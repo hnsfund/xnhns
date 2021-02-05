@@ -2,10 +2,13 @@
 import {
   BigInt,
   ByteArray,
-  EthereumEvent,
+  ethereum
 } from '@graphprotocol/graph-ts'
 
-export function createEventID(event: EthereumEvent): string {
+// export class Event extends ethereum.Event {}
+
+
+export function createEventID(event: ethereum.Event): string {
   return event.block.number.toString().concat('-').concat(event.logIndex.toString())
 }
 

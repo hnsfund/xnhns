@@ -26,6 +26,7 @@ function publishContract(contractName) {
 
     }
     if(!address || !contract) return;
+
     contract = JSON.parse(contract);
     let graphConfigPath = `${graphDir}/config/config.json`
     let graphConfig
@@ -40,6 +41,7 @@ function publishContract(contractName) {
       } catch (e) {
         console.log(e)
       }
+    console.log(`Adding ${contractName} to subgraph...`);
 
     graphConfig = JSON.parse(graphConfig)
     graphConfig[contractName + "Address"] = address
