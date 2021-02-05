@@ -13,12 +13,19 @@ function publishContract(contractName) {
     chalk.yellow(publishDir)
   );
   try {
-    let contract = fs
-      .readFileSync(`${bre.config.paths.artifacts}/contracts/${contractName}.sol/${contractName}.json`)
-      .toString();
-    const address = fs
-      .readFileSync(`${bre.config.paths.artifacts}/${contractName}.address`)
-      .toString();
+    let contract;
+    let address;
+    try {
+      contract = fs
+        .readFileSync(`${bre.config.paths.artifacts}/contracts/${contractName}.sol/${contractName}.json`)
+        .toString();
+      address = fs
+        .readFileSync(`${bre.config.paths.artifacts}/${contractName}.address`)
+        .toString();
+    } catch (e) {
+
+    }
+    if(!address || !contract) return;
     contract = JSON.parse(contract);
     let graphConfigPath = `${graphDir}/config/config.json`
     let graphConfig

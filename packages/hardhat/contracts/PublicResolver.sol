@@ -7,6 +7,9 @@ import "./profiles/ContentHashResolver.sol";
 import "../interfaces/ENS.sol";
 import "../interfaces/IRestrictedNameWrapper.sol";
 
+
+// TODO replace with resolver without restricted name wrapper bs
+
 /**
  * A simple resolver anyone can use; only allows the owner of a node to set its
  * address.

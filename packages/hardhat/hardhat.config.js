@@ -1,7 +1,9 @@
 const { utils } = require('ethers')
 const fs = require('fs')
 
-require('@nomiclabs/hardhat-waffle')
+require('@nomiclabs/hardhat-waffle');
+require("@nomiclabs/hardhat-etherscan"); // Uncomment to verify on etherscan
+require('hardhat-deploy');
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils
 
@@ -48,6 +50,11 @@ module.exports = {
         (you can put in a mnemonic here to set the deployer locally)
       */
     },
+    hardhat: {
+      live: false,
+      saveDeployments: true,
+      tags: ["test", "local"]
+    },
     rinkeby: {
       url: 'https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad', //<---- YOUR INFURA ID! (or it won't work)
       accounts: {
@@ -81,7 +88,11 @@ module.exports = {
     },
   },
   solidity: {
-    version: '0.7.5',
+    compilers: [
+      { version: "0.7.0" },
+      { version: "0.5.16" },
+      // { version: "0.4.24" },
+    ],
     settings: {
       optimizer: {
         enabled: true,
@@ -89,6 +100,9 @@ module.exports = {
       },
     },
   },
+  etherscan: {
+    apiKey: '43JVMCI3EJCZSECDWX99KRZRYWDX3H7MCH'
+  }
 }
 
 const DEBUG = false

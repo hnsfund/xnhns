@@ -3,18 +3,23 @@
   "license": "UNLICENSED",
   "version": "1.0.0",
   "scripts": {
-    "codegen": "graph codegen",
+    "codegen": "graph codegen --output-dir src/types/",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ GITHUB_USERNAME/your-contract",
-    "create-local": "graph create --node http://localhost:8020/ scaffold-eth/your-contract",
-    "remove-local": "graph remove --node http://localhost:8020/ scaffold-eth/your-contract",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 scaffold-eth/your-contract"
-  },
-  "dependencies": {
-    "@graphprotocol/graph-cli": "0.18.0",
-    "@graphprotocol/graph-ts": "0.18.0"
+    "setup": "npm run codegen && npm run create-local && npm run deploy-local",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ kibagateaux/badass-ens",
+    "create-local": "graph create --node http://localhost:8020/ scaffold-eth/badass-ens",
+    "remove-local": "graph remove --node http://localhost:8020/ scaffold-eth/badass-ens",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 scaffold-eth/badass-ens",
+    "docker:setup": "npm run codegen && npm run docker:create-local && npm run docker:deploy-local",
+    "docker:create-local": "graph create graphprotocol/ens --node http://ens-app_graph-node_1:8020",
+    "docker:deploy-local": "graph deploy graphprotocol/ens --debug --ipfs http://ens-app_ipfs_1:5001 --node http://ens-app_graph-node_1:8020/",
+    "docker:remove-local": "graph remove graphprotocol/ens --node http://ens-app_graph-node_1:8020",
+    "watch-local": "graph deploy graphprotocol/ens --watch --debug --node http://127.0.0.1:8020/ --ipfs http://localhost:5001"
   },
   "devDependencies": {
+    "@graphprotocol/graph-cli": "0.18.0",
+    "@graphprotocol/graph-ts": "0.18.0",
+    "@ensdomains/content-hash": "^2.5.3",
     "mustache": "^3.1.0"
   }
 }

@@ -1,13 +1,13 @@
 pragma solidity >=0.4.24;
 
-//import "@ensdomains/ens/contracts/ENS.sol";
-import "./ENS.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@ensdomains/ens/contracts/ENS.sol";
+// import "./ENS.sol";
+// import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 //TODO import from NPM
 
-abstract contract BaseRegistrar is IERC721, Ownable {
+abstract contract IBaseRegistrar is Ownable {
     uint256 public constant GRACE_PERIOD = 90 days;
 
     event ControllerAdded(address indexed controller);

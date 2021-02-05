@@ -4,11 +4,13 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
+    "@nomiclabs/hardhat-etherscan": "^2.1.1",
     "eslint": "^7.5.0",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-babel": "^5.3.1",
-    "eslint-plugin-prettier": "^3.1.4"
+    "eslint-plugin-prettier": "^3.1.4",
+    "hardhat-deploy": "^0.7.0-beta.44"
   },
   "dependencies": {
     "@ensdomains/ens": "^0.4.5",
@@ -26,6 +28,7 @@
   },
   "scripts": {
     "chain": "hardhat node",
+    "console": "hardhat console",
     "test": "hardhat test",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.js && hardhat run scripts/publish.js",
