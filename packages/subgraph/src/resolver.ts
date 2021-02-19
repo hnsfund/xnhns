@@ -1,13 +1,13 @@
 import {
-  // ABIChanged as ABIChangedEvent,
+  ABIChanged as ABIChangedEvent,
   AddrChanged as AddrChangedEvent,
   AddressChanged as AddressChangedEvent,
   AuthorisationChanged as AuthorisationChangedEvent,
   ContenthashChanged as ContenthashChangedEvent,
-  // InterfaceChanged as InterfaceChangedEvent,
-  // NameChanged as NameChangedEvent,
-  // PubkeyChanged as PubkeyChangedEvent,
-  // TextChanged as TextChangedEvent,
+  InterfaceChanged as InterfaceChangedEvent,
+  NameChanged as NameChangedEvent,
+  PubkeyChanged as PubkeyChangedEvent,
+  TextChanged as TextChangedEvent,
 } from './types/Resolver/Resolver'
 
 import {
@@ -81,56 +81,56 @@ export function handleMulticoinAddrChanged(event: AddressChangedEvent): void {
   resolverEvent.save()
 }
 
-// export function handleNameChanged(event: NameChangedEvent): void {
-//   if(event.params.name.indexOf("\u0000") != -1) return;
+export function handleNameChanged(event: NameChangedEvent): void {
+  if(event.params.name.indexOf("\u0000") != -1) return;
   
-//   let resolverEvent = new NameChanged(createEventID(event))
-//   resolverEvent.resolver = createResolverID(event.params.node, event.address)
-//   resolverEvent.blockNumber = event.block.number.toI32()
-//   resolverEvent.transactionID = event.transaction.hash
-//   resolverEvent.name = event.params.name
-//   resolverEvent.save()
-// }
+  let resolverEvent = new NameChanged(createEventID(event))
+  resolverEvent.resolver = createResolverID(event.params.node, event.address)
+  resolverEvent.blockNumber = event.block.number.toI32()
+  resolverEvent.transactionID = event.transaction.hash
+  resolverEvent.name = event.params.name
+  resolverEvent.save()
+}
 
-// export function handleABIChanged(event: ABIChangedEvent): void {
-//   let resolverEvent = new AbiChanged(createEventID(event))
-//   resolverEvent.resolver = createResolverID(event.params.node, event.address)
-//   resolverEvent.blockNumber = event.block.number.toI32()
-//   resolverEvent.transactionID = event.transaction.hash
-//   resolverEvent.contentType = event.params.contentType
-//   resolverEvent.save()
-// }
+export function handleABIChanged(event: ABIChangedEvent): void {
+  let resolverEvent = new AbiChanged(createEventID(event))
+  resolverEvent.resolver = createResolverID(event.params.node, event.address)
+  resolverEvent.blockNumber = event.block.number.toI32()
+  resolverEvent.transactionID = event.transaction.hash
+  resolverEvent.contentType = event.params.contentType
+  resolverEvent.save()
+}
 
-// export function handlePubkeyChanged(event: PubkeyChangedEvent): void {
-//   let resolverEvent = new PubkeyChanged(createEventID(event))
-//   resolverEvent.resolver = createResolverID(event.params.node, event.address)
-//   resolverEvent.blockNumber = event.block.number.toI32()
-//   resolverEvent.transactionID = event.transaction.hash
-//   resolverEvent.x = event.params.x
-//   resolverEvent.y = event.params.y
-//   resolverEvent.save()
-// }
+export function handlePubkeyChanged(event: PubkeyChangedEvent): void {
+  let resolverEvent = new PubkeyChanged(createEventID(event))
+  resolverEvent.resolver = createResolverID(event.params.node, event.address)
+  resolverEvent.blockNumber = event.block.number.toI32()
+  resolverEvent.transactionID = event.transaction.hash
+  resolverEvent.x = event.params.x
+  resolverEvent.y = event.params.y
+  resolverEvent.save()
+}
 
-// export function handleTextChanged(event: TextChangedEvent): void {
-//   let resolver = getOrCreateResolver(event.params.node, event.address)
-//   let key = event.params.key;
-//   if(resolver.texts == null) {
-//     resolver.texts = [key];
-//     resolver.save();
-//   } else if(!resolver.texts.includes(key)) {
-//     let texts = resolver.texts
-//     texts.push(key)
-//     resolver.texts = texts
-//     resolver.save()
-//   }
+export function handleTextChanged(event: TextChangedEvent): void {
+  let resolver = getOrCreateResolver(event.params.node, event.address)
+  let key = event.params.key;
+  if(resolver.texts == null) {
+    resolver.texts = [key];
+    resolver.save();
+  } else if(!resolver.texts.includes(key)) {
+    let texts = resolver.texts
+    texts.push(key)
+    resolver.texts = texts
+    resolver.save()
+  }
 
-//   let resolverEvent = new TextChanged(createEventID(event))
-//   resolverEvent.resolver = createResolverID(event.params.node, event.address)
-//   resolverEvent.blockNumber = event.block.number.toI32()
-//   resolverEvent.transactionID = event.transaction.hash
-//   resolverEvent.key = event.params.key
-//   resolverEvent.save()
-// }
+  let resolverEvent = new TextChanged(createEventID(event))
+  resolverEvent.resolver = createResolverID(event.params.node, event.address)
+  resolverEvent.blockNumber = event.block.number.toI32()
+  resolverEvent.transactionID = event.transaction.hash
+  resolverEvent.key = event.params.key
+  resolverEvent.save()
+}
 
 export function handleContentHashChanged(event: ContenthashChangedEvent): void {
   let resolver = getOrCreateResolver(event.params.node, event.address)
@@ -145,15 +145,15 @@ export function handleContentHashChanged(event: ContenthashChangedEvent): void {
   resolverEvent.save()
 }
 
-// export function handleInterfaceChanged(event: InterfaceChangedEvent): void {
-//   let resolverEvent = new InterfaceChanged(createEventID(event))
-//   resolverEvent.resolver = createResolverID(event.params.node, event.address)
-//   resolverEvent.blockNumber = event.block.number.toI32()
-//   resolverEvent.transactionID = event.transaction.hash
-//   resolverEvent.interfaceID = event.params.interfaceID
-//   resolverEvent.implementer = event.params.implementer
-//   resolverEvent.save()
-// }
+export function handleInterfaceChanged(event: InterfaceChangedEvent): void {
+  let resolverEvent = new InterfaceChanged(createEventID(event))
+  resolverEvent.resolver = createResolverID(event.params.node, event.address)
+  resolverEvent.blockNumber = event.block.number.toI32()
+  resolverEvent.transactionID = event.transaction.hash
+  resolverEvent.interfaceID = event.params.interfaceID
+  resolverEvent.implementer = event.params.implementer
+  resolverEvent.save()
+}
 
 export function handleAuthorisationChanged(event: AuthorisationChangedEvent): void {
   let resolverEvent = new AuthorisationChanged(createEventID(event))
@@ -178,7 +178,9 @@ function getOrCreateResolver(node: Bytes, address: Address): Resolver {
 }
 
 function createEventID(event: ethereum.Event): string {
-  return event.block.number.toString().concat('-').concat(event.logIndex.toString())
+  const id = event.block.number.toString().concat('-').concat(event.logIndex.toString())
+  // log("\n\n generat event id - ", id)
+  return id;
 }
 
 function createResolverID(node: Bytes, resolver: Address): string {

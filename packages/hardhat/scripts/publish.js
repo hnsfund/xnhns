@@ -5,7 +5,7 @@ const bre = require("hardhat");
 const publishDir = "../react-app/src/contracts";
 const graphDir = "../subgraph"
 
-function publishContract(contractName) {
+function publishContract(contractName, scriptName) {
   console.log(
     "Publishing",
     chalk.cyan(contractName),

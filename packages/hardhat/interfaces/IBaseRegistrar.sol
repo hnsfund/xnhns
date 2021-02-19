@@ -1,11 +1,7 @@
-pragma solidity >=0.4.24;
+pragma solidity ^0.7.0;
 
-import "@ensdomains/ens/contracts/ENS.sol";
-// import "./ENS.sol";
-// import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-
-//TODO import from NPM
+import "./IENS.sol";
 
 abstract contract IBaseRegistrar is Ownable {
     uint256 public constant GRACE_PERIOD = 90 days;

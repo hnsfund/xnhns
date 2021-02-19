@@ -1,10 +1,10 @@
 pragma solidity ^0.7.0;
 
-import "@ensdomains/resolver/contracts/Resolver.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/PriceOracle.sol";
+import "../../interfaces/IPublicResolver.sol";
+import "../../interfaces/PriceOracle.sol";
+import "../utils/StringUtils.sol";
 import "./BaseRegistrar.sol";
-import "./StringUtils.sol";
 
 /**
  * @dev A registrar controller for registering and renewing names at fixed cost.
@@ -106,7 +106,7 @@ contract RegistrarController is Ownable {
 
             // Configure the resolver
             if (addr != address(0)) {
-                Resolver(resolver).setAddr(nodehash, addr);
+                IPublicResolver(resolver).setAddr(nodehash, addr);
             }
 
             // Now transfer full ownership to the expeceted owner

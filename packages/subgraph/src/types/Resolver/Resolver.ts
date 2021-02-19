@@ -10,6 +10,28 @@ import {
   BigInt
 } from "@graphprotocol/graph-ts";
 
+export class ABIChanged extends ethereum.Event {
+  get params(): ABIChanged__Params {
+    return new ABIChanged__Params(this);
+  }
+}
+
+export class ABIChanged__Params {
+  _event: ABIChanged;
+
+  constructor(event: ABIChanged) {
+    this._event = event;
+  }
+
+  get node(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get contentType(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+}
+
 export class AddrChanged extends ethereum.Event {
   get params(): AddrChanged__Params {
     return new AddrChanged__Params(this);
@@ -110,9 +132,191 @@ export class ContenthashChanged__Params {
   }
 }
 
+export class InterfaceChanged extends ethereum.Event {
+  get params(): InterfaceChanged__Params {
+    return new InterfaceChanged__Params(this);
+  }
+}
+
+export class InterfaceChanged__Params {
+  _event: InterfaceChanged;
+
+  constructor(event: InterfaceChanged) {
+    this._event = event;
+  }
+
+  get node(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get interfaceID(): Bytes {
+    return this._event.parameters[1].value.toBytes();
+  }
+
+  get implementer(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+}
+
+export class NameChanged extends ethereum.Event {
+  get params(): NameChanged__Params {
+    return new NameChanged__Params(this);
+  }
+}
+
+export class NameChanged__Params {
+  _event: NameChanged;
+
+  constructor(event: NameChanged) {
+    this._event = event;
+  }
+
+  get node(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get name(): string {
+    return this._event.parameters[1].value.toString();
+  }
+}
+
+export class OwnershipTransferred extends ethereum.Event {
+  get params(): OwnershipTransferred__Params {
+    return new OwnershipTransferred__Params(this);
+  }
+}
+
+export class OwnershipTransferred__Params {
+  _event: OwnershipTransferred;
+
+  constructor(event: OwnershipTransferred) {
+    this._event = event;
+  }
+
+  get previousOwner(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get newOwner(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+}
+
+export class PubkeyChanged extends ethereum.Event {
+  get params(): PubkeyChanged__Params {
+    return new PubkeyChanged__Params(this);
+  }
+}
+
+export class PubkeyChanged__Params {
+  _event: PubkeyChanged;
+
+  constructor(event: PubkeyChanged) {
+    this._event = event;
+  }
+
+  get node(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get x(): Bytes {
+    return this._event.parameters[1].value.toBytes();
+  }
+
+  get y(): Bytes {
+    return this._event.parameters[2].value.toBytes();
+  }
+}
+
+export class TextChanged extends ethereum.Event {
+  get params(): TextChanged__Params {
+    return new TextChanged__Params(this);
+  }
+}
+
+export class TextChanged__Params {
+  _event: TextChanged;
+
+  constructor(event: TextChanged) {
+    this._event = event;
+  }
+
+  get node(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get indexedKey(): Bytes {
+    return this._event.parameters[1].value.toBytes();
+  }
+
+  get key(): string {
+    return this._event.parameters[2].value.toString();
+  }
+}
+
+export class Resolver__ABIResult {
+  value0: BigInt;
+  value1: Bytes;
+
+  constructor(value0: BigInt, value1: Bytes) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromBytes(this.value1));
+    return map;
+  }
+}
+
+export class Resolver__pubkeyResult {
+  value0: Bytes;
+  value1: Bytes;
+
+  constructor(value0: Bytes, value1: Bytes) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromFixedBytes(this.value0));
+    map.set("value1", ethereum.Value.fromFixedBytes(this.value1));
+    return map;
+  }
+}
+
 export class Resolver extends ethereum.SmartContract {
   static bind(address: Address): Resolver {
     return new Resolver("Resolver", address);
+  }
+
+  ABI(node: Bytes, contentTypes: BigInt): Resolver__ABIResult {
+    let result = super.call("ABI", "ABI(bytes32,uint256):(uint256,bytes)", [
+      ethereum.Value.fromFixedBytes(node),
+      ethereum.Value.fromUnsignedBigInt(contentTypes)
+    ]);
+
+    return new Resolver__ABIResult(result[0].toBigInt(), result[1].toBytes());
+  }
+
+  try_ABI(
+    node: Bytes,
+    contentTypes: BigInt
+  ): ethereum.CallResult<Resolver__ABIResult> {
+    let result = super.tryCall("ABI", "ABI(bytes32,uint256):(uint256,bytes)", [
+      ethereum.Value.fromFixedBytes(node),
+      ethereum.Value.fromUnsignedBigInt(contentTypes)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new Resolver__ABIResult(value[0].toBigInt(), value[1].toBytes())
+    );
   }
 
   addr(node: Bytes): Address {
@@ -190,32 +394,6 @@ export class Resolver extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  checkCallData(node: Bytes, data: Array<Bytes>): boolean {
-    let result = super.call(
-      "checkCallData",
-      "checkCallData(bytes32,bytes[]):(bool)",
-      [ethereum.Value.fromFixedBytes(node), ethereum.Value.fromBytesArray(data)]
-    );
-
-    return result[0].toBoolean();
-  }
-
-  try_checkCallData(
-    node: Bytes,
-    data: Array<Bytes>
-  ): ethereum.CallResult<boolean> {
-    let result = super.tryCall(
-      "checkCallData",
-      "checkCallData(bytes32,bytes[]):(bool)",
-      [ethereum.Value.fromFixedBytes(node), ethereum.Value.fromBytesArray(data)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBoolean());
-  }
-
   contenthash(node: Bytes): Bytes {
     let result = super.call("contenthash", "contenthash(bytes32):(bytes)", [
       ethereum.Value.fromFixedBytes(node)
@@ -235,6 +413,38 @@ export class Resolver extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
+  interfaceImplementer(node: Bytes, interfaceID: Bytes): Address {
+    let result = super.call(
+      "interfaceImplementer",
+      "interfaceImplementer(bytes32,bytes4):(address)",
+      [
+        ethereum.Value.fromFixedBytes(node),
+        ethereum.Value.fromFixedBytes(interfaceID)
+      ]
+    );
+
+    return result[0].toAddress();
+  }
+
+  try_interfaceImplementer(
+    node: Bytes,
+    interfaceID: Bytes
+  ): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "interfaceImplementer",
+      "interfaceImplementer(bytes32,bytes4):(address)",
+      [
+        ethereum.Value.fromFixedBytes(node),
+        ethereum.Value.fromFixedBytes(interfaceID)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   multicall(data: Array<Bytes>): Array<Bytes> {
     let result = super.call("multicall", "multicall(bytes[]):(bytes[])", [
       ethereum.Value.fromBytesArray(data)
@@ -252,6 +462,61 @@ export class Resolver extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBytesArray());
+  }
+
+  name(node: Bytes): string {
+    let result = super.call("name", "name(bytes32):(string)", [
+      ethereum.Value.fromFixedBytes(node)
+    ]);
+
+    return result[0].toString();
+  }
+
+  try_name(node: Bytes): ethereum.CallResult<string> {
+    let result = super.tryCall("name", "name(bytes32):(string)", [
+      ethereum.Value.fromFixedBytes(node)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toString());
+  }
+
+  owner(): Address {
+    let result = super.call("owner", "owner():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_owner(): ethereum.CallResult<Address> {
+    let result = super.tryCall("owner", "owner():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  pubkey(node: Bytes): Resolver__pubkeyResult {
+    let result = super.call("pubkey", "pubkey(bytes32):(bytes32,bytes32)", [
+      ethereum.Value.fromFixedBytes(node)
+    ]);
+
+    return new Resolver__pubkeyResult(result[0].toBytes(), result[1].toBytes());
+  }
+
+  try_pubkey(node: Bytes): ethereum.CallResult<Resolver__pubkeyResult> {
+    let result = super.tryCall("pubkey", "pubkey(bytes32):(bytes32,bytes32)", [
+      ethereum.Value.fromFixedBytes(node)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new Resolver__pubkeyResult(value[0].toBytes(), value[1].toBytes())
+    );
   }
 
   supportsInterface(interfaceID: Bytes): boolean {
@@ -276,6 +541,27 @@ export class Resolver extends ethereum.SmartContract {
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
+
+  text(node: Bytes, key: string): string {
+    let result = super.call("text", "text(bytes32,string):(string)", [
+      ethereum.Value.fromFixedBytes(node),
+      ethereum.Value.fromString(key)
+    ]);
+
+    return result[0].toString();
+  }
+
+  try_text(node: Bytes, key: string): ethereum.CallResult<string> {
+    let result = super.tryCall("text", "text(bytes32,string):(string)", [
+      ethereum.Value.fromFixedBytes(node),
+      ethereum.Value.fromString(key)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toString());
+  }
 }
 
 export class ConstructorCall extends ethereum.Call {
@@ -297,10 +583,6 @@ export class ConstructorCall__Inputs {
 
   get _ens(): Address {
     return this._call.inputValues[0].value.toAddress();
-  }
-
-  get _wrapper(): Address {
-    return this._call.inputValues[1].value.toAddress();
   }
 }
 
@@ -343,6 +625,70 @@ export class MulticallCall__Outputs {
 
   get results(): Array<Bytes> {
     return this._call.outputValues[0].value.toBytesArray();
+  }
+}
+
+export class RenounceOwnershipCall extends ethereum.Call {
+  get inputs(): RenounceOwnershipCall__Inputs {
+    return new RenounceOwnershipCall__Inputs(this);
+  }
+
+  get outputs(): RenounceOwnershipCall__Outputs {
+    return new RenounceOwnershipCall__Outputs(this);
+  }
+}
+
+export class RenounceOwnershipCall__Inputs {
+  _call: RenounceOwnershipCall;
+
+  constructor(call: RenounceOwnershipCall) {
+    this._call = call;
+  }
+}
+
+export class RenounceOwnershipCall__Outputs {
+  _call: RenounceOwnershipCall;
+
+  constructor(call: RenounceOwnershipCall) {
+    this._call = call;
+  }
+}
+
+export class SetABICall extends ethereum.Call {
+  get inputs(): SetABICall__Inputs {
+    return new SetABICall__Inputs(this);
+  }
+
+  get outputs(): SetABICall__Outputs {
+    return new SetABICall__Outputs(this);
+  }
+}
+
+export class SetABICall__Inputs {
+  _call: SetABICall;
+
+  constructor(call: SetABICall) {
+    this._call = call;
+  }
+
+  get node(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+
+  get contentType(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get data(): Bytes {
+    return this._call.inputValues[2].value.toBytes();
+  }
+}
+
+export class SetABICall__Outputs {
+  _call: SetABICall;
+
+  constructor(call: SetABICall) {
+    this._call = call;
   }
 }
 
@@ -486,6 +832,184 @@ export class SetContenthashCall__Outputs {
   _call: SetContenthashCall;
 
   constructor(call: SetContenthashCall) {
+    this._call = call;
+  }
+}
+
+export class SetInterfaceCall extends ethereum.Call {
+  get inputs(): SetInterfaceCall__Inputs {
+    return new SetInterfaceCall__Inputs(this);
+  }
+
+  get outputs(): SetInterfaceCall__Outputs {
+    return new SetInterfaceCall__Outputs(this);
+  }
+}
+
+export class SetInterfaceCall__Inputs {
+  _call: SetInterfaceCall;
+
+  constructor(call: SetInterfaceCall) {
+    this._call = call;
+  }
+
+  get node(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+
+  get interfaceID(): Bytes {
+    return this._call.inputValues[1].value.toBytes();
+  }
+
+  get implementer(): Address {
+    return this._call.inputValues[2].value.toAddress();
+  }
+}
+
+export class SetInterfaceCall__Outputs {
+  _call: SetInterfaceCall;
+
+  constructor(call: SetInterfaceCall) {
+    this._call = call;
+  }
+}
+
+export class SetNameCall extends ethereum.Call {
+  get inputs(): SetNameCall__Inputs {
+    return new SetNameCall__Inputs(this);
+  }
+
+  get outputs(): SetNameCall__Outputs {
+    return new SetNameCall__Outputs(this);
+  }
+}
+
+export class SetNameCall__Inputs {
+  _call: SetNameCall;
+
+  constructor(call: SetNameCall) {
+    this._call = call;
+  }
+
+  get node(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+
+  get name(): string {
+    return this._call.inputValues[1].value.toString();
+  }
+}
+
+export class SetNameCall__Outputs {
+  _call: SetNameCall;
+
+  constructor(call: SetNameCall) {
+    this._call = call;
+  }
+}
+
+export class SetPubkeyCall extends ethereum.Call {
+  get inputs(): SetPubkeyCall__Inputs {
+    return new SetPubkeyCall__Inputs(this);
+  }
+
+  get outputs(): SetPubkeyCall__Outputs {
+    return new SetPubkeyCall__Outputs(this);
+  }
+}
+
+export class SetPubkeyCall__Inputs {
+  _call: SetPubkeyCall;
+
+  constructor(call: SetPubkeyCall) {
+    this._call = call;
+  }
+
+  get node(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+
+  get x(): Bytes {
+    return this._call.inputValues[1].value.toBytes();
+  }
+
+  get y(): Bytes {
+    return this._call.inputValues[2].value.toBytes();
+  }
+}
+
+export class SetPubkeyCall__Outputs {
+  _call: SetPubkeyCall;
+
+  constructor(call: SetPubkeyCall) {
+    this._call = call;
+  }
+}
+
+export class SetTextCall extends ethereum.Call {
+  get inputs(): SetTextCall__Inputs {
+    return new SetTextCall__Inputs(this);
+  }
+
+  get outputs(): SetTextCall__Outputs {
+    return new SetTextCall__Outputs(this);
+  }
+}
+
+export class SetTextCall__Inputs {
+  _call: SetTextCall;
+
+  constructor(call: SetTextCall) {
+    this._call = call;
+  }
+
+  get node(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+
+  get key(): string {
+    return this._call.inputValues[1].value.toString();
+  }
+
+  get value(): string {
+    return this._call.inputValues[2].value.toString();
+  }
+}
+
+export class SetTextCall__Outputs {
+  _call: SetTextCall;
+
+  constructor(call: SetTextCall) {
+    this._call = call;
+  }
+}
+
+export class TransferOwnershipCall extends ethereum.Call {
+  get inputs(): TransferOwnershipCall__Inputs {
+    return new TransferOwnershipCall__Inputs(this);
+  }
+
+  get outputs(): TransferOwnershipCall__Outputs {
+    return new TransferOwnershipCall__Outputs(this);
+  }
+}
+
+export class TransferOwnershipCall__Inputs {
+  _call: TransferOwnershipCall;
+
+  constructor(call: TransferOwnershipCall) {
+    this._call = call;
+  }
+
+  get newOwner(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class TransferOwnershipCall__Outputs {
+  _call: TransferOwnershipCall;
+
+  constructor(call: TransferOwnershipCall) {
     this._call = call;
   }
 }

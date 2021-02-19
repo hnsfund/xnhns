@@ -1,7 +1,7 @@
 pragma solidity >=0.6.0 <0.8.0;
 
 import "hardhat/console.sol";
-import "../interfaces/ENS.sol";
+import "../interfaces/IENS.sol";
 
 //TODO: remove and pull in from npm
 

@@ -1,13 +1,13 @@
 pragma solidity ^0.7.0;
 
-import "@ensdomains/ens/contracts/ENS.sol";
-import "./ERC721/ERC721.sol";
-import "../interfaces/IBaseRegistrar.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "../../interfaces/IENS.sol";
+import "../../interfaces/IBaseRegistrar.sol";
+import "../ERC721/ERC721.sol";
 
 contract BaseRegistrar is
   IBaseRegistrar,
-  ERC721("Badass Domain Registrar", "BADASS")
+  ERC721("Badass Domain Registrar", "BADASS") // TODO change
 {
     // A map of expiry times
     mapping(uint256=>uint) expiries;

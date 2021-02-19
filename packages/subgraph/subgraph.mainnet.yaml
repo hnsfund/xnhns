@@ -8,9 +8,9 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: ENSRegistry
-    network: ropsten
+    network: mainnet
     source:
-      address: '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+      address: '0x36fc69f0983e536d1787cc83f481581f22cca2a1'
       abi: EnsRegistry
     mapping:
       kind: ethereum/events
@@ -23,7 +23,7 @@ dataSources:
         - Resolver
       abis:
         - name: EnsRegistry
-          file: ./abis/ENSRegistry.json
+          file: ./_abis/ENSRegistry.json
       eventHandlers:
         - event: 'Transfer(indexed bytes32,address)'
           handler: handleTransfer
@@ -34,11 +34,11 @@ dataSources:
         - event: 'NewTTL(indexed bytes32,uint64)'
           handler: handleNewTTL
   - kind: ethereum/contract
-    name: BaseRegistrar
-    network: ropsten
+    name: BaseRegistrarImplementation
+    network: mainnet
     source:
-      address: '0x638A246F0Ec8883eF68280293FFE8Cfbabe61B44'
-      abi: BaseRegistrar
+      address: '0xa271897710a2B22f7A5bE5fEaCb00811d960e0b8'
+      abi: BaseRegistrarImplementation
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -50,8 +50,8 @@ dataSources:
         - NameRenewed
         - NameTransferred
       abis:
-        - name: BaseRegistrar
-          file: ./abis/BaseRegistrar.json
+        - name: BaseRegistrarImplementation
+          file: ./_abis/BaseRegistrarImplementation.json
       eventHandlers:
         - event: 'NameRegistered(indexed uint256,indexed address,uint256)'
           handler: handleNameRegistered
@@ -60,11 +60,11 @@ dataSources:
         - event: 'Transfer(indexed address,indexed address,indexed uint256)'
           handler: handleNameTransferred
   - kind: ethereum/contract
-    name: RegistrarController
-    network: ropsten
+    name: ETHRegistrarController
+    network: mainnet
     source:
-      address:  '0x6C2d83262fF84cBaDb3e416D527403135D757892'
-      abi: RegistrarController
+      address:  '0x82994379b1ec951c8e001dfcec2a7ce8f4f39b97'
+      abi: ETHRegistrarController
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -73,8 +73,8 @@ dataSources:
       entities:
         - Registration
       abis:
-        - name: RegistrarController
-          file: ./abis/RegistrarController.json
+        - name: ETHRegistrarController
+          file: ./_abis/ETHRegistrarController.json
       eventHandlers:
         - event: 'NameRegistered(string,indexed bytes32,indexed address,uint256,uint256)'
           handler: handleNameRegisteredByController
@@ -83,7 +83,7 @@ dataSources:
 
   # - kind: ethereum/contract
   #   name: ENSRegistryOld
-  #   network: ropsten
+  #   network: localhost
   #   source:
   #     address: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
   #     abi: EnsRegistry
@@ -98,7 +98,7 @@ dataSources:
   #       - Resolver
   #     abis:
   #       - name: EnsRegistry
-  #         file: ./abis/ENSRegistry.json
+  #         file: ./_abis/ENSRegistry.json
   #     eventHandlers:
   #       - event: 'Transfer(indexed bytes32,address)'
   #         handler: handleTransferOldRegistry
@@ -108,45 +108,45 @@ dataSources:
   #         handler: handleNewResolverOldRegistry
   #       - event: 'NewTTL(indexed bytes32,uint64)'
   #         handler: handleNewTTLOldRegistry
-  - kind: ethereum/contract
-    name: Resolver
-    network: ropsten
-    source:
-      abi: Resolver
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      file: ./src/resolver.ts
-      entities:
-        - AddrChanged
-        - MulticoinAddrChanged
-        - NameChanged
-        - AbiChanged
-        - PubkeyChanged
-        - Textchanged
-        - ContenthashChanged
-        - InterfaceChanged
-        - AuthorisationChanged
-      abis:
-        - name: Resolver
-          file: ./abis/PublicResolver.json
-      eventHandlers:
-        - event: 'ABIChanged(indexed bytes32,indexed uint256)'
-          handler: handleABIChanged
-        - event: 'AddrChanged(indexed bytes32,address)'
-          handler: handleAddrChanged
-        - event: 'AddressChanged(indexed bytes32,uint256,bytes)'
-          handler: handleMulticoinAddrChanged
-        - event: 'AuthorisationChanged(indexed bytes32,indexed address,indexed address,bool)'
-          handler: handleAuthorisationChanged
-        - event: 'ContenthashChanged(indexed bytes32,bytes)'
-          handler: handleContentHashChanged
-        - event: 'InterfaceChanged(indexed bytes32,indexed bytes4,address)'
-          handler: handleInterfaceChanged
-        - event: 'NameChanged(indexed bytes32,string)'
-          handler: handleNameChanged
-        - event: 'PubkeyChanged(indexed bytes32,bytes32,bytes32)'
-          handler: handlePubkeyChanged
-        - event: 'TextChanged(indexed bytes32,indexed string,string)'
-          handler: handleTextChanged
+  # - kind: ethereum/contract
+  #   name: Resolver
+  #   network: localhost
+  #   source:
+  #     abi: Resolver
+  #   mapping:
+  #     kind: ethereum/events
+  #     apiVersion: 0.0.4
+  #     language: wasm/assemblyscript
+  #     file: ./src/resolver.ts
+  #     entities:
+  #       - AddrChanged
+  #       - MulticoinAddrChanged
+  #       # - NameChanged
+  #       # - AbiChanged
+  #       - PubkeyChanged
+  #       # - Textchanged
+  #       - ContenthashChanged
+  #       # - InterfaceChanged
+  #       - AuthorisationChanged
+  #     abis:
+  #       - name: Resolver
+  #         file: ./_abis/PublicResolver.json
+  #     eventHandlers:
+  #       # - event: 'ABIChanged(indexed bytes32,indexed uint256)'
+  #       #   handler: handleABIChanged
+  #       - event: 'AddrChanged(indexed bytes32,address)'
+  #         handler: handleAddrChanged
+  #       - event: 'AddressChanged(indexed bytes32,uint256,bytes)'
+  #         handler: handleMulticoinAddrChanged
+  #       - event: 'AuthorisationChanged(indexed bytes32,indexed address,indexed address,bool)'
+  #         handler: handleAuthorisationChanged
+  #       - event: 'ContenthashChanged(indexed bytes32,bytes)'
+  #         handler: handleContentHashChanged
+  #       # - event: 'InterfaceChanged(indexed bytes32,indexed bytes4,address)'
+  #       #   handler: handleInterfaceChanged
+  #       # - event: 'NameChanged(indexed bytes32,string)'
+  #       #   handler: handleNameChanged
+  #       # - event: 'PubkeyChanged(indexed bytes32,bytes32,bytes32)'
+  #       #   handler: handlePubkeyChanged
+  #       # - event: 'TextChanged(indexed bytes32,indexed string,string)'
+  #       #   handler: handleTextChanged
