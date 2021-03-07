@@ -19,12 +19,13 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = 'localhost'
+const defaultNetwork = 'kovan'
 
 function mnemonic() {
   try {
     return fs.readFileSync('./mnemonic.txt').toString().trim()
   } catch (e) {
+    console.log('deploying  from non mnomnic account', );
     if (defaultNetwork !== 'localhost') {
       console.log(
         '☢️ WARNING: No mnemonic file created for a deploy account. Try `yarn run generate` and then `yarn run account`.'
@@ -36,33 +37,77 @@ function mnemonic() {
 
 module.exports = {
   defaultNetwork,
-
   // don't forget to set your provider like:
   // REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
   // (then your frontend will talk to your contracts on the live network!)
   // (you will need to restart the `yarn run start` dev server after editing the .env)
 
+  /** HARDAT DEPLOY CONFIG */
+  namedAccounts: {
+    deployer: {
+      default: 0, // here this will by default take the first account as deployer
+      1: 0, // similarly on mainnet it will take the first account as deployer. Note though that depending on how hardhat network are configured, the account 0 on one network can be different than on another
+      // 4: '0xA296a3d5F026953e17F472B497eC29a5631FB51B', // but for rinkeby it will be a specific address
+    },
+  },
+  external: {
+    contracts: [
+      {
+        artifacts: "node_modules/@chainlink/0.7/dev/artifacts/",
+      },
+    ]
+  },
+
+  /** STANDARD HARDAT CONFIG */
   networks: {
+    mainnet: {
+      url: 'https://mainnet.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad', //<---- YOUR INFURA ID! (or it won't work)
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    /* L2s */
+    xdai: {
+      url: 'https://dai.poa.network',
+      gasPrice: 1000000000,
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    matic: {
+      url: 'https://rpc-mainnet.matic.network',
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+      network_id: 80001,
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true
+    },
+    /* local */
     localhost: {
       url: 'http://localhost:8545',
-      /*
-        notice no mnemonic here? it will just use account 0 of the hardhat node to deploy
-        (you can put in a mnemonic here to set the deployer locally)
-      */
     },
     hardhat: {
       live: false,
       saveDeployments: true,
       tags: ["test", "local"]
     },
-    rinkeby: {
-      url: 'https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad', //<---- YOUR INFURA ID! (or it won't work)
+    /* testnet */
+    mumbai: { // matic PoS testnet
+      url: 'https://rpc-mumbai.matic.today',
       accounts: {
         mnemonic: mnemonic(),
       },
     },
-    mainnet: {
-      url: 'https://mainnet.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad', //<---- YOUR INFURA ID! (or it won't work)
+    kovan: {
+      url: 'https://kovan.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad', //<---- YOUR INFURA ID! (or it won't work)
+      accounts: {
+        mnemonic: mnemonic(),
+      },
+    },
+    rinkeby: {
+      url: 'https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad', //<---- YOUR INFURA ID! (or it won't work)
       accounts: {
         mnemonic: mnemonic(),
       },
@@ -79,15 +124,9 @@ module.exports = {
         mnemonic: mnemonic(),
       },
     },
-    xdai: {
-      url: 'https://dai.poa.network',
-      gasPrice: 1000000000,
-      accounts: {
-        mnemonic: mnemonic(),
-      },
-    },
   },
   solidity: {
+    evmVersion: 'istanbul',
     compilers: [
       { version: "0.7.0" },
       { version: "0.5.16" },

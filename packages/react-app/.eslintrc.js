@@ -22,6 +22,7 @@ module.exports = {
     "react/prop-types": "off",
     "react/destructuring-assignment": "off",
     "no-console": "off",
-    "jsx-a11y/accessible-emoji": ["off"]
+    "jsx-a11y/accessible-emoji": ["off"],
+    "func-names": "off",
   },
 };

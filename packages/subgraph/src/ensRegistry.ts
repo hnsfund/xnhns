@@ -2,11 +2,12 @@
 import {
   BigInt,
   crypto,
-  ens
+  ens,
+  log,
 } from '@graphprotocol/graph-ts'
 
 import {
-  createEventID, concat, ROOT_NODE, EMPTY_ADDRESS
+  createEventID, getDomain, concat, ROOT_NODE, EMPTY_ADDRESS
 } from './utils'
 
 // Import event types from the registry contract ABI
@@ -20,30 +21,8 @@ import {
 // Import entity types generated from the GraphQL schema
 import { Account, Domain, Resolver, NewOwner, Transfer, NewResolver, NewTTL } from './types/schema'
 
-const BIG_INT_ZERO = BigInt.fromI32(0)
-
-function createDomain(node: string, timestamp: BigInt): Domain {
-  let domain = new Domain(node)
-  if(node == ROOT_NODE) {
-    domain = new Domain(node)
-    domain.owner = EMPTY_ADDRESS
-    domain.isMigrated = true
-    domain.createdAt = timestamp
-    domain.save()
-  }
-  return domain
-}
-
-function getDomain(node: string, timestamp: BigInt = BIG_INT_ZERO): Domain|null {
-  let domain = Domain.load(node)
-  if(domain == null && node == ROOT_NODE) {
-    return createDomain(node, timestamp)
-  }
-  return domain
-}
-
 // Handler for NewOwner events
-function _handleNewOwner(event: NewOwnerEvent, isMigrated: boolean): void {
+function _handleNewOwner(event: NewOwnerEvent): void {
   let account = new Account(event.params.owner.toHexString())
   account.save()
 
@@ -75,7 +54,6 @@ function _handleNewOwner(event: NewOwnerEvent, isMigrated: boolean): void {
   domain.owner = account.id
   domain.parent = event.params.node.toHexString()
   domain.labelhash = event.params.label
-  domain.isMigrated = isMigrated
   domain.save()
 
   let domainEvent = new NewOwner(createEventID(event))
@@ -151,37 +129,5 @@ export function handleNewTTL(event: NewTTLEvent): void {
 }
 
 export function handleNewOwner(event: NewOwnerEvent): void {
-  _handleNewOwner(event, true)
-}
-
-export function handleNewOwnerOldRegistry(event: NewOwnerEvent): void {
-  let subnode = crypto.keccak256(concat(event.params.node, event.params.label)).toHexString()
-  let domain = getDomain(subnode)
-
-  if(domain == null || domain.isMigrated == false){
-    _handleNewOwner(event, false)
-  }
-}
-
-export function handleNewResolverOldRegistry(event: NewResolverEvent): void {
-  let node = event.params.node.toHexString()
-  let domain = getDomain(node, event.block.timestamp)
-  if(node == ROOT_NODE || !domain.isMigrated){
-    handleNewResolver(event)
-  }
-}
-export function handleNewTTLOldRegistry(event: NewTTLEvent): void {
-  let domain = getDomain(event.params.node.toHexString())
-
-  if(domain.isMigrated == false){
-    handleNewTTL(event)
-  }
-}
-
-export function handleTransferOldRegistry(event: TransferEvent): void {
-  let domain = getDomain(event.params.node.toHexString())
-
-  if(domain.isMigrated == false){
-    handleTransfer(event)
-  }
+  _handleNewOwner(event)
 }

@@ -1,68 +1,70 @@
 pragma solidity ^0.7.0;
-
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "../interfaces/IENS.sol";
 import "./utils/Controllable.sol";
-import "./ERC721/ERC721.sol";
 
 contract Root is
-  Ownable,
   Controllable,
-  ERC721("Handshake Ethereum Naming Service", "HENS")
+  ERC721("Cross-Network Handshake NFTTLD", "NFTLD")
 {
     bytes32 constant private ROOT_NODE = bytes32(0);
 
-    // bytes4 constant private INTERFACE_META_ID = bytes4(keccak256("supportsInterface(bytes4)"));
-    // bytes4 constant private ERC721_ID = bytes4(
-    //     keccak256("balanceOf(address)") ^
-    //     keccak256("ownerOf(uint256)") ^
-    //     keccak256("approve(address,uint256)") ^
-    //     keccak256("getApproved(uint256)") ^
-    //     keccak256("setApprovalForAll(address,bool)") ^
-    //     keccak256("isApprovedForAll(address,address)") ^
-    //     keccak256("transferFrom(address,address,uint256)") ^
-    //     keccak256("safeTransferFrom(address,address,uint256)") ^
-    //     keccak256("safeTransferFrom(address,address,uint256,bytes)")
-    // );
+    bytes4 constant private RECLAIM_ID = bytes4(keccak256("reclaim(uint,address)"));
 
-    // event TLDLocked(bytes32 indexed label);
-    event TLDRegistered(uint256 indexed id, address indexed owner);
+    event TLDRegistered(uint indexed id, address indexed owner);
+    event TLDUnregistered(uint indexed id, address indexed owner);
+    event TLDRemoved(uint indexed id, address indexed owner);
 
     ENS public ens;
-    // mapping(bytes32=>bool) public locked;
+    mapping(uint => address) public tldControllers; // sets NFTLD to only be changd by original registrar
 
-    constructor(ENS _ens) public {
+    constructor(ENS _ens) {
         ens = _ens;
-    }
-
-    function setSubnodeOwner(bytes32 label, address owner) public {
-        // require(!locked[label]);
-        ens.setSubnodeOwner(ROOT_NODE, label, owner);
+        _registerInterface(RECLAIM_ID);
     }
 
     function setResolver(address resolver) external onlyOwner {
         ens.setResolver(ROOT_NODE, resolver);
     }
 
-    function register(uint256 id, address owner) external onlyController returns(bool) {
+    function register(uint id, address _owner) external onlyController returns(bool) {
+        require(address(0) == tldControllers[id], 'Cannot register claimed TLD');
         if(_exists(id)) {
             // Name was previously owned, and expired
             _burn(id);
         }
-        _mint(owner, id);
-        setSubnodeOwner(bytes32(id), owner);
-        emit TLDRegistered(id, owner);
+        _mint(_owner, id);
+        ens.setSubnodeOwner(ROOT_NODE, bytes32(id), _owner);
+        emit TLDRegistered(id, _owner);
+        tldControllers[id] = msg.sender;
         return true;
     }
 
-    // function lock(bytes32 label) external onlyOwner {
-    //     emit TLDLocked(label);
-    //     locked[label] = true;
-    // }
+    function unregister(uint id) external onlyController returns(bool) {
+        require(address(0) != tldControllers[id], 'Cannot unregister a nonexistant TLD');
+        require(msg.sender == tldControllers[id], 'Controller not allowed for NFTLD');
+        address _owner = ownerOf(id);
+        if(_exists(id)) {
+            _burn(id);
+        }
+        ens.setSubnodeOwner(ROOT_NODE, bytes32(id), address(0)); // or address(this)?
+        delete tldControllers[id];
+        emit TLDUnregistered(id, _owner);
+        return true;
+    }
 
-    // can remove because all interfaces already declared in erc721 contract
-    // function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
-    //     return interfaceID == INTERFACE_META_ID ||
-    //            interfaceID == ERC721_ID;
-    // }
+    function setSubnodeOwner(uint id, address _owner) external onlyController returns (bool) {
+      // bypass lock because used for TLD maintainence
+      ens.setSubnodeOwner(ROOT_NODE, bytes32(id), _owner);
+      return true;
+    }
+
+    /**
+     * @dev Reclaim ownership of a name in ENS if you own the NFT.
+     */
+    function reclaim(uint id, address _owner) external returns (bool) {
+        require(_isApprovedOrOwner(msg.sender, id));
+        ens.setSubnodeOwner(ROOT_NODE, bytes32(id), _owner);
+        return true;
+    }
 }

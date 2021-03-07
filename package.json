@@ -14,6 +14,7 @@
     "react-app:eject": "yarn workspace @scaffold-eth/react-app eject",
     "react-app:start": "yarn workspace @scaffold-eth/react-app start",
     "react-app:test": "yarn workspace @scaffold-eth/react-app test",
+    "setup": "yarn run node -d && yarn run graph-node -d",
     "build": "yarn workspace @scaffold-eth/react-app build --max-old-space-size=12288",
     "chain": "yarn workspace @scaffold-eth/hardhat chain",
     "node": "yarn workspace @scaffold-eth/hardhat chain",
@@ -21,6 +22,7 @@
     "start": "yarn workspace @scaffold-eth/react-app start",
     "compile": "yarn workspace @scaffold-eth/hardhat compile",
     "deploy": "yarn workspace @scaffold-eth/hardhat deploy",
+    "deploy:local": "yarn workspace @scaffold-eth/hardhat deploy:singleton && yarn graph-ship-local",
     "watch": "yarn workspace @scaffold-eth/hardhat watch",
     "accounts": "yarn workspace @scaffold-eth/hardhat accounts",
     "balance": "yarn workspace @scaffold-eth/hardhat balance",
@@ -34,16 +36,16 @@
     "wallet": "cd packages/hardhat && npx hardhat wallet",
     "fundedwallet": "cd packages/hardhat && npx hardhat fundedwallet",
     "flatten": "cd packages/hardhat && npx hardhat flatten",
-    "graph-run-node": "cd docker/graph-node && docker-compose up",
+    "graph-node": "rm -rf docker/graph-node/data && cd docker/graph-node && docker-compose up",
     "graph-remove-node": "cd docker/graph-node && docker-compose down",
     "graph-prepare": "mustache packages/subgraph/config/config.json packages/subgraph/src/subgraph.template.yaml > packages/subgraph/subgraph.yaml",
     "graph-codegen": "yarn workspace @scaffold-eth/subgraph graph codegen",
+    "graph-deploy": "yarn run graph-prepare && yarn run graph-codegen && yarn workspace @scaffold-eth/subgraph deploy",
     "graph-build": "yarn workspace @scaffold-eth/subgraph graph build",
-    "graph-create-local": "yarn workspace @scaffold-eth/subgraph graph create --node http://localhost:8020/ kibagateaux/badass-hardhat",
-    "graph-remove-local": "yarn workspace @scaffold-eth/subgraph graph remove --node http://localhost:8020/ kibagateaux/badass-hardhat",
-    "graph-deploy-local": "yarn workspace @scaffold-eth/subgraph graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 kibagateaux/badass-hardhat",
-    "graph-ship-local": "yarn graph-prepare && yarn graph-codegen && yarn graph-deploy-local",
-    "deploy-and-graph": "yarn deploy && yarn graph-ship-local"
+    "graph-create-local": "yarn workspace @scaffold-eth/subgraph graph create --node http://localhost:8020/ kibagateaux/badassens",
+    "graph-remove-local": "yarn workspace @scaffold-eth/subgraph graph remove --node http://localhost:8020/ kibagateaux/badassens",
+    "graph-deploy-local": "yarn workspace @scaffold-eth/subgraph graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 kibagateaux/badassens",
+    "graph-ship-local": "yarn graph-prepare && yarn graph-codegen && yarn graph-create-local && yarn graph-deploy-local"
   },
   "workspaces": {
     "packages": [

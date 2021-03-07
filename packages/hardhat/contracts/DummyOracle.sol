@@ -2,7 +2,7 @@ pragma solidity ^0.7.0;
 contract DummyOracle {
     int value;
 
-    constructor(int _value) public {
+    constructor(int _value) {
         set(_value);
     }
 

@@ -26,7 +26,7 @@ contract BaseRegistrar is
     );
     bytes4 constant private RECLAIM_ID = bytes4(keccak256("reclaim(uint256,address)"));
 
-    constructor(ENS _ens, bytes32 _baseNode) public {
+    constructor(ENS _ens, bytes32 _baseNode) {
         ens = _ens;
         baseNode = _baseNode;
     }
@@ -47,10 +47,10 @@ contract BaseRegistrar is
     //  * @param tokenId uint256 ID of the token to query the owner of
     //  * @return address currently marked as the owner of the given token ID
     //  */
-    // function ownerOf(uint256 tokenId) override public view returns (address) {
-    //     require(expiries[tokenId] > block.timestamp);
-    //     return super.ownerOf(tokenId);
-    // }
+    function ownerOf(uint256 tokenId) override public view returns (address) {
+        require(expiries[tokenId] > block.timestamp);
+        return super.ownerOf(tokenId);
+    }
 
     // Authorises a controller, who can register and renew domains.
     function addController(address controller) override external onlyOwner {

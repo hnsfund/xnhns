@@ -13,9 +13,7 @@
     "hardhat-deploy": "^0.7.0-beta.44"
   },
   "dependencies": {
-    "@ensdomains/buffer": "^0.0.10",
-    "@ensdomains/dnssec-oracle": "^0.2.0",
-    "@ensdomains/ens": "^0.4.5",
+    "@chainlink/contracts": "^0.1.6",
     "@nomiclabs/hardhat-ethers": "^2.0.0",
     "@nomiclabs/hardhat-waffle": "^2.0.0",
     "@openzeppelin/contracts": "^3.3.0",
@@ -24,6 +22,7 @@
     "ethereum-waffle": "^3.1.1",
     "ethers": "^5.0.17",
     "hardhat": "^2.0.4",
+    "hardhat-deploy": "^0.7.0-beta.45",
     "node-watch": "^0.7.0",
     "qrcode-terminal": "^0.12.0",
     "ramda": "^0.27.1"
@@ -33,9 +32,11 @@
     "console": "hardhat console",
     "test": "hardhat test",
     "compile": "hardhat compile",
+    "deploy": "yarn run deploy-xnhns",
     "deploy:test": "hardhat run --network ropsten scripts/deploy-single-tld-ens.js && hardhat run scripts/publish.js",
-    "deploy": "hardhat run scripts/deploy-single-tld-ens.js && hardhat run scripts/publish.js",
-    "deploy-hens": "hardhat run scripts/deploy-hens.js && hardhat run scripts/publish.js",
+    "deploy:singleton": "hardhat run scripts/deploy-single-tld-ens.js && hardhat run scripts/publish.js",
+    "deploy-xnhns": "hardhat run scripts/deploy-xnhns.js",
+    "postdeploy": " hardhat run scripts/publish.js",
     "watch": "node scripts/watch.js",
     "accounts": "hardhat accounts",
     "balance": "hardhat balance",

@@ -8,7 +8,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: ENSRegistry
-    network: ropsten
+    network: localhost
     source:
       address: '{{ENSRegistryAddress}}'
       abi: EnsRegistry
@@ -35,7 +35,7 @@ dataSources:
           handler: handleNewTTL
   - kind: ethereum/contract
     name: BaseRegistrar
-    network: ropsten
+    network: localhost
     source:
       address: '{{BaseRegistrarAddress}}'
       abi: BaseRegistrar
@@ -61,7 +61,7 @@ dataSources:
           handler: handleNameTransferred
   - kind: ethereum/contract
     name: RegistrarController
-    network: ropsten
+    network: localhost
     source:
       address:  '{{RegistrarControllerAddress}}'
       abi: RegistrarController
@@ -80,37 +80,9 @@ dataSources:
           handler: handleNameRegisteredByController
         - event: 'NameRenewed(string,indexed bytes32,uint256,uint256)'
           handler: handleNameRenewedByController
-
-  # - kind: ethereum/contract
-  #   name: ENSRegistryOld
-  #   network: ropsten
-  #   source:
-  #     address: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
-  #     abi: EnsRegistry
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.4
-  #     language: wasm/assemblyscript
-  #     file: ./src/ensRegistry.ts
-  #     entities:
-  #       - Domain
-  #       - Account
-  #       - Resolver
-  #     abis:
-  #       - name: EnsRegistry
-  #         file: ./abis/ENSRegistry.json
-  #     eventHandlers:
-  #       - event: 'Transfer(indexed bytes32,address)'
-  #         handler: handleTransferOldRegistry
-  #       - event: 'NewOwner(indexed bytes32,indexed bytes32,address)'
-  #         handler: handleNewOwnerOldRegistry
-  #       - event: 'NewResolver(indexed bytes32,address)'
-  #         handler: handleNewResolverOldRegistry
-  #       - event: 'NewTTL(indexed bytes32,uint64)'
-  #         handler: handleNewTTLOldRegistry
   - kind: ethereum/contract
     name: Resolver
-    network: ropsten
+    network: localhost
     source:
       abi: Resolver
     mapping:

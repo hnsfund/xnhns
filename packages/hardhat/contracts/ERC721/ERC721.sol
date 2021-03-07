@@ -97,7 +97,7 @@ contract ERC721 is
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
-    constructor(string memory name_, string memory symbol_) public {
+    constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
 
@@ -122,7 +122,7 @@ contract ERC721 is
     /**
      * @dev See {IERC721-ownerOf}.
      */
-    function ownerOf(uint256 tokenId) public override view returns (address) {
+    function ownerOf(uint256 tokenId) public virtual override view returns (address) {
         return
             _tokenOwners.get(
                 tokenId,

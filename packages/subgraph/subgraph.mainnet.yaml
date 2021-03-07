@@ -80,73 +80,45 @@ dataSources:
           handler: handleNameRegisteredByController
         - event: 'NameRenewed(string,indexed bytes32,uint256,uint256)'
           handler: handleNameRenewedByController
-
-  # - kind: ethereum/contract
-  #   name: ENSRegistryOld
-  #   network: localhost
-  #   source:
-  #     address: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
-  #     abi: EnsRegistry
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.4
-  #     language: wasm/assemblyscript
-  #     file: ./src/ensRegistry.ts
-  #     entities:
-  #       - Domain
-  #       - Account
-  #       - Resolver
-  #     abis:
-  #       - name: EnsRegistry
-  #         file: ./_abis/ENSRegistry.json
-  #     eventHandlers:
-  #       - event: 'Transfer(indexed bytes32,address)'
-  #         handler: handleTransferOldRegistry
-  #       - event: 'NewOwner(indexed bytes32,indexed bytes32,address)'
-  #         handler: handleNewOwnerOldRegistry
-  #       - event: 'NewResolver(indexed bytes32,address)'
-  #         handler: handleNewResolverOldRegistry
-  #       - event: 'NewTTL(indexed bytes32,uint64)'
-  #         handler: handleNewTTLOldRegistry
-  # - kind: ethereum/contract
-  #   name: Resolver
-  #   network: localhost
-  #   source:
-  #     abi: Resolver
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.4
-  #     language: wasm/assemblyscript
-  #     file: ./src/resolver.ts
-  #     entities:
-  #       - AddrChanged
-  #       - MulticoinAddrChanged
-  #       # - NameChanged
-  #       # - AbiChanged
-  #       - PubkeyChanged
-  #       # - Textchanged
-  #       - ContenthashChanged
-  #       # - InterfaceChanged
-  #       - AuthorisationChanged
-  #     abis:
-  #       - name: Resolver
-  #         file: ./_abis/PublicResolver.json
-  #     eventHandlers:
-  #       # - event: 'ABIChanged(indexed bytes32,indexed uint256)'
-  #       #   handler: handleABIChanged
-  #       - event: 'AddrChanged(indexed bytes32,address)'
-  #         handler: handleAddrChanged
-  #       - event: 'AddressChanged(indexed bytes32,uint256,bytes)'
-  #         handler: handleMulticoinAddrChanged
-  #       - event: 'AuthorisationChanged(indexed bytes32,indexed address,indexed address,bool)'
-  #         handler: handleAuthorisationChanged
-  #       - event: 'ContenthashChanged(indexed bytes32,bytes)'
-  #         handler: handleContentHashChanged
-  #       # - event: 'InterfaceChanged(indexed bytes32,indexed bytes4,address)'
-  #       #   handler: handleInterfaceChanged
-  #       # - event: 'NameChanged(indexed bytes32,string)'
-  #       #   handler: handleNameChanged
-  #       # - event: 'PubkeyChanged(indexed bytes32,bytes32,bytes32)'
-  #       #   handler: handlePubkeyChanged
-  #       # - event: 'TextChanged(indexed bytes32,indexed string,string)'
-  #       #   handler: handleTextChanged
+  - kind: ethereum/contract
+    name: Resolver
+    network: mainnet
+    source:
+      abi: Resolver
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/resolver.ts
+      entities:
+        - AddrChanged
+        - MulticoinAddrChanged
+        - NameChanged
+        - AbiChanged
+        - PubkeyChanged
+        - Textchanged
+        - ContenthashChanged
+        - InterfaceChanged
+        - AuthorisationChanged
+      abis:
+        - name: Resolver
+          file: ./_abis/PublicResolver.json
+      eventHandlers:
+        - event: 'ABIChanged(indexed bytes32,indexed uint256)'
+          handler: handleABIChanged
+        - event: 'AddrChanged(indexed bytes32,address)'
+          handler: handleAddrChanged
+        - event: 'AddressChanged(indexed bytes32,uint256,bytes)'
+          handler: handleMulticoinAddrChanged
+        - event: 'AuthorisationChanged(indexed bytes32,indexed address,indexed address,bool)'
+          handler: handleAuthorisationChanged
+        - event: 'ContenthashChanged(indexed bytes32,bytes)'
+          handler: handleContentHashChanged
+        - event: 'InterfaceChanged(indexed bytes32,indexed bytes4,address)'
+          handler: handleInterfaceChanged
+        - event: 'NameChanged(indexed bytes32,string)'
+          handler: handleNameChanged
+        - event: 'PubkeyChanged(indexed bytes32,bytes32,bytes32)'
+          handler: handlePubkeyChanged
+        - event: 'TextChanged(indexed bytes32,indexed string,string)'
+          handler: handleTextChanged

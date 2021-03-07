@@ -18,7 +18,7 @@ contract ReverseRegistrar {
      * @param ensAddr The address of the ENS registry.
      * @param resolverAddr The address of the default reverse resolver.
      */
-    constructor(ENS ensAddr, NameResolver resolverAddr) public {
+    constructor(ENS ensAddr, NameResolver resolverAddr) {
         ens = ensAddr;
         defaultResolver = resolverAddr;
 

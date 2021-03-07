@@ -1,0 +1,22 @@
+{
+  "ENSRegistry": {
+    "address": "0xDFb4F9aF9f732ca502FC0378354eD3496a1E261b"
+  },
+  "Root": {
+    "address": "0xE04cF85F994433B9E455de73AfeC79FcDC93D67F"
+  },
+  "ChainLinkOracle": {
+    "address": "0x31Da52dFe5168e2b029703152a877149ea3fB064",
+    "verifyHnsTldJobId": "41e9e8e2678f4d5f98e4bebe02cc1ccc"
+  },
+  "HNSRegistrar": {
+    "address": "0x95Ffb0e891C9C4aa80671c0BFa8160D8BB47D908",
+    "args": [
+      "0xCa34F76e0EF441AEC48DdFA5a9aB9fECc179274B",
+      "kovan",
+      "0x31Da52dFe5168e2b029703152a877149ea3fB064",
+      "0xa36085F69e2889c224210F603D836748e7dC0088",
+      "0xc41283548f83ba6bd778e08454c501b1ac054a5d9048c1a22d12ef6907475c5b"
+    ]
+  }
+}

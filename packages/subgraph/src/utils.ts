@@ -2,11 +2,10 @@
 import {
   BigInt,
   ByteArray,
-  ethereum
+  ethereum,
 } from '@graphprotocol/graph-ts'
-
-// export class Event extends ethereum.Event {}
-
+// Import entity types generated from the GraphQL schema
+import { Domain } from './types/schema'
 
 export function createEventID(event: ethereum.Event): string {
   return event.block.number.toString().concat('-').concat(event.logIndex.toString())
@@ -42,3 +41,25 @@ export function uint256ToByteArray(i: BigInt): ByteArray {
   let hex = i.toHex().slice(2).padStart(64, '0')
   return byteArrayFromHex(hex)
 }
+
+const BIG_INT_ZERO = BigInt.fromI32(0)
+
+function createDomain(node: string, timestamp: BigInt): Domain {
+  let domain = new Domain(node)
+  if(node == ROOT_NODE) {
+    domain = new Domain(node)
+    domain.owner = EMPTY_ADDRESS
+    domain.createdAt = timestamp
+    domain.save()
+  }
+  return domain
+}
+
+export function getDomain(node: string, timestamp: BigInt = BIG_INT_ZERO): Domain|null {
+  let domain = Domain.load(node)
+  if(domain == null && node == ROOT_NODE) {
+    return createDomain(node, timestamp)
+  }
+  return domain
+}
+

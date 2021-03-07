@@ -2,7 +2,7 @@ pragma solidity >=0.7.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/PriceOracle.sol";
+import "../interfaces/IPriceOracle.sol";
 import "./utils//StringUtils.sol";
 
 interface AggregatorInterface {
@@ -11,7 +11,7 @@ interface AggregatorInterface {
 
 
 // StablePriceOracle sets a price in USD, based on an oracle.
-contract StablePriceOracle is Ownable, PriceOracle {
+contract StablePriceOracle is Ownable, IPriceOracle {
     using SafeMath for *;
     using StringUtils for *;
 
@@ -28,7 +28,7 @@ contract StablePriceOracle is Ownable, PriceOracle {
     bytes4 constant private INTERFACE_META_ID = bytes4(keccak256("supportsInterface(bytes4)"));
     bytes4 constant private ORACLE_ID = bytes4(keccak256("price(string,uint256,uint256)") ^ keccak256("premium(string,uint256,uint256)"));
 
-    constructor(AggregatorInterface _usdOracle, uint[] memory _rentPrices) public {
+    constructor(AggregatorInterface _usdOracle, uint[] memory _rentPrices) {
         usdOracle = _usdOracle;
         setPrices(_rentPrices);
     }
@@ -78,7 +78,7 @@ contract StablePriceOracle is Ownable, PriceOracle {
     /**
      * @dev Returns the pricing premium in internal base units.
      */
-    function _premium(string memory name, uint expires, uint duration) internal view returns(uint) {
+    function _premium(string memory name, uint expires, uint duration) internal pure returns(uint) {
         return 0;
     }
 
@@ -92,7 +92,7 @@ contract StablePriceOracle is Ownable, PriceOracle {
         return amount.mul(ethPrice).div(1e8);
     }
 
-    function supportsInterface(bytes4 interfaceID) public view returns (bool) {
+    function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
         return interfaceID == INTERFACE_META_ID || interfaceID == ORACLE_ID;
     }
 }

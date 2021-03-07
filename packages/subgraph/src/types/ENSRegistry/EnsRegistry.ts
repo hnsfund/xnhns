@@ -133,89 +133,6 @@ export class EnsRegistry extends ethereum.SmartContract {
     return new EnsRegistry("EnsRegistry", address);
   }
 
-  isApprovedForAll(owner: Address, operator: Address): boolean {
-    let result = super.call(
-      "isApprovedForAll",
-      "isApprovedForAll(address,address):(bool)",
-      [ethereum.Value.fromAddress(owner), ethereum.Value.fromAddress(operator)]
-    );
-
-    return result[0].toBoolean();
-  }
-
-  try_isApprovedForAll(
-    owner: Address,
-    operator: Address
-  ): ethereum.CallResult<boolean> {
-    let result = super.tryCall(
-      "isApprovedForAll",
-      "isApprovedForAll(address,address):(bool)",
-      [ethereum.Value.fromAddress(owner), ethereum.Value.fromAddress(operator)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBoolean());
-  }
-
-  owner(node: Bytes): Address {
-    let result = super.call("owner", "owner(bytes32):(address)", [
-      ethereum.Value.fromFixedBytes(node)
-    ]);
-
-    return result[0].toAddress();
-  }
-
-  try_owner(node: Bytes): ethereum.CallResult<Address> {
-    let result = super.tryCall("owner", "owner(bytes32):(address)", [
-      ethereum.Value.fromFixedBytes(node)
-    ]);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  recordExists(node: Bytes): boolean {
-    let result = super.call("recordExists", "recordExists(bytes32):(bool)", [
-      ethereum.Value.fromFixedBytes(node)
-    ]);
-
-    return result[0].toBoolean();
-  }
-
-  try_recordExists(node: Bytes): ethereum.CallResult<boolean> {
-    let result = super.tryCall("recordExists", "recordExists(bytes32):(bool)", [
-      ethereum.Value.fromFixedBytes(node)
-    ]);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBoolean());
-  }
-
-  resolver(node: Bytes): Address {
-    let result = super.call("resolver", "resolver(bytes32):(address)", [
-      ethereum.Value.fromFixedBytes(node)
-    ]);
-
-    return result[0].toAddress();
-  }
-
-  try_resolver(node: Bytes): ethereum.CallResult<Address> {
-    let result = super.tryCall("resolver", "resolver(bytes32):(address)", [
-      ethereum.Value.fromFixedBytes(node)
-    ]);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
   setSubnodeOwner(node: Bytes, label: Bytes, owner: Address): Bytes {
     let result = super.call(
       "setSubnodeOwner",
@@ -251,6 +168,44 @@ export class EnsRegistry extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
+  owner(node: Bytes): Address {
+    let result = super.call("owner", "owner(bytes32):(address)", [
+      ethereum.Value.fromFixedBytes(node)
+    ]);
+
+    return result[0].toAddress();
+  }
+
+  try_owner(node: Bytes): ethereum.CallResult<Address> {
+    let result = super.tryCall("owner", "owner(bytes32):(address)", [
+      ethereum.Value.fromFixedBytes(node)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  resolver(node: Bytes): Address {
+    let result = super.call("resolver", "resolver(bytes32):(address)", [
+      ethereum.Value.fromFixedBytes(node)
+    ]);
+
+    return result[0].toAddress();
+  }
+
+  try_resolver(node: Bytes): ethereum.CallResult<Address> {
+    let result = super.tryCall("resolver", "resolver(bytes32):(address)", [
+      ethereum.Value.fromFixedBytes(node)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   ttl(node: Bytes): BigInt {
     let result = super.call("ttl", "ttl(bytes32):(uint64)", [
       ethereum.Value.fromFixedBytes(node)
@@ -268,6 +223,51 @@ export class EnsRegistry extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  recordExists(node: Bytes): boolean {
+    let result = super.call("recordExists", "recordExists(bytes32):(bool)", [
+      ethereum.Value.fromFixedBytes(node)
+    ]);
+
+    return result[0].toBoolean();
+  }
+
+  try_recordExists(node: Bytes): ethereum.CallResult<boolean> {
+    let result = super.tryCall("recordExists", "recordExists(bytes32):(bool)", [
+      ethereum.Value.fromFixedBytes(node)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  isApprovedForAll(owner: Address, operator: Address): boolean {
+    let result = super.call(
+      "isApprovedForAll",
+      "isApprovedForAll(address,address):(bool)",
+      [ethereum.Value.fromAddress(owner), ethereum.Value.fromAddress(operator)]
+    );
+
+    return result[0].toBoolean();
+  }
+
+  try_isApprovedForAll(
+    owner: Address,
+    operator: Address
+  ): ethereum.CallResult<boolean> {
+    let result = super.tryCall(
+      "isApprovedForAll",
+      "isApprovedForAll(address,address):(bool)",
+      [ethereum.Value.fromAddress(owner), ethereum.Value.fromAddress(operator)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 }
 
@@ -293,74 +293,6 @@ export class ConstructorCall__Outputs {
   _call: ConstructorCall;
 
   constructor(call: ConstructorCall) {
-    this._call = call;
-  }
-}
-
-export class SetApprovalForAllCall extends ethereum.Call {
-  get inputs(): SetApprovalForAllCall__Inputs {
-    return new SetApprovalForAllCall__Inputs(this);
-  }
-
-  get outputs(): SetApprovalForAllCall__Outputs {
-    return new SetApprovalForAllCall__Outputs(this);
-  }
-}
-
-export class SetApprovalForAllCall__Inputs {
-  _call: SetApprovalForAllCall;
-
-  constructor(call: SetApprovalForAllCall) {
-    this._call = call;
-  }
-
-  get operator(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get approved(): boolean {
-    return this._call.inputValues[1].value.toBoolean();
-  }
-}
-
-export class SetApprovalForAllCall__Outputs {
-  _call: SetApprovalForAllCall;
-
-  constructor(call: SetApprovalForAllCall) {
-    this._call = call;
-  }
-}
-
-export class SetOwnerCall extends ethereum.Call {
-  get inputs(): SetOwnerCall__Inputs {
-    return new SetOwnerCall__Inputs(this);
-  }
-
-  get outputs(): SetOwnerCall__Outputs {
-    return new SetOwnerCall__Outputs(this);
-  }
-}
-
-export class SetOwnerCall__Inputs {
-  _call: SetOwnerCall;
-
-  constructor(call: SetOwnerCall) {
-    this._call = call;
-  }
-
-  get node(): Bytes {
-    return this._call.inputValues[0].value.toBytes();
-  }
-
-  get owner(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-}
-
-export class SetOwnerCall__Outputs {
-  _call: SetOwnerCall;
-
-  constructor(call: SetOwnerCall) {
     this._call = call;
   }
 }
@@ -404,82 +336,6 @@ export class SetRecordCall__Outputs {
 
   constructor(call: SetRecordCall) {
     this._call = call;
-  }
-}
-
-export class SetResolverCall extends ethereum.Call {
-  get inputs(): SetResolverCall__Inputs {
-    return new SetResolverCall__Inputs(this);
-  }
-
-  get outputs(): SetResolverCall__Outputs {
-    return new SetResolverCall__Outputs(this);
-  }
-}
-
-export class SetResolverCall__Inputs {
-  _call: SetResolverCall;
-
-  constructor(call: SetResolverCall) {
-    this._call = call;
-  }
-
-  get node(): Bytes {
-    return this._call.inputValues[0].value.toBytes();
-  }
-
-  get resolver(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-}
-
-export class SetResolverCall__Outputs {
-  _call: SetResolverCall;
-
-  constructor(call: SetResolverCall) {
-    this._call = call;
-  }
-}
-
-export class SetSubnodeOwnerCall extends ethereum.Call {
-  get inputs(): SetSubnodeOwnerCall__Inputs {
-    return new SetSubnodeOwnerCall__Inputs(this);
-  }
-
-  get outputs(): SetSubnodeOwnerCall__Outputs {
-    return new SetSubnodeOwnerCall__Outputs(this);
-  }
-}
-
-export class SetSubnodeOwnerCall__Inputs {
-  _call: SetSubnodeOwnerCall;
-
-  constructor(call: SetSubnodeOwnerCall) {
-    this._call = call;
-  }
-
-  get node(): Bytes {
-    return this._call.inputValues[0].value.toBytes();
-  }
-
-  get label(): Bytes {
-    return this._call.inputValues[1].value.toBytes();
-  }
-
-  get owner(): Address {
-    return this._call.inputValues[2].value.toAddress();
-  }
-}
-
-export class SetSubnodeOwnerCall__Outputs {
-  _call: SetSubnodeOwnerCall;
-
-  constructor(call: SetSubnodeOwnerCall) {
-    this._call = call;
-  }
-
-  get value0(): Bytes {
-    return this._call.outputValues[0].value.toBytes();
   }
 }
 
@@ -529,6 +385,116 @@ export class SetSubnodeRecordCall__Outputs {
   }
 }
 
+export class SetOwnerCall extends ethereum.Call {
+  get inputs(): SetOwnerCall__Inputs {
+    return new SetOwnerCall__Inputs(this);
+  }
+
+  get outputs(): SetOwnerCall__Outputs {
+    return new SetOwnerCall__Outputs(this);
+  }
+}
+
+export class SetOwnerCall__Inputs {
+  _call: SetOwnerCall;
+
+  constructor(call: SetOwnerCall) {
+    this._call = call;
+  }
+
+  get node(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+
+  get owner(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+}
+
+export class SetOwnerCall__Outputs {
+  _call: SetOwnerCall;
+
+  constructor(call: SetOwnerCall) {
+    this._call = call;
+  }
+}
+
+export class SetSubnodeOwnerCall extends ethereum.Call {
+  get inputs(): SetSubnodeOwnerCall__Inputs {
+    return new SetSubnodeOwnerCall__Inputs(this);
+  }
+
+  get outputs(): SetSubnodeOwnerCall__Outputs {
+    return new SetSubnodeOwnerCall__Outputs(this);
+  }
+}
+
+export class SetSubnodeOwnerCall__Inputs {
+  _call: SetSubnodeOwnerCall;
+
+  constructor(call: SetSubnodeOwnerCall) {
+    this._call = call;
+  }
+
+  get node(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+
+  get label(): Bytes {
+    return this._call.inputValues[1].value.toBytes();
+  }
+
+  get owner(): Address {
+    return this._call.inputValues[2].value.toAddress();
+  }
+}
+
+export class SetSubnodeOwnerCall__Outputs {
+  _call: SetSubnodeOwnerCall;
+
+  constructor(call: SetSubnodeOwnerCall) {
+    this._call = call;
+  }
+
+  get value0(): Bytes {
+    return this._call.outputValues[0].value.toBytes();
+  }
+}
+
+export class SetResolverCall extends ethereum.Call {
+  get inputs(): SetResolverCall__Inputs {
+    return new SetResolverCall__Inputs(this);
+  }
+
+  get outputs(): SetResolverCall__Outputs {
+    return new SetResolverCall__Outputs(this);
+  }
+}
+
+export class SetResolverCall__Inputs {
+  _call: SetResolverCall;
+
+  constructor(call: SetResolverCall) {
+    this._call = call;
+  }
+
+  get node(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+
+  get resolver(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+}
+
+export class SetResolverCall__Outputs {
+  _call: SetResolverCall;
+
+  constructor(call: SetResolverCall) {
+    this._call = call;
+  }
+}
+
 export class SetTTLCall extends ethereum.Call {
   get inputs(): SetTTLCall__Inputs {
     return new SetTTLCall__Inputs(this);
@@ -559,6 +525,40 @@ export class SetTTLCall__Outputs {
   _call: SetTTLCall;
 
   constructor(call: SetTTLCall) {
+    this._call = call;
+  }
+}
+
+export class SetApprovalForAllCall extends ethereum.Call {
+  get inputs(): SetApprovalForAllCall__Inputs {
+    return new SetApprovalForAllCall__Inputs(this);
+  }
+
+  get outputs(): SetApprovalForAllCall__Outputs {
+    return new SetApprovalForAllCall__Outputs(this);
+  }
+}
+
+export class SetApprovalForAllCall__Inputs {
+  _call: SetApprovalForAllCall;
+
+  constructor(call: SetApprovalForAllCall) {
+    this._call = call;
+  }
+
+  get operator(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get approved(): boolean {
+    return this._call.inputValues[1].value.toBoolean();
+  }
+}
+
+export class SetApprovalForAllCall__Outputs {
+  _call: SetApprovalForAllCall;
+
+  constructor(call: SetApprovalForAllCall) {
     this._call = call;
   }
 }

@@ -240,25 +240,6 @@ export class BaseRegistrar extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  available(id: BigInt): boolean {
-    let result = super.call("available", "available(uint256):(bool)", [
-      ethereum.Value.fromUnsignedBigInt(id)
-    ]);
-
-    return result[0].toBoolean();
-  }
-
-  try_available(id: BigInt): ethereum.CallResult<boolean> {
-    let result = super.tryCall("available", "available(uint256):(bool)", [
-      ethereum.Value.fromUnsignedBigInt(id)
-    ]);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBoolean());
-  }
-
   balanceOf(owner: Address): BigInt {
     let result = super.call("balanceOf", "balanceOf(address):(uint256)", [
       ethereum.Value.fromAddress(owner)
@@ -291,21 +272,6 @@ export class BaseRegistrar extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBytes());
-  }
-
-  baseURI(): string {
-    let result = super.call("baseURI", "baseURI():(string)", []);
-
-    return result[0].toString();
-  }
-
-  try_baseURI(): ethereum.CallResult<string> {
-    let result = super.tryCall("baseURI", "baseURI():(string)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toString());
   }
 
   controllers(param0: Address): boolean {
@@ -389,40 +355,19 @@ export class BaseRegistrar extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  name(): string {
-    let result = super.call("name", "name():(string)", []);
+  isOwner(): boolean {
+    let result = super.call("isOwner", "isOwner():(bool)", []);
 
-    return result[0].toString();
+    return result[0].toBoolean();
   }
 
-  try_name(): ethereum.CallResult<string> {
-    let result = super.tryCall("name", "name():(string)", []);
+  try_isOwner(): ethereum.CallResult<boolean> {
+    let result = super.tryCall("isOwner", "isOwner():(bool)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
     let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toString());
-  }
-
-  nameExpires(id: BigInt): BigInt {
-    let result = super.call("nameExpires", "nameExpires(uint256):(uint256)", [
-      ethereum.Value.fromUnsignedBigInt(id)
-    ]);
-
-    return result[0].toBigInt();
-  }
-
-  try_nameExpires(id: BigInt): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "nameExpires",
-      "nameExpires(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(id)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
   owner(): Address {
@@ -457,6 +402,46 @@ export class BaseRegistrar extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  nameExpires(id: BigInt): BigInt {
+    let result = super.call("nameExpires", "nameExpires(uint256):(uint256)", [
+      ethereum.Value.fromUnsignedBigInt(id)
+    ]);
+
+    return result[0].toBigInt();
+  }
+
+  try_nameExpires(id: BigInt): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "nameExpires",
+      "nameExpires(uint256):(uint256)",
+      [ethereum.Value.fromUnsignedBigInt(id)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  available(id: BigInt): boolean {
+    let result = super.call("available", "available(uint256):(bool)", [
+      ethereum.Value.fromUnsignedBigInt(id)
+    ]);
+
+    return result[0].toBoolean();
+  }
+
+  try_available(id: BigInt): ethereum.CallResult<boolean> {
+    let result = super.tryCall("available", "available(uint256):(bool)", [
+      ethereum.Value.fromUnsignedBigInt(id)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
   register(id: BigInt, owner: Address, duration: BigInt): BigInt {
@@ -572,108 +557,6 @@ export class BaseRegistrar extends ethereum.SmartContract {
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
-
-  symbol(): string {
-    let result = super.call("symbol", "symbol():(string)", []);
-
-    return result[0].toString();
-  }
-
-  try_symbol(): ethereum.CallResult<string> {
-    let result = super.tryCall("symbol", "symbol():(string)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toString());
-  }
-
-  tokenByIndex(index: BigInt): BigInt {
-    let result = super.call("tokenByIndex", "tokenByIndex(uint256):(uint256)", [
-      ethereum.Value.fromUnsignedBigInt(index)
-    ]);
-
-    return result[0].toBigInt();
-  }
-
-  try_tokenByIndex(index: BigInt): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "tokenByIndex",
-      "tokenByIndex(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(index)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  tokenOfOwnerByIndex(owner: Address, index: BigInt): BigInt {
-    let result = super.call(
-      "tokenOfOwnerByIndex",
-      "tokenOfOwnerByIndex(address,uint256):(uint256)",
-      [
-        ethereum.Value.fromAddress(owner),
-        ethereum.Value.fromUnsignedBigInt(index)
-      ]
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_tokenOfOwnerByIndex(
-    owner: Address,
-    index: BigInt
-  ): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "tokenOfOwnerByIndex",
-      "tokenOfOwnerByIndex(address,uint256):(uint256)",
-      [
-        ethereum.Value.fromAddress(owner),
-        ethereum.Value.fromUnsignedBigInt(index)
-      ]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  tokenURI(tokenId: BigInt): string {
-    let result = super.call("tokenURI", "tokenURI(uint256):(string)", [
-      ethereum.Value.fromUnsignedBigInt(tokenId)
-    ]);
-
-    return result[0].toString();
-  }
-
-  try_tokenURI(tokenId: BigInt): ethereum.CallResult<string> {
-    let result = super.tryCall("tokenURI", "tokenURI(uint256):(string)", [
-      ethereum.Value.fromUnsignedBigInt(tokenId)
-    ]);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toString());
-  }
-
-  totalSupply(): BigInt {
-    let result = super.call("totalSupply", "totalSupply():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_totalSupply(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("totalSupply", "totalSupply():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
 }
 
 export class ConstructorCall extends ethereum.Call {
@@ -710,36 +593,6 @@ export class ConstructorCall__Outputs {
   }
 }
 
-export class AddControllerCall extends ethereum.Call {
-  get inputs(): AddControllerCall__Inputs {
-    return new AddControllerCall__Inputs(this);
-  }
-
-  get outputs(): AddControllerCall__Outputs {
-    return new AddControllerCall__Outputs(this);
-  }
-}
-
-export class AddControllerCall__Inputs {
-  _call: AddControllerCall;
-
-  constructor(call: AddControllerCall) {
-    this._call = call;
-  }
-
-  get controller(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class AddControllerCall__Outputs {
-  _call: AddControllerCall;
-
-  constructor(call: AddControllerCall) {
-    this._call = call;
-  }
-}
-
 export class ApproveCall extends ethereum.Call {
   get inputs(): ApproveCall__Inputs {
     return new ApproveCall__Inputs(this);
@@ -771,192 +624,6 @@ export class ApproveCall__Outputs {
 
   constructor(call: ApproveCall) {
     this._call = call;
-  }
-}
-
-export class ReclaimCall extends ethereum.Call {
-  get inputs(): ReclaimCall__Inputs {
-    return new ReclaimCall__Inputs(this);
-  }
-
-  get outputs(): ReclaimCall__Outputs {
-    return new ReclaimCall__Outputs(this);
-  }
-}
-
-export class ReclaimCall__Inputs {
-  _call: ReclaimCall;
-
-  constructor(call: ReclaimCall) {
-    this._call = call;
-  }
-
-  get id(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get owner(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-}
-
-export class ReclaimCall__Outputs {
-  _call: ReclaimCall;
-
-  constructor(call: ReclaimCall) {
-    this._call = call;
-  }
-}
-
-export class RegisterCall extends ethereum.Call {
-  get inputs(): RegisterCall__Inputs {
-    return new RegisterCall__Inputs(this);
-  }
-
-  get outputs(): RegisterCall__Outputs {
-    return new RegisterCall__Outputs(this);
-  }
-}
-
-export class RegisterCall__Inputs {
-  _call: RegisterCall;
-
-  constructor(call: RegisterCall) {
-    this._call = call;
-  }
-
-  get id(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get owner(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get duration(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-}
-
-export class RegisterCall__Outputs {
-  _call: RegisterCall;
-
-  constructor(call: RegisterCall) {
-    this._call = call;
-  }
-
-  get value0(): BigInt {
-    return this._call.outputValues[0].value.toBigInt();
-  }
-}
-
-export class RegisterOnlyCall extends ethereum.Call {
-  get inputs(): RegisterOnlyCall__Inputs {
-    return new RegisterOnlyCall__Inputs(this);
-  }
-
-  get outputs(): RegisterOnlyCall__Outputs {
-    return new RegisterOnlyCall__Outputs(this);
-  }
-}
-
-export class RegisterOnlyCall__Inputs {
-  _call: RegisterOnlyCall;
-
-  constructor(call: RegisterOnlyCall) {
-    this._call = call;
-  }
-
-  get id(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get owner(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get duration(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-}
-
-export class RegisterOnlyCall__Outputs {
-  _call: RegisterOnlyCall;
-
-  constructor(call: RegisterOnlyCall) {
-    this._call = call;
-  }
-
-  get value0(): BigInt {
-    return this._call.outputValues[0].value.toBigInt();
-  }
-}
-
-export class RemoveControllerCall extends ethereum.Call {
-  get inputs(): RemoveControllerCall__Inputs {
-    return new RemoveControllerCall__Inputs(this);
-  }
-
-  get outputs(): RemoveControllerCall__Outputs {
-    return new RemoveControllerCall__Outputs(this);
-  }
-}
-
-export class RemoveControllerCall__Inputs {
-  _call: RemoveControllerCall;
-
-  constructor(call: RemoveControllerCall) {
-    this._call = call;
-  }
-
-  get controller(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class RemoveControllerCall__Outputs {
-  _call: RemoveControllerCall;
-
-  constructor(call: RemoveControllerCall) {
-    this._call = call;
-  }
-}
-
-export class RenewCall extends ethereum.Call {
-  get inputs(): RenewCall__Inputs {
-    return new RenewCall__Inputs(this);
-  }
-
-  get outputs(): RenewCall__Outputs {
-    return new RenewCall__Outputs(this);
-  }
-}
-
-export class RenewCall__Inputs {
-  _call: RenewCall;
-
-  constructor(call: RenewCall) {
-    this._call = call;
-  }
-
-  get id(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get duration(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class RenewCall__Outputs {
-  _call: RenewCall;
-
-  constructor(call: RenewCall) {
-    this._call = call;
-  }
-
-  get value0(): BigInt {
-    return this._call.outputValues[0].value.toBigInt();
   }
 }
 
@@ -1083,7 +750,7 @@ export class SetApprovalForAllCall__Inputs {
     this._call = call;
   }
 
-  get operator(): Address {
+  get to(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 
@@ -1096,36 +763,6 @@ export class SetApprovalForAllCall__Outputs {
   _call: SetApprovalForAllCall;
 
   constructor(call: SetApprovalForAllCall) {
-    this._call = call;
-  }
-}
-
-export class SetResolverCall extends ethereum.Call {
-  get inputs(): SetResolverCall__Inputs {
-    return new SetResolverCall__Inputs(this);
-  }
-
-  get outputs(): SetResolverCall__Outputs {
-    return new SetResolverCall__Outputs(this);
-  }
-}
-
-export class SetResolverCall__Inputs {
-  _call: SetResolverCall;
-
-  constructor(call: SetResolverCall) {
-    this._call = call;
-  }
-
-  get resolver(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class SetResolverCall__Outputs {
-  _call: SetResolverCall;
-
-  constructor(call: SetResolverCall) {
     this._call = call;
   }
 }
@@ -1194,6 +831,252 @@ export class TransferOwnershipCall__Outputs {
   _call: TransferOwnershipCall;
 
   constructor(call: TransferOwnershipCall) {
+    this._call = call;
+  }
+}
+
+export class AddControllerCall extends ethereum.Call {
+  get inputs(): AddControllerCall__Inputs {
+    return new AddControllerCall__Inputs(this);
+  }
+
+  get outputs(): AddControllerCall__Outputs {
+    return new AddControllerCall__Outputs(this);
+  }
+}
+
+export class AddControllerCall__Inputs {
+  _call: AddControllerCall;
+
+  constructor(call: AddControllerCall) {
+    this._call = call;
+  }
+
+  get controller(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class AddControllerCall__Outputs {
+  _call: AddControllerCall;
+
+  constructor(call: AddControllerCall) {
+    this._call = call;
+  }
+}
+
+export class RemoveControllerCall extends ethereum.Call {
+  get inputs(): RemoveControllerCall__Inputs {
+    return new RemoveControllerCall__Inputs(this);
+  }
+
+  get outputs(): RemoveControllerCall__Outputs {
+    return new RemoveControllerCall__Outputs(this);
+  }
+}
+
+export class RemoveControllerCall__Inputs {
+  _call: RemoveControllerCall;
+
+  constructor(call: RemoveControllerCall) {
+    this._call = call;
+  }
+
+  get controller(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class RemoveControllerCall__Outputs {
+  _call: RemoveControllerCall;
+
+  constructor(call: RemoveControllerCall) {
+    this._call = call;
+  }
+}
+
+export class SetResolverCall extends ethereum.Call {
+  get inputs(): SetResolverCall__Inputs {
+    return new SetResolverCall__Inputs(this);
+  }
+
+  get outputs(): SetResolverCall__Outputs {
+    return new SetResolverCall__Outputs(this);
+  }
+}
+
+export class SetResolverCall__Inputs {
+  _call: SetResolverCall;
+
+  constructor(call: SetResolverCall) {
+    this._call = call;
+  }
+
+  get resolver(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class SetResolverCall__Outputs {
+  _call: SetResolverCall;
+
+  constructor(call: SetResolverCall) {
+    this._call = call;
+  }
+}
+
+export class RegisterCall extends ethereum.Call {
+  get inputs(): RegisterCall__Inputs {
+    return new RegisterCall__Inputs(this);
+  }
+
+  get outputs(): RegisterCall__Outputs {
+    return new RegisterCall__Outputs(this);
+  }
+}
+
+export class RegisterCall__Inputs {
+  _call: RegisterCall;
+
+  constructor(call: RegisterCall) {
+    this._call = call;
+  }
+
+  get id(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get owner(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get duration(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+}
+
+export class RegisterCall__Outputs {
+  _call: RegisterCall;
+
+  constructor(call: RegisterCall) {
+    this._call = call;
+  }
+
+  get value0(): BigInt {
+    return this._call.outputValues[0].value.toBigInt();
+  }
+}
+
+export class RegisterOnlyCall extends ethereum.Call {
+  get inputs(): RegisterOnlyCall__Inputs {
+    return new RegisterOnlyCall__Inputs(this);
+  }
+
+  get outputs(): RegisterOnlyCall__Outputs {
+    return new RegisterOnlyCall__Outputs(this);
+  }
+}
+
+export class RegisterOnlyCall__Inputs {
+  _call: RegisterOnlyCall;
+
+  constructor(call: RegisterOnlyCall) {
+    this._call = call;
+  }
+
+  get id(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get owner(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get duration(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+}
+
+export class RegisterOnlyCall__Outputs {
+  _call: RegisterOnlyCall;
+
+  constructor(call: RegisterOnlyCall) {
+    this._call = call;
+  }
+
+  get value0(): BigInt {
+    return this._call.outputValues[0].value.toBigInt();
+  }
+}
+
+export class RenewCall extends ethereum.Call {
+  get inputs(): RenewCall__Inputs {
+    return new RenewCall__Inputs(this);
+  }
+
+  get outputs(): RenewCall__Outputs {
+    return new RenewCall__Outputs(this);
+  }
+}
+
+export class RenewCall__Inputs {
+  _call: RenewCall;
+
+  constructor(call: RenewCall) {
+    this._call = call;
+  }
+
+  get id(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get duration(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+}
+
+export class RenewCall__Outputs {
+  _call: RenewCall;
+
+  constructor(call: RenewCall) {
+    this._call = call;
+  }
+
+  get value0(): BigInt {
+    return this._call.outputValues[0].value.toBigInt();
+  }
+}
+
+export class ReclaimCall extends ethereum.Call {
+  get inputs(): ReclaimCall__Inputs {
+    return new ReclaimCall__Inputs(this);
+  }
+
+  get outputs(): ReclaimCall__Outputs {
+    return new ReclaimCall__Outputs(this);
+  }
+}
+
+export class ReclaimCall__Inputs {
+  _call: ReclaimCall;
+
+  constructor(call: ReclaimCall) {
+    this._call = call;
+  }
+
+  get id(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get owner(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+}
+
+export class ReclaimCall__Outputs {
+  _call: ReclaimCall;
+
+  constructor(call: ReclaimCall) {
     this._call = call;
   }
 }

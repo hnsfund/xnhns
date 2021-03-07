@@ -2,7 +2,7 @@ pragma solidity ^0.7.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../../interfaces/IPublicResolver.sol";
-import "../../interfaces/PriceOracle.sol";
+import "../../interfaces/IPriceOracle.sol";
 import "../utils/StringUtils.sol";
 import "./BaseRegistrar.sol";
 
@@ -30,7 +30,7 @@ contract RegistrarController is Ownable {
     );
 
     BaseRegistrar base;
-    PriceOracle prices;
+    IPriceOracle prices;
     uint public minCommitmentAge;
     uint public maxCommitmentAge;
 
@@ -40,7 +40,7 @@ contract RegistrarController is Ownable {
     event NameRenewed(string name, bytes32 indexed label, uint cost, uint expires);
     event NewPriceOracle(address indexed oracle);
 
-    constructor(BaseRegistrar _base, PriceOracle _prices, uint _minCommitmentAge, uint _maxCommitmentAge) public {
+    constructor(BaseRegistrar _base, IPriceOracle _prices, uint _minCommitmentAge, uint _maxCommitmentAge) public {
         require(_maxCommitmentAge > _minCommitmentAge);
 
         base = _base;
@@ -139,7 +139,7 @@ contract RegistrarController is Ownable {
         emit NameRenewed(name, label, cost, expires);
     }
 
-    function setPriceOracle(PriceOracle _prices) public onlyOwner {
+    function setPriceOracle(IPriceOracle _prices) public onlyOwner {
         prices = _prices;
         emit NewPriceOracle(address(prices));
     }

@@ -1,9 +1,6 @@
 pragma solidity >=0.6.0 <0.8.0;
 
-import "hardhat/console.sol";
 import "../interfaces/IENS.sol";
-
-//TODO: remove and pull in from npm
 
 /**
  * The ENS registry contract.
@@ -15,13 +12,12 @@ contract ENSRegistry is ENS {
         uint64 ttl;
     }
 
-    mapping(bytes32 => Record) records;
-    mapping(address => mapping(address => bool)) operators;
+    mapping(bytes32 => Record) public records; // node -> Record
+    mapping(address => mapping(address => bool)) public operators; // owner -> operator -> isAllowed?
 
     // Permits modifications only by the owner of the specified node.
     modifier authorised(bytes32 node) {
         address owner = records[node].owner;
-        console.log("owner", owner, "msg.sender", msg.sender);
         require(
             owner == msg.sender || operators[owner][msg.sender],
             "sender is not owner oroperator"
@@ -32,7 +28,7 @@ contract ENSRegistry is ENS {
     /**
      * @dev Constructs a new ENS registrar.
      */
-    constructor() public {
+    constructor() {
         records[0x0].owner = msg.sender;
     }
 

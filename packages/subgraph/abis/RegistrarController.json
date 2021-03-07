@@ -7,7 +7,7 @@
         "type": "address"
       },
       {
-        "internalType": "contract PriceOracle",
+        "internalType": "contract IPriceOracle",
         "name": "_prices",
         "type": "address"
       },
@@ -445,7 +445,7 @@
   {
     "inputs": [
       {
-        "internalType": "contract PriceOracle",
+        "internalType": "contract IPriceOracle",
         "name": "_prices",
         "type": "address"
       }

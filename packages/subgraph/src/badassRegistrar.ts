@@ -6,7 +6,7 @@ import {
 } from '@graphprotocol/graph-ts'
 
 import {
-  createEventID, ROOT_NODE, EMPTY_ADDRESS,
+  getDomain, createEventID, ROOT_NODE, EMPTY_ADDRESS,
   uint256ToByteArray, byteArrayFromHex, concat
 } from './utils'
 
@@ -25,7 +25,8 @@ import {
 // Import entity types generated from the GraphQL schema
 import { Account, Domain, Registration, NameRegistered, NameRenewed, NameTransferred } from './types/schema'
 
-var rootNode:ByteArray = byteArrayFromHex("93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae")
+// namehash('badass')
+var rootNode:ByteArray = byteArrayFromHex("b44c89215555ccdf0769c791a87ef752af07fc4be5a7855f589edff68ea561c7")
 
 export function handleNameRegistered(event: NameRegisteredEvent): void {
   let account = new Account(event.params.owner.toHex())
@@ -33,7 +34,9 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
 
   let label = uint256ToByteArray(event.params.id)
   let registration = new Registration(label.toHex())
-  registration.domain = crypto.keccak256(concat(rootNode, label)).toHex()
+  let node = crypto.keccak256(concat(rootNode, label)).toHex()
+  let domain = getDomain(node, event.block.timestamp)
+  registration.domain = domain.id
   registration.registrationDate = event.block.timestamp
   registration.expiryDate = event.params.expires
   registration.registrant = account.id
@@ -54,10 +57,13 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
 }
 
 export function handleNameRegisteredByController(event: ControllerNameRegisteredEvent): void {
+  // let domain = new Domain(crypto.keccak256(concat(rootNode, event.params.label)).toHex())
   let domain = new Domain(crypto.keccak256(concat(rootNode, event.params.label)).toHex())
   if(domain.labelName !== event.params.name) {
     domain.labelName = event.params.name
-    domain.name = event.params.name + '.eth'
+    domain.name = event.params.name + '.badass'
+    domain.owner = event.params.owner.toHex()
+    domain.createdAt = event.block.timestamp
     domain.save()
   }
 
@@ -72,7 +78,7 @@ export function handleNameRenewedByController(event: ControllerNameRenewedEvent)
   let domain = new Domain(crypto.keccak256(concat(rootNode, event.params.label)).toHex())
   if(domain.labelName !== event.params.name) {
     domain.labelName = event.params.name
-    domain.name = event.params.name + '.eth'
+    domain.name = event.params.name + '.badass'
     domain.save()
   }
 

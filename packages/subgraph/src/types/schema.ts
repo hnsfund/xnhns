@@ -179,15 +179,6 @@ export class Domain extends Entity {
     }
   }
 
-  get isMigrated(): boolean {
-    let value = this.get("isMigrated");
-    return value.toBoolean();
-  }
-
-  set isMigrated(value: boolean) {
-    this.set("isMigrated", Value.fromBoolean(value));
-  }
-
   get createdAt(): BigInt {
     let value = this.get("createdAt");
     return value.toBigInt();
