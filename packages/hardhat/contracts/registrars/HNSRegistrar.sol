@@ -1,7 +1,7 @@
 pragma solidity ^0.7.0;
 
-import "@chainlink/contracts/src/v0.7/ChainlinkClient.sol";
 import "../../interfaces/IENS.sol";
+import "../../interfaces/IXNHNSOracle.sol";
 import "../../interfaces/IPanvalaMember.sol";
 import "../Root.sol";
 
@@ -9,51 +9,50 @@ import "../Root.sol";
  * @dev An ENS registrar that allows the owner of a HNS TLD to claim the
  *      corresponding TLD in ENS.
  */
-contract HNSRegistrar is ChainlinkClient {
+contract HNSRegistrar {
 
     ENS public ens;
     // IPanvalaMember public hnsFund;
 
-    address public hnsOracle;
-    bytes32 public verifyHnsTldJobId;
-    uint256 private oracleFee = 0.1 * 10 ** 18; // 0.1 LINK
-
+    // oracle that requests and stores tld verification data
+    IXNHNSOracle public xnhnsOracle;
+    // namespace that this contract lives in
+    // formal registry of namespaces tbd in a HIP
     string public xnhnsNS;
     // add versioning var too?
     uint256 public constant snitchDeposit = 0.1 ether;
-    uint256 public constant tldDeposit = 0.1 ether;
-    uint256 public constant snitchReward = tldDeposit / 2;
-    uint256 public tldsRegistered; // Valid tlds currently registered in root from this registrar
-    uint256 public pendingSnitches; // snitch calls awaiting completion
+    uint256 public constant minTLDDeposit = 0.1 ether;
+
+    // total tld + snitch deposits in contract
+    uint256 public totalDeposits;
+    // namehash -> tld deposit
 
     bytes4 constant private INTERFACE_META_ID = bytes4(keccak256("supportsInterface(bytes4)"));
     bytes4 constant private XNHNS_CLAIM_ID = bytes4(
       keccak256("register(string)") ^
       keccak256("unregister(string)") ^
-      keccak256("snitch(string)") ^
+      keccak256("snitchOn(string)") ^
       keccak256("namespace()") ^
       keccak256("oracle()")
     );
 
     struct Snitch {
-      address snitcher;
-      bytes32 tld;
+      address addr;
+      uint256 blockStart;
     }
+    
     event NewOracle(address oracle);
-    event ClaimVerified(bytes32 indexed node, address indexed owner);
+    event TLDRegistered(bytes32 indexed node, address indexed owner);
     event SnitchedOn(bytes32 indexed node, address indexed owner, address indexed snitch);
     event SnitchesGotStitches(bytes32 indexed node, address indexed owner, address indexed snitch);
 
-    mapping(bytes32 => bytes32) tldRunIds; // Link run id -> tld node
-    mapping(bytes32 => Snitch) snitches; // Link run id -> snitch
+    mapping(bytes32 => Snitch) snitches; // namehash -> snitcher
+    mapping(bytes32 => uint256) public tldDeposits;
 
-    constructor(ENS _ens, string memory _namespace, address _oracle,
-                address _link, bytes32 _jobId) {
+    constructor(ENS _ens, string memory _namespace, IXNHNSOracle _oracle) {
         ens = _ens;
         xnhnsNS = _namespace;
-        hnsOracle = _oracle;
-        setChainlinkToken(_link);
-        verifyHnsTldJobId = _jobId;
+        xnhnsOracle = _oracle;
         emit NewOracle(address(_oracle));
     }
 
@@ -61,150 +60,115 @@ contract HNSRegistrar is ChainlinkClient {
      * @dev This contract's owner-only functions can be invoked by the owner of the ENS root.
      */
     modifier onlyOwner {
-        require(msg.sender == _getRoot().owner());
-        _;
+      require(msg.sender == _getRoot().owner());
+      _;
+    }
+
+    modifier whileOracleAllowed {
+      require(
+        IXNHNSOracle(xnhnsOracle).getCallerPermission(address(this)),
+        'Registrar disabled'
+      );
+      _;
+    }
+
+    function verify(string calldata tld) public payable returns (bytes32 requestId) {
+      require(msg.value >= minTLDDeposit, 'Insufficient tld deposit');
+      tldDeposits[_getNamehash(tld)] = msg.value;
+      totalDeposits += msg.value;
+      return xnhnsOracle.updateTLD(tld);
     }
 
     /**
      * @dev Claims a name by proving ownership of its HNS equivalent.
      * Chainlink node verifies that NS record is pointed to namespace of this contract (Ethereum)
      * and pulls TXT record with address to give ownership to.
-     * @param tld The HNS domain to claim
+     * @param node The HNS domain to claim
      */
-    function register(string memory tld) public payable returns (bytes32 requestId) {
-      require(msg.value >= tldDeposit, 'Insufficient tld deposit');
-      requestId = _verify(tld, 0, this.receiveClaimVerification.selector);
-      pendingSnitches += 1;
-      return requestId;
-    }
-
-    function receiveClaimVerification(bytes32 requestId, address owner)
-      public
-      recordChainlinkFulfillment(requestId)
-      returns (bool)
-    {
-      // TODO prpbab;y best practice to only save response here and do all other logic on a separate call by owner/owner/snitch
-      if(owner != address(0)) {
-        bytes32 namehash = tldRunIds[requestId];
-        // mint NFT and assign tld to address stored on HNS TXT record
-        _getRoot().register(uint(namehash), owner);
-        emit ClaimVerified(namehash, owner);
-        return true;
-      }
-      return false;
+    function register(bytes32 node) public returns (uint id) {
+      address tldOwner = IXNHNSOracle(xnhnsOracle).getTLDOwner(node);
+      require(tldOwner != address(0), 'TLD is invalid on this namespace');
+      require(tldOwner == msg.sender, 'Only TLD owner can register');
+      // theoretically tld can be verified by another contract and we dont take a deposit
+       _getRoot().register(uint(node), msg.sender);
+      emit TLDRegistered(node, msg.sender);
+      return uint(node);
     }
 
 
-    /** callable by anyone to prove that TLD is not set anymore and revoke teir ENS name */
-    function snitch(string memory tld) public payable returns (bytes32 requestId) {
+    /** @dev Allows anyone to prove that TLD is not set anymore and revoke teir ENS name
+     * @param tld - human readable string 
+    */
+    function snitchOn(string memory tld) public payable returns (bytes32 requestId) {
       require(msg.value >= snitchDeposit, 'Insufficient snitch deposit');
-      bytes32 node = _getNamehash(tld);
-      // TODO: can't frontrun register() since HNS records will be there anyway, should we let snitches get rekt?
-      require(ens.recordExists(node), 'NFTLD is not registered');
-      requestId = _verify(tld, 1, this.receiveSnitchVerification.selector);
-      snitches[requestId] = Snitch({
-        snitcher: msg.sender,
-        tld: node
+      bytes32 node  = _getNamehash(tld);
+      require(tldDeposits[node] >= minTLDDeposit, 'TLD not registered');
+      (address addr,) = _getSnitch(node);
+      require(addr == address(0), 'TLD already snitched on');
+      snitches[node] = Snitch({
+        addr: msg.sender,
+        blockStart: block.timestamp
       });
-      pendingSnitches += 1;
-      return requestId;
+      totalDeposits += snitchDeposit;
+      return IXNHNSOracle(xnhnsOracle).updateTLD(tld);
     }
 
-    function receiveSnitchVerification(bytes32 requestId, address owner)
-      public
-      recordChainlinkFulfillment(requestId)
-      returns (bool)
-    {
-      Snitch memory _snitch = snitches[requestId];
-      delete snitches[requestId];
-      pendingSnitches -= 1;
+    function claimSnitchReward(bytes32 node) public returns (bool) {
+      (address addr, uint256 blockStart) = _getSnitch(node);
+      // prevent snitch front running oracle response
+      require(block.timestamp > blockStart + 2 hours, 'Cannot snitch yet');
+      delete snitches[node];
 
-      uint id = uint(_snitch.tld);
-      Root root = _getRoot();
-
-      if(owner == address(0)) {
-        _unregister(id);
-        payable(_snitch.snitcher).transfer(snitchDeposit + snitchReward);
-        emit SnitchedOn(_snitch.tld, root.ownerOf(id), _snitch.snitcher);
+      if(IXNHNSOracle(xnhnsOracle).getTLDOwner(node) == address(0)) {
+        // snitch successful
+        uint256 tldDeposit = _unregister(node);
+        payable(addr).transfer(snitchDeposit + (tldDeposit / 2));
+        totalDeposits -= (snitchDeposit + tldDeposit);
+        emit SnitchedOn(node, _getRoot().ownerOf(uint(node)), addr);
         return true;
       } else {
-        if(owner != root.ownerOf(id)) {
-          root.setSubnodeOwner(id, owner);
-        }
-        emit SnitchesGotStitches(_snitch.tld, root.ownerOf(id), _snitch.snitcher);
+        // snitch failed
+        // move snitch deposit to smart contract's fees
+        totalDeposits -= snitchDeposit;
+        emit SnitchesGotStitches(node, _getRoot().ownerOf(uint(node)), addr);
         return false;
       }
-    
     }
 
-    /**
-     * @dev Verifies a name by proving ownership of its HNS equivalent.
-     * Chainlink node verifies that NS record is pointed to namespace of this contract
-     * and pulls TXT record on TLD with address to give ownership to.
-     * CL Node returns address(0) if either NS or TXT is not configured properly
-     * @param tld The name to claim, in DNS wire format.
-     * @param checkNS - tells CL to check if NS record is set to xnhnsNS in addition to TXT.
-     * Boolean 0/1 wrapped in text and parsed by EA
-     * @param callback - contract method to call after oracle returns data
-     */
-    function _verify(string memory tld, int checkNS, bytes4 callback)
-      internal
-      returns (bytes32)
-    {
-      Chainlink.Request memory request = buildChainlinkRequest(
-        verifyHnsTldJobId,
-        address(this),
-        callback
-      );
-      Chainlink.add(request, "tld", tld);
-      Chainlink.add(request, "ns", xnhnsNS);
-      Chainlink.addInt(request, "checkNS", checkNS);
-      
-      tldRunIds[request.id] = _getNamehash(tld);
-
-      return sendChainlinkRequestTo(hnsOracle, request, oracleFee);
-    }
-
-    function unregister(string memory tld) public payable {
-      Root root = _getRoot();
-      uint id = uint(_getNamehash((tld)));
-      address owner = root.ownerOf(id);
+    function unregister(bytes32 node) public payable {
+      uint id = uint(node);
+      address owner = _getRoot().ownerOf(id);
       require(msg.sender == owner, 'Only TLD owner can unregister');
-      _unregister(id);
-      payable(owner).transfer(tldDeposit);
+
+      uint256 deposit = _unregister(node);
+      payable(owner).transfer(deposit);
     }
 
-    function _unregister(uint id) internal returns (bool) {
-      _getRoot().unregister(id);
-      tldsRegistered -= 1;
-      return true;
+    function _unregister(bytes32 node) internal returns (uint256 deposit) {
+      _getRoot().unregister(uint(node));
+      deposit = tldDeposits[node];
+      totalDeposits -= deposit;
+      tldDeposits[node] = 0;
+      return deposit;
     }
 
-    function setOracle(address _oracle, uint _fee, bytes32 _jobId)
-      public
-      onlyOwner
-      returns (bool)
-    {
-      hnsOracle = _oracle;
-      verifyHnsTldJobId = _jobId;
-      oracleFee = _fee;
-      emit NewOracle(address(hnsOracle));
+    function setOracle(IXNHNSOracle _oracle) public onlyOwner returns (bool) {
+      xnhnsOracle = _oracle;
+      emit NewOracle(address(xnhnsOracle));
       return true;
     }
 
     /**
      * @dev donate fees collected by registrar to HNS Fund via Panvala League
     */
-    function donateProfits() public payable returns(uint) {
-      uint deposits = (tldsRegistered * tldDeposit) +
-        (pendingSnitches * snitchDeposit);
-      uint feesCollected = address(this).balance - deposits;
+    function donateProfits() public returns(uint) {
+      uint feesCollected = address(this).balance - totalDeposits;
       // hnsFund.regenerate.value(feesCollected)(feesCollected);
       return feesCollected;
     }
 
-    function oracle() public view returns (address, bytes32, uint256) {
-      return (hnsOracle, verifyHnsTldJobId, oracleFee);
+    function oracle() public view returns (IXNHNSOracle) {
+      return xnhnsOracle;
     }
     
     function namespace() public view returns (string memory) {
@@ -217,6 +181,11 @@ contract HNSRegistrar is ChainlinkClient {
 
     function _getRoot() internal view returns (Root) {
       return Root(ens.owner(bytes32(0)));
+    }
+
+    function _getSnitch(bytes32 node) public view returns (address, uint256) {
+      Snitch memory _snitch = snitches[node];
+      return (_snitch.addr, _snitch.blockStart);
     }
 
 

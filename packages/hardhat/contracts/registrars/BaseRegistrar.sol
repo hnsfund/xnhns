@@ -7,7 +7,6 @@ import "../ERC721/ERC721.sol";
 
 contract BaseRegistrar is
   IBaseRegistrar,
-  ERC721("Badass Domain Registrar", "BADASS") // TODO change
 {
     // A map of expiry times
     mapping(uint256=>uint) expiries;
@@ -26,9 +25,10 @@ contract BaseRegistrar is
     );
     bytes4 constant private RECLAIM_ID = bytes4(keccak256("reclaim(uint256,address)"));
 
-    constructor(ENS _ens, bytes32 _baseNode) {
+    constructor(ENS _ens, bytes32 _baseNode, string memory tld) {
         ens = _ens;
         baseNode = _baseNode;
+        ERC721("NFTLD Domain Registrar", tld)
     }
 
     modifier live {

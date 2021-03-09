@@ -44,11 +44,18 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
     event DepositEscrowed(bytes32 tradeId, address buyer, bytes32 indexed hnsTo);
     event TradeFinalized(bytes32 tradeId, bytes32 indexed hnsTo, bytes32 indexed hnsFrom);
 
-    // Only allow 1 active trade per domain at a time to reduce spam and promote offchain coordination
-    mapping(bytes32 => Trade) public trades; // keccak([NFTLD id, ...ids]) -> Trade
-    mapping(bytes32 => bytes32) tradeConfirmations; // LINK run ID -> Trade
-    mapping(address => bool) public allowedTokens; // token adddress -> allowed
-    mapping(address => uint256) feesCollected; // token address -> fees
+    // keccak([NFTLD id, ...ids]) -> Trade
+    mapping(bytes32 => Trade) public trades;
+    // tradeId -> completed
+    // true after chainlink node confirms FINALIZE txs on all tlds hnsFrom -> hnsTo
+    mapping(bytes32 -> bool) public finalizedTrades;
+    // token adddress -> allowed
+    mapping(address => bool) public allowedTokens;
+    // LINK run ID -> Trade
+    mapping(bytes32 => bytes32) private tradeConfirmations;
+    // token address -> fees earned
+    mapping(address => uint256) private feesCollected;
+
 
     function initializeEscrowManager(ENS _ens, address _oracle, address _link, bytes32 _jobId) internal {
       ens = _ens;
@@ -220,12 +227,20 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
       returns (bool)
     {
       if(finalized) {
-        _finalizeTrade(tradeConfirmations[requestId]);
+        finalizedTrades[tradeConfirmations[requestId]] = true;
+        // or 
+        // Trade memory trade = trades[tradeConfirmations[requestId]];
+        // trade.status = TradeStatus.FINALIZED;
       }
       return finalized;
     }
 
-    function _finalizeTrade(bytes32 tradeId) internal {
+    function finalizeTrade(bytes32 tradeId) public returns (bool) {
+      require(finalizedTrades[tradeId], 'Trade has not been finalized');
+      return _finalizeTrade(tradeId);;
+    }
+
+    function _finalizeTrade(bytes32 tradeId) internal returns (bool) {
       Trade memory trade = trades[tradeId];
       Root root = _getRoot();
       uint256 fee = trade.amount.div(escrowFee);
@@ -247,6 +262,8 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
       });
 
       delete trades[tradeId];
+      delete finalizedTrades[tradeId];
+      return true;
     }
 
 
