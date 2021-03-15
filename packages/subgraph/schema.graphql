@@ -20,6 +20,7 @@ interface DomainEvent {
   transactionID: Bytes!
 }
 
+
 type Transfer implements DomainEvent @entity {
   id: ID!
   domain: Domain!
@@ -101,6 +102,26 @@ type NameTransferred implements RegistrationEvent @entity {
   transactionID: Bytes!
   newOwner: Account!
 }
+
+type SnitchedOn implements DomainEvent @entity {
+  id: ID!
+  domain: Domain!
+  blockNumber: Int!
+  transactionID: Bytes!
+  snitch: Account!
+  absconder: Account!
+  snitchReward: BigInt!
+}
+
+type SnitchesGetStiches implements DomainEvent @entity {
+  id: ID!
+  domain: Domain!
+  blockNumber: Int!
+  transactionID: Bytes!
+  snitch: Account!
+  snitchPenalty: BigInt!
+}
+
 
 type Resolver @entity {
   id: ID!                   # Concatenation of resolver address and namehash

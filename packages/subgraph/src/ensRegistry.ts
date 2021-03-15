@@ -43,7 +43,7 @@ function _handleNewOwner(event: NewOwnerEvent): void {
     if(label == null) {
       label = '[' + event.params.label.toHexString().slice(2) + ']'
     }
-    if(event.params.node.toHexString() == '0x0000000000000000000000000000000000000000000000000000000000000000') {
+    if(event.params.node.toHexString() == ROOT_NODE) {
       domain.name = label
     } else {
       let parent = Domain.load(event.params.node.toHexString())

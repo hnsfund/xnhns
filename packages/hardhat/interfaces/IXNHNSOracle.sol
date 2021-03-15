@@ -1,9 +1,13 @@
+pragma solidity ^0.7.0;
+
 interface IXNHNSOracle {
   event NewOracle(address oracle);
-  event TLDOwnerSet(bytes32 indexed node, address indexed owner);
+  // NewOwner event identical to IENS.sol
+  event NewOwner(bytes32 indexed node, bytes32 indexed label, address owner);
 
-  function updateTLD(string calldata tld) external returns (bytes32);
+  function requestTLDUpdate(string calldata tld) external returns (bytes32);
   function getTLDOwner(bytes32 node) external returns (address);
   function getCallerPermission(address addr) external returns (bool);
+  function setCallerPermission(address addr, bool _permission) external returns (bool);
   function setOracle(address _oracle, uint _fee, bytes32 _jobId) external returns (bool);
 }

@@ -2,7 +2,7 @@ pragma solidity ^0.7.0;
 
 import "@chainlink/contracts/src/v0.7/ChainlinkClient.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/IXNHNSOracle.sol"
+import "../../interfaces/IXNHNSOracle.sol";
 
 /**
  * @dev Oracle that verifies a TLD is configured for this XNHNS namespace
@@ -10,7 +10,7 @@ import "../interfaces/IXNHNSOracle.sol"
  */
 contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
     string public constant NAMESPACE = "{namespace}";
-    string public constant NS_RECORD = "{ENSRegistrt.address}.{_{namespace}}.";
+    string public constant NS_RECORD = "{ENSRegistrt.address}._{namespace}.";
 
     address public hnsOracle;
     bytes32 public verifyHnsTldJobId;
@@ -22,9 +22,6 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
     mapping(bytes32 => bytes32) private tldRunIds;
     // contracts that are allowed to initiate oracle requests
     mapping(address => bool) private allowedCallers;
-
-    event NewOracle(address oracle);
-    event TLDOwnerSet(bytes32 indexed node, address indexed owner);
 
     constructor(
         address _oracle,
@@ -44,7 +41,7 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
      * and pulls TXT record with address to give ownership to.
      * @param tld The HNS domain to claim
      */
-    function updateTLD(string calldata tld) public returns (bytes32) {
+    function requestTLDUpdate(string calldata tld) public override returns (bytes32) {
       require(bytes(tld).length > 0, 'Invalid TLD');
       require(allowedCallers[msg.sender], 'Caller does not have permission to initiate oracle requests');
 
@@ -69,12 +66,14 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
     {
       bytes32 namehash = tldRunIds[requestId];
       tldOwners[namehash] = _owner; // oracle returns addres(0) if invalid claim
-      emit TLDOwnerSet(namehash, _owner);
+      // bytes32(0) is root node which is always parent of a tld
+      emit NewOwner(bytes32(0), namehash, _owner);
       return true;
     }
 
     function setOracle(address _oracle, uint _fee, bytes32 _jobId)
       public
+      override 
       onlyOwner
       returns (bool)
     {
@@ -85,12 +84,17 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
       return true;
     }
 
-    function getTLDOwner(bytes32 node) public view returns (address) {
+    function getTLDOwner(bytes32 node) public view  override returns (address) {
       return tldOwners[node];
     }
 
-    function getCallerPermission(address addr) public view returns (bool) {
-      return allowedCallers[msg.sender]
+    function getCallerPermission(address addr) public view override returns (bool) {
+      return allowedCallers[addr];
+    }
+
+    function setCallerPermission(address addr, bool _permission) public  override onlyOwner returns (bool) {
+      allowedCallers[addr] = _permission;
+      return true;
     }
 
     function _getNamehash(string memory tld) internal pure returns (bytes32) {

@@ -42,9 +42,10 @@ contract HNSRegistrar {
     }
     
     event NewOracle(address oracle);
-    event TLDRegistered(bytes32 indexed node, address indexed owner);
-    event SnitchedOn(bytes32 indexed node, address indexed owner, address indexed snitch);
-    event SnitchesGotStitches(bytes32 indexed node, address indexed owner, address indexed snitch);
+    // NewOwner identitcal to IENS.sol
+    event NewOwner(bytes32 indexed node, bytes32 indexed label, address owner);
+    event SnitchedOn(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchReward);
+    event SnitchesGotStitches(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchPenalty);
 
     mapping(bytes32 => Snitch) snitches; // namehash -> snitcher
     mapping(bytes32 => uint256) public tldDeposits;
@@ -64,7 +65,7 @@ contract HNSRegistrar {
       _;
     }
 
-    modifier whileOracleAllowed {
+    modifier whileRegistrarEnabled {
       require(
         IXNHNSOracle(xnhnsOracle).getCallerPermission(address(this)),
         'Registrar disabled'
@@ -72,11 +73,19 @@ contract HNSRegistrar {
       _;
     }
 
-    function verify(string calldata tld) public payable returns (bytes32 requestId) {
+    /**
+      * @dev Called by HNS TLD owners to get XNHNS oracle to verify ownership on host chain.
+      * Also used by new HNS TLD owners to change host chain owner even if NFTLD already exists.
+     */
+    function verify(string calldata tld)
+      public payable
+      whileRegistrarEnabled
+      returns (bytes32 requestId)
+    {
       require(msg.value >= minTLDDeposit, 'Insufficient tld deposit');
-      tldDeposits[_getNamehash(tld)] = msg.value;
+      tldDeposits[_getNamehash(tld)] += msg.value;
       totalDeposits += msg.value;
-      return xnhnsOracle.updateTLD(tld);
+      return xnhnsOracle.requestTLDUpdate(tld);
     }
 
     /**
@@ -91,7 +100,7 @@ contract HNSRegistrar {
       require(tldOwner == msg.sender, 'Only TLD owner can register');
       // theoretically tld can be verified by another contract and we dont take a deposit
        _getRoot().register(uint(node), msg.sender);
-      emit TLDRegistered(node, msg.sender);
+      emit NewOwner(bytes32(0), node, msg.sender);
       return uint(node);
     }
 
@@ -99,10 +108,15 @@ contract HNSRegistrar {
     /** @dev Allows anyone to prove that TLD is not set anymore and revoke teir ENS name
      * @param tld - human readable string 
     */
-    function snitchOn(string memory tld) public payable returns (bytes32 requestId) {
+    function snitchOn(string memory tld)
+      public payable
+      whileRegistrarEnabled
+      returns (bytes32 requestId)
+    {
       require(msg.value >= snitchDeposit, 'Insufficient snitch deposit');
       bytes32 node  = _getNamehash(tld);
-      require(tldDeposits[node] >= minTLDDeposit, 'TLD not registered');
+      require(ens.recordExists(node), 'Cant snitch on unregistered TLD');
+      require(tldDeposits[node] >= minTLDDeposit, 'No reward for snitching on TLD');
       (address addr,) = _getSnitch(node);
       require(addr == address(0), 'TLD already snitched on');
       snitches[node] = Snitch({
@@ -110,7 +124,7 @@ contract HNSRegistrar {
         blockStart: block.timestamp
       });
       totalDeposits += snitchDeposit;
-      return IXNHNSOracle(xnhnsOracle).updateTLD(tld);
+      return IXNHNSOracle(xnhnsOracle).requestTLDUpdate(tld);
     }
 
     function claimSnitchReward(bytes32 node) public returns (bool) {
@@ -124,13 +138,13 @@ contract HNSRegistrar {
         uint256 tldDeposit = _unregister(node);
         payable(addr).transfer(snitchDeposit + (tldDeposit / 2));
         totalDeposits -= (snitchDeposit + tldDeposit);
-        emit SnitchedOn(node, _getRoot().ownerOf(uint(node)), addr);
+        emit SnitchedOn(node, _getRoot().ownerOf(uint(node)), addr, tldDeposit / 2);
         return true;
       } else {
         // snitch failed
         // move snitch deposit to smart contract's fees
         totalDeposits -= snitchDeposit;
-        emit SnitchesGotStitches(node, _getRoot().ownerOf(uint(node)), addr);
+        emit SnitchesGotStitches(node, _getRoot().ownerOf(uint(node)), addr, snitchDeposit);
         return false;
       }
     }
@@ -166,6 +180,8 @@ contract HNSRegistrar {
       // hnsFund.regenerate.value(feesCollected)(feesCollected);
       return feesCollected;
     }
+
+    /** Getter Functions */
 
     function oracle() public view returns (IXNHNSOracle) {
       return xnhnsOracle;

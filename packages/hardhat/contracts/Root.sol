@@ -24,7 +24,7 @@ contract Root is
     }
 
     function setResolver(address resolver) external onlyOwner {
-        ens.setResolver(ROOT_NODE, resolver);
+      ens.setResolver(ROOT_NODE, resolver);
     }
 
     function register(uint id, address _owner) external onlyController returns(bool) {
@@ -53,11 +53,11 @@ contract Root is
         return true;
     }
 
-    function setSubnodeOwner(uint id, address _owner) external onlyController returns (bool) {
-      // bypass lock because used for TLD maintainence
-      ens.setSubnodeOwner(ROOT_NODE, bytes32(id), _owner);
-      return true;
-    }
+    // function setSubnodeOwner(uint id, address _owner) external onlyController returns (bool) {
+    //   // bypass lock because used for TLD maintainence
+    //   ens.setSubnodeOwner(ROOT_NODE, bytes32(id), _owner);
+    //   return true;
+    // }
 
     /**
      * @dev Reclaim ownership of a name in ENS if you own the NFT.

@@ -2,8 +2,8 @@ pragma solidity >=0.7.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/IPriceOracle.sol";
-import "./utils//StringUtils.sol";
+import "../../interfaces/IPriceOracle.sol";
+import "../utils//StringUtils.sol";
 
 interface AggregatorInterface {
   function latestAnswer() external view returns (int256);

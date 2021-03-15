@@ -1,34 +1,23 @@
 pragma solidity ^0.7.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "../utils/ERC721.sol";
 import "../../interfaces/IENS.sol";
 import "../../interfaces/IBaseRegistrar.sol";
-import "../ERC721/ERC721.sol";
 
 contract BaseRegistrar is
   IBaseRegistrar,
+  ERC721("NFTLD Domain Registrar", "NFTLD") 
 {
     // A map of expiry times
     mapping(uint256=>uint) expiries;
 
-    bytes4 constant private INTERFACE_META_ID = bytes4(keccak256("supportsInterface(bytes4)"));
-    bytes4 constant private ERC721_ID = bytes4(
-        keccak256("balanceOf(address)") ^
-        keccak256("ownerOf(uint256)") ^
-        keccak256("approve(address,uint256)") ^
-        keccak256("getApproved(uint256)") ^
-        keccak256("setApprovalForAll(address,bool)") ^
-        keccak256("isApprovedForAll(address,address)") ^
-        keccak256("transferFrom(address,address,uint256)") ^
-        keccak256("safeTransferFrom(address,address,uint256)") ^
-        keccak256("safeTransferFrom(address,address,uint256,bytes)")
-    );
     bytes4 constant private RECLAIM_ID = bytes4(keccak256("reclaim(uint256,address)"));
 
     constructor(ENS _ens, bytes32 _baseNode, string memory tld) {
         ens = _ens;
-        baseNode = _baseNode;
-        ERC721("NFTLD Domain Registrar", tld)
+        baseNode = _baseNode;   
+        _registerInterface(RECLAIM_ID);
     }
 
     modifier live {
@@ -134,11 +123,5 @@ contract BaseRegistrar is
     function reclaim(uint256 id, address owner) override external live {
         require(_isApprovedOrOwner(msg.sender, id));
         ens.setSubnodeOwner(baseNode, bytes32(id), owner);
-    }
-
-    function supportsInterface(bytes4 interfaceID) virtual override public view returns (bool) {
-        return interfaceID == INTERFACE_META_ID ||
-               interfaceID == ERC721_ID ||
-               interfaceID == RECLAIM_ID;
     }
 }

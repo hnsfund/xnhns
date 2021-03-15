@@ -35,7 +35,7 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
       bytes32 hnsTo; // hns address of buyer
       uint256 amount; // # of tokens TODO considerations for non base18 tokens?
       address token; // ETH if address(0)
-      uint256[] tldTokens; // all tlds in trade
+      uint256[] tlds; // all tlds in trade
       TradeStatus status;
     }
 
@@ -46,13 +46,13 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
 
     // keccak([NFTLD id, ...ids]) -> Trade
     mapping(bytes32 => Trade) public trades;
-    // tradeId -> completed
-    // true after chainlink node confirms FINALIZE txs on all tlds hnsFrom -> hnsTo
-    mapping(bytes32 -> bool) public finalizedTrades;
-    // token adddress -> allowed
-    mapping(address => bool) public allowedTokens;
     // LINK run ID -> Trade
     mapping(bytes32 => bytes32) private tradeConfirmations;
+    // tradeId -> completed
+    // true after chainlink node confirms FINALIZE txs on all tlds hnsFrom -> hnsTo
+    mapping(bytes32 => bool) public finalizedTrades;
+    // token adddress -> allowed
+    mapping(address => bool) public allowedTokens;
     // token address -> fees earned
     mapping(address => uint256) private feesCollected;
 
@@ -137,7 +137,7 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
         from: from,
         to: to,
         hnsFrom: hnsFrom,
-        hsnTo: bytes32(0),
+        hnsTo: bytes32(0)
       });
 
       emit TradeInitiated({
@@ -193,14 +193,12 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
         trade.status == TradeStatus.DEPOSIT_ESCROWED,
         'Trade is not ready to FINALIZE'
       );
-      return _checkHnsTx(tradeId, trade.hnsFrom, trade.hsTo, this.receiveHnsFinalizeResponse.selector);
+      return _checkHnsTx(tradeId, trade.hnsFrom, trade.hnsTo, this.receiveHnsFinalizeResponse.selector);
     }
 
     /**
      * @dev calls ChainLink oracle to verify that all TLDs have been transfered from the Trade.hnsFrom
      * to Trade.hnsTo. Smart contract sends tradeId and oracle is calls The Graph to find all associated tlds.
-     *
-     * 
     */
     function _checkHnsTx(bytes32 tradeId, bytes32 hnsFrom, bytes32 hnsTo, bytes4 callback)
       internal
@@ -237,23 +235,25 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
 
     function finalizeTrade(bytes32 tradeId) public returns (bool) {
       require(finalizedTrades[tradeId], 'Trade has not been finalized');
-      return _finalizeTrade(tradeId);;
+      return _finalizeTrade(tradeId);
     }
 
     function _finalizeTrade(bytes32 tradeId) internal returns (bool) {
       Trade memory trade = trades[tradeId];
-      Root root = _getRoot();
       uint256 fee = trade.amount.div(escrowFee);
+      // transfer tokens to NFTLD seller
       if(trade.token == address(0)) {
         require(address(this).balance >= trade.amount, 'oops');
-        address(this).transfer(fee);
         payable(trade.from).transfer(trade.amount - fee);
       } else {
         IERC20 token = IERC20(trade.token);
         require(token.balanceOf(address(this)) >= trade.amount, 'oops');
-        token.transer(trade.from, trade.amount.sub(fee));
+        token.transfer(trade.from, trade.amount.sub(fee));
       }
-      withdrawable[trade.token] += fee;
+      // transfer NFTLDs buyer
+      _transferNFTLDs(trade.tlds, address(this), trade.to);
+      // collect $$$
+      feesCollected[trade.token] += fee;
  
       emit TradeFinalized({
         tradeId: tradeId,
@@ -274,12 +274,8 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
     function cancelTrade(bytes32 tradeId) public virtual onlySeller(tradeId) returns (bool) {
       require(!_isTradeStarted(tradeId), 'Cannot cancel trade in progress');
       Trade memory trade = trades[tradeId];
-      
-      Root root = _getRoot();
-      for (uint i=0; i< trade.ids.length; i++) {
-        root.transfer(address(this), trade.from, trade.ids[i]);
-      }
-      delete trades[tradeId]; // data should be stored in `trade` var still
+      _transferNFTLDs(trade.tlds, address(this), trade.from);
+      delete trades[tradeId];
       return true;
     }
 
@@ -287,25 +283,31 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
      * @dev only callable by buyer to prevent griefing by seller if tey never transfer domain on HNS.
      * Sends escrowed assets back to original owners.
      * Only callable after `saleTTL` has expired.
-     * @param  id - token id being sold
+     * @param  tradeId - token id being sold
     */
     function fuckOff(bytes32 tradeId) public onlyBuyer(tradeId) returns (bool) {
-      require(_isSaleStarted(tradeId), 'Trade has not started yet');
+      require(_isTradeStarted(tradeId), 'Trade has not started yet');
       Trade memory trade = trades[tradeId];
       // add startTime to Trade and saleTTL global var
       // require(trade.startTime + saleTTL >= block.timestamp, 'can not fuck off yet');
 
-
-      _getRoot().safeTransferFrom(address(this), trade.from, id);
+      _transferNFTLDs(trade.tlds, address(this), trade.from);
       payable(trade.to).transfer(trade.amount); // should be sale.buyer but .call.calue/.transfer dont compile
 
       delete trades[tradeId];
       return true;
     }
 
+    function _transferNFTLDs(uint256[] memory ids, address from, address to) internal returns (bool) {
+      Root root = _getRoot();
+      for (uint i=0; i< ids.length; i++) {
+        root.safeTransferFrom(from, to, ids[i]);
+      }
+      return true;
+    }
+
     /** OWNER FUNCTIONS */
     function setTokenTradability(address _token, bool _allowed) public virtual onlyOwner returns (bool) {
-      require(IERC20(_token), 'Token is not an ERC20');
       allowedTokens[_token] = _allowed;
       return true;
     }
@@ -324,16 +326,17 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
 
     function withdrawETH(uint256 _amount, address _to) public virtual onlyOwner returns (bool) {
       require(address(this).balance >= _amount, 'Insufficient ETH balance');
-      withdrawable[address(0)] -= _amount;
+      feesCollected[address(0)] -= _amount;
       payable(_to).transfer(_amount);
       return true;
     }
 
-    function withdrawToken(uint256 _amount, address _token, address _to) public virtual onlyOwner returns (bool) {
-      require(wthdrawable[_token] >= _amount, 'Withdrawal amount greater than fees accured');
+    function withdrawERC20(uint256 _amount, address _token, address _to) public virtual onlyOwner returns (bool) {
+      require(_token != address(0), 'Invalid token address');
+      require(feesCollected[_token] >= _amount, 'Withdrawal amount greater than fees accured');
       IERC20 token = IERC20(_token);
       require(token.balanceOf(address(this)) >= _amount, 'Insufficient token balance');
-      withdrawable[trade.token] -0= _amount;
+      feesCollected[_token] -= _amount;
       token.transfer(_to, _amount);
       return true;
     }
@@ -343,15 +346,9 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
       return this.onERC721Received.selector;
     }
 
-
     /** @dev NFTLD ids. Array must have same order and size generate equal hashes */
     function _getTradeId(uint[] calldata ids) public pure returns (bytes32) {
-      return keccak256(ids);
-    }
-    
-    /** @dev Gets NFTLDs being traded in  tradeId */
-    function _getTradeNFTLDs(bytes32 tradeId) public view returns (uint[] calldata) {
-      return trades[tradeId].tldTokens;
+      return keccak256(abi.encodePacked(ids));
     }
 
     function _getRoot() internal view returns(Root) {
@@ -360,6 +357,7 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
 
     function _isTradeStarted(bytes32 id) internal virtual view returns (bool) {
       Trade memory trade = trades[id];
+      // TODO i think this returns false if trade[id] doesnt exist which is a false negative
       return trade.hnsTo != bytes32(0); // set once buyer deposits escrow (idk how enum acts when Trade isnt present)
     }
 

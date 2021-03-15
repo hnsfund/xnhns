@@ -1,3 +1,4 @@
+pragma solidity ^0.7.0;
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 abstract contract IPanvalaMember {
   address public constant PAN_TOKEN = 0xD56daC73A4d6766464b38ec6D91eB45Ce7457c44;

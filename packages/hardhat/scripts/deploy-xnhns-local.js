@@ -45,8 +45,7 @@ async function deploy(name, _args) {
       deployTransaction: { wait: () => Promise.resolve() } // stub wait
     } : 
     await contractArtifacts.deploy(...args);
-
-
+  
   console.log(chalk.cyan(name), 'deployed to:', chalk.magenta(contract.address))
   fs.writeFileSync(`artifacts/${name}.address`, contract.address)
   console.log('\n')
@@ -64,30 +63,27 @@ async function main() {
   const EnsRegistry = await deploy('ENSRegistry')
   const registryAddress = EnsRegistry.address
   console.log('XNHNS registry form namespace --- ', `${registryAddress}._${namespace}.`);
+
   
   const Root = await deploy('Root', [registryAddress])
-  const XNHNSOracle = await deploy('XNHNSOracle', [
-    oracleAddr,
-    linkAddr,
-    verifyTldJobId
-  ])
-
+  const XNHNSOracle = await deploy('DummyXNHNSOracle')
   const HNSRegistrar = await deploy('HNSRegistrar', [
     registryAddress,
     namespace,
     XNHNSOracle.address
-  ])
+  ]);
 
+  
   console.log('oracle', oracleAddr, linkAddr, verifyTldJobId);
   
   // Allow registrar to update ENS Registry to issue TLDs
   await Root.deployTransaction.wait()
   await Root.setController(HNSRegistrar.address, true)
-
+  
   // allow registrar to call oracle to update tld status
   await XNHNSOracle.deployTrasnaction.wait()
   XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
-  
+
   // const HnsFund = deploy('PanvalaMember', [HNS_FUND_TREASURY])
   // const TLDBroker = await deploy('TLDSalesBroker', [
   //   registryAddress,
