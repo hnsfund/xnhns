@@ -101,6 +101,8 @@ function App(props) {
   const yourLocalBalance = useBalance(localProvider, address);
   if(DEBUG) console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
 
+  const activeNetworkBalance = useBalance(userProvider, address);
+
   // Just plug in different 🛰 providers to get your balance on different chains:
   const yourMainnetBalance = useBalance(mainnetProvider, address);
   if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
@@ -116,22 +118,19 @@ function App(props) {
   // EXTERNAL CONTRACT EXAMPLE:
   //
   // If you want to bring in the mainnet DAI contract it would look like:
-  const mainnetDAIContract = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
-  console.log("🌍 DAI contract on mainnet:",mainnetDAIContract)
-  //
-  // Then read your DAI balance like:
-  const myMainnetDAIBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
-  console.log("🥇 myMainnetDAIBalance:",myMainnetDAIBalance)
+  // const mainnetDAIContract = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
+  // const myMainnetDAIBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
 
 
   // keep track of a variable from the contract in the local React state:
-  const tldOracle = useContractReader(readContracts,"DummyXNHNSOracle", "tldOwners")
-  const tldDeposits = useContractReader(readContracts,"HNSRegistrar", "tldDeposits")
-  console.log("🤗 tldOracle:", tldOracle, tldDeposits)
+  // const tldOracle = useContractReader(readContracts, "DummyXNHNSOracle", "tldOwners")
+  // const tldDeposits = useContractReader(readContracts, "HNSRegistrar", "tldDeposits")
+  // console.log("🤗 tldOracle:", tldOracle, tldDeposits)
 
   //📟 Listen for broadcast events
-  const newTldOwnerEvents = useEventListener(readContracts, "DummyXNHNSOracle", "NewOwner", localProvider, 1);
-  console.log("📟 NewOwner events:", newTldOwnerEvents)
+  const oracleNewOwnerEvents = useEventListener(readContracts, "DummyXNHNSOracle", "NewOwner", localProvider, 1);
+  const registrarNewOwnerEvents = useEventListener(readContracts, "HNSRegistrar", "NewOwner", localProvider, 1);
+  console.log("📟 NewOwner events:", oracleNewOwnerEvents)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -217,9 +216,6 @@ function App(props) {
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
           </Menu.Item>
-          {/* <Menu.Item key="/mainnetdai">
-            <Link onClick={()=>{setRoute("/mainnetdai")}} to="/mainnetdai">Mainnet DAI</Link>
-          </Menu.Item> */}
           <Menu.Item key="/subgraph">
             <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
           </Menu.Item>
@@ -249,16 +245,6 @@ function App(props) {
               blockExplorer={blockExplorer}
             />
 
-            { /* Uncomment to display and interact with an external contract (DAI on mainnet):
-            <Contract
-              name="DAI"
-              customContract={mainnetDAIContract}
-              signer={userProvider.getSigner()}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
-            */ }
           </Route>
           <Route path="/hints">
             <Hints
@@ -275,23 +261,12 @@ function App(props) {
               userProvider={userProvider}
               mainnetProvider={mainnetProvider}
               localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
+              activeNetworkBalance={activeNetworkBalance}
               tx={tx}
               writeContracts={writeContracts}
               readContracts={readContracts}
-              tldOracle={tldOracle}
-              newTldOwnerEvents={newTldOwnerEvents}
-            />
-          </Route>
-          <Route path="/mainnetdai">
-            <Contract
-              name="DAI"
-              customContract={mainnetDAIContract}
-              signer={userProvider.getSigner()}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer={"https://etherscan.io/"}
+              oracleNewOwnerEvents={oracleNewOwnerEvents}
+              registrarNewOwnerEvents={registrarNewOwnerEvents}
             />
           </Route>
           <Route path="/subgraph">

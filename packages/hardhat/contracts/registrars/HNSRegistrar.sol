@@ -35,17 +35,17 @@ contract HNSRegistrar {
       keccak256("oracle()")
     );
 
-    struct Snitch {
-      address addr;
-      uint256 blockStart;
-    }
-    
     event NewOracle(address oracle);
     // NewOwner identitcal to IENS.sol
     event NewOwner(bytes32 indexed node, bytes32 indexed label, address owner);
     event SnitchedOn(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchReward);
     event SnitchesGotStitches(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchPenalty);
 
+    struct Snitch {
+      address addr;
+      uint256 blockStart;
+    }
+    
     mapping(bytes32 => Snitch) snitches; // namehash -> snitcher
     mapping(bytes32 => uint256) public tldDeposits; // namehash -> tld deposit
 
@@ -65,10 +65,7 @@ contract HNSRegistrar {
     }
 
     modifier whileRegistrarEnabled {
-      require(
-        IXNHNSOracle(xnhnsOracle).getCallerPermission(address(this)),
-        'Registrar disabled'
-      );
+      require(_registrarEnabled(), 'Registrar disabled');
       _;
     }
 
@@ -82,7 +79,7 @@ contract HNSRegistrar {
       returns (bytes32 requestId)
     {
       require(msg.value >= minTLDDeposit, 'Insufficient tld deposit');
-      tldDeposits[_getNamehash(tld)] += msg.value;
+      tldDeposits[_getNamehash(tld)] = msg.value;
       totalDeposits += msg.value;
       return xnhnsOracle.requestTLDUpdate(tld);
     }
@@ -94,10 +91,11 @@ contract HNSRegistrar {
      * @param node The HNS domain to claim
      */
     function register(bytes32 node) public returns (uint id) {
+      require(tldDeposits[node] >= minTLDDeposit, 'Insufficient deposit for TLD');
       address tldOwner = IXNHNSOracle(xnhnsOracle).getTLDOwner(node);
       require(tldOwner != address(0), 'TLD is invalid on this namespace');
       require(tldOwner == msg.sender, 'Only TLD owner can register');
-      // theoretically tld can be verified by another contract and we dont take a deposit
+
        _getRoot().register(uint(node), msg.sender);
       emit NewOwner(bytes32(0), node, msg.sender);
       return uint(node);
@@ -115,7 +113,7 @@ contract HNSRegistrar {
 
       bytes32 node  = _getNamehash(tld);
       require(ens.recordExists(node), 'Cant snitch on unregistered TLD');
-      require(tldDeposits[node] >= minTLDDeposit, 'No reward for snitching on TLD');
+      // require(tldDeposits[node] >= minTLDDeposit, 'No reward for snitching on TLD');
 
       (address addr,) = _getSnitch(node);
       require(addr == address(0), 'TLD already snitched on');
@@ -205,6 +203,10 @@ contract HNSRegistrar {
     function _getSnitch(bytes32 node) public view returns (address, uint256) {
       Snitch memory _snitch = snitches[node];
       return (_snitch.addr, _snitch.blockStart);
+    }
+
+    function _registrarEnabled() internal returns (bool) {
+      return IXNHNSOracle(xnhnsOracle).getCallerPermission(address(this));
     }
 
 

@@ -15,7 +15,7 @@ function publishContract(contractName, contractPath) {
   try {
     let contract;
     let address;
-    console.log('publish contract', `${bre.config.paths.artifacts}/contracts${contractPath}${contractName}.sol/${contractName}.json`);
+    console.log('publish contract', `${bre.config.paths.artifacts}/contracts${contractPath}/${contractName}.sol/${contractName}.json`);
     try {
       contract = fs
         .readFileSync(`${bre.config.paths.artifacts}/contracts/${contractPath}/${contractName}.sol/${contractName}.json`)
@@ -95,10 +95,11 @@ async function main() {
         const contractName = file.replace(".sol", "");
         // Add contract to list if publishing is successful
         if (publishContract(contractName, currentPath)) {
-          finalContractList.push(contractName, pathStart + currentPath + contractName);
+          // full contract path = pathStart + currentPath + '/' + contractName + '.sol'
+          finalContractList.push(contractName);
         }
       } else {
-        const nextPath = currentPath + '/' + file + '/';
+        const nextPath = currentPath + '/' + file;
         findAllContracts(nextPath, fs.readdirSync(pathStart + nextPath))
       }
     })
