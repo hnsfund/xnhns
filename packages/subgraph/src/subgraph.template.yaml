@@ -33,6 +33,32 @@ dataSources:
           handler: handleNewResolver
         - event: 'NewTTL(indexed bytes32,uint64)'
           handler: handleNewTTL
+  # Core XNHNS subgraph
+  - kind: ethereum/contract
+      name: HNSRegistrar
+      network: localhost
+      source:
+        address: '{{HNSRegistrarAddress}}'
+        abi: HNSRegistrar
+      mapping:
+        kind: ethereum/events
+        apiVersion: 0.0.4
+        language: wasm/assemblyscript
+        file: ./src/resolver.ts
+        entities:
+          - Domain
+          - Account
+        abis:
+          - name: HNSRegistrar
+            file: ./abis/HNSRegistrar.json
+        eventHandlers:
+          - event: 'NewOwner(indexed bytes32, indexed bytes32, indexed address)'
+            handler: handleTLDRegistered
+          - event: 'SnitchedOn(indexed bytes32, indexed address, indexed address)'
+            handler: handleSnitchedOn
+          - event: 'SnitchesGetStiches(indexed bytes32, indexed address, indexed address)'
+            handler: handleSnitchesGetStiches
+  # Registrars
   - kind: ethereum/contract
     name: BaseRegistrar
     network: localhost
@@ -80,6 +106,7 @@ dataSources:
           handler: handleNameRegisteredByController
         - event: 'NameRenewed(string,indexed bytes32,uint256,uint256)'
           handler: handleNameRenewedByController
+  # Resolvers
   - kind: ethereum/contract
     name: Resolver
     network: localhost

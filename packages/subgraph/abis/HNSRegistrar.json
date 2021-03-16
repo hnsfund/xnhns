@@ -12,81 +12,13 @@
         "type": "string"
       },
       {
-        "internalType": "address",
+        "internalType": "contract IXNHNSOracle",
         "name": "_oracle",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_link",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_jobId",
-        "type": "bytes32"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "id",
-        "type": "bytes32"
-      }
-    ],
-    "name": "ChainlinkCancelled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "id",
-        "type": "bytes32"
-      }
-    ],
-    "name": "ChainlinkFulfilled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "id",
-        "type": "bytes32"
-      }
-    ],
-    "name": "ChainlinkRequested",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "node",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      }
-    ],
-    "name": "ClaimVerified",
-    "type": "event"
   },
   {
     "anonymous": false,
@@ -112,15 +44,46 @@
       },
       {
         "indexed": true,
+        "internalType": "bytes32",
+        "name": "label",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "NewOwner",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
         "internalType": "address",
         "name": "owner",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address",
         "name": "snitch",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "snitchReward",
+        "type": "uint256"
       }
     ],
     "name": "SnitchedOn",
@@ -142,10 +105,16 @@
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address",
         "name": "snitch",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "snitchPenalty",
+        "type": "uint256"
       }
     ],
     "name": "SnitchesGotStitches",
@@ -173,20 +142,44 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "tld",
-        "type": "string"
-      }
-    ],
-    "name": "claim",
-    "outputs": [
-      {
         "internalType": "bytes32",
-        "name": "requestId",
+        "name": "node",
         "type": "bytes32"
       }
     ],
-    "stateMutability": "payable",
+    "name": "_getSnitch",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
+      }
+    ],
+    "name": "claimSnitchReward",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -199,7 +192,7 @@
         "type": "uint256"
       }
     ],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -217,12 +210,12 @@
   },
   {
     "inputs": [],
-    "name": "hnsOracle",
+    "name": "minTLDDeposit",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "uint256",
         "name": "",
-        "type": "address"
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -246,32 +239,9 @@
     "name": "oracle",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IXNHNSOracle",
         "name": "",
         "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "pendingSnitches",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -281,21 +251,16 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "requestId",
+        "name": "node",
         "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
       }
     ],
-    "name": "receiveClaimVerification",
+    "name": "register",
     "outputs": [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
@@ -304,43 +269,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "requestId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      }
-    ],
-    "name": "receiveSnitchVerification",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
+        "internalType": "contract IXNHNSOracle",
         "name": "_oracle",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_fee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_jobId",
-        "type": "bytes32"
       }
     ],
     "name": "setOracle",
@@ -352,25 +283,6 @@
       }
     ],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "tld",
-        "type": "string"
-      }
-    ],
-    "name": "snitch",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "requestId",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -387,16 +299,22 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "snitchReward",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "tld",
+        "type": "string"
       }
     ],
-    "stateMutability": "view",
+    "name": "snitchOn",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "requestId",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -419,8 +337,14 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "tldDeposit",
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "tldDeposits",
     "outputs": [
       {
         "internalType": "uint256",
@@ -433,7 +357,7 @@
   },
   {
     "inputs": [],
-    "name": "tldsRegistered",
+    "name": "totalDeposits",
     "outputs": [
       {
         "internalType": "uint256",
@@ -447,9 +371,9 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "tld",
-        "type": "string"
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
       }
     ],
     "name": "unregister",
@@ -458,16 +382,22 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "verifyHnsTldJobId",
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "tld",
+        "type": "string"
+      }
+    ],
+    "name": "verify",
     "outputs": [
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "requestId",
         "type": "bytes32"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -478,6 +408,19 @@
         "internalType": "string",
         "name": "",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "xnhnsOracle",
+    "outputs": [
+      {
+        "internalType": "contract IXNHNSOracle",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

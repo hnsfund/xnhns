@@ -8,7 +8,7 @@ const addresses = {}
 const HNS_FUND_TREASURY = '0xd25A803E24FFd3C0033547BE04D8C43FFBa7486b';
 const HNS_PANVALA_CONTRACT = '';
 
-const namespace = 'kovan',
+const namespace = 'local',
   oracleAddr = '0x31Da52dFe5168e2b029703152a877149ea3fB064',
   linkAddr = '0xa36085F69e2889c224210F603D836748e7dC0088',
   verifyTldJobId = utils.id('41e9e8e2678f4d5f98e4bebe02cc1ccc'),
@@ -24,7 +24,7 @@ const getContract = (contractName, namespace) => {
           const contract = JSON.parse(data)[contractName];
           return contract ? resolve(contract.address) : resolve(null);
         } else {
-          return reject(err);
+          return resolve(null);
         }
       })
   }) 
@@ -40,10 +40,7 @@ async function deploy(name, _args) {
   const contractAddress = await getContract(name, namespace)
   console.log('predeployed contract address:', contractAddress);
   const contract = contractAddress ?
-    {
-      ...contractArtifacts.attach(contractAddress),
-      deployTransaction: { wait: () => Promise.resolve() } // stub wait
-    } : 
+    contractArtifacts.attach(contractAddress) : 
     await contractArtifacts.deploy(...args);
   
   console.log(chalk.cyan(name), 'deployed to:', chalk.magenta(contract.address))
@@ -74,15 +71,19 @@ async function main() {
   ]);
 
   
-  console.log('oracle', oracleAddr, linkAddr, verifyTldJobId);
+  // console.log('oracle', oracleAddr, linkAddr, verifyTldJobId);
   
+  console.log('Allowing HNSRegistrar to update Root...');
+  console.log('???', Root.deployTransaction.wait);
   // Allow registrar to update ENS Registry to issue TLDs
-  await Root.deployTransaction.wait()
+  await (Root.deployTransaction && Root.deployTransaction.wait())
   await Root.setController(HNSRegistrar.address, true)
-  
+
+  console.log('Allowing HNSRegistrar to call oracle...');
+  console.log('???', XNHNSOracle.deployTransaction.wait);
   // allow registrar to call oracle to update tld status
-  await XNHNSOracle.deployTrasnaction.wait()
-  XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
+  await (XNHNSOracle.deployTransaction && XNHNSOracle.deployTransaction.wait())
+  await XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
 
   // const HnsFund = deploy('PanvalaMember', [HNS_FUND_TREASURY])
   // const TLDBroker = await deploy('TLDSalesBroker', [

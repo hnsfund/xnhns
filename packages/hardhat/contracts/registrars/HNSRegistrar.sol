@@ -25,7 +25,6 @@ contract HNSRegistrar {
 
     // total tld + snitch deposits in contract
     uint256 public totalDeposits;
-    // namehash -> tld deposit
 
     bytes4 constant private INTERFACE_META_ID = bytes4(keccak256("supportsInterface(bytes4)"));
     bytes4 constant private XNHNS_CLAIM_ID = bytes4(
@@ -48,7 +47,7 @@ contract HNSRegistrar {
     event SnitchesGotStitches(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchPenalty);
 
     mapping(bytes32 => Snitch) snitches; // namehash -> snitcher
-    mapping(bytes32 => uint256) public tldDeposits;
+    mapping(bytes32 => uint256) public tldDeposits; // namehash -> tld deposit
 
     constructor(ENS _ens, string memory _namespace, IXNHNSOracle _oracle) {
         ens = _ens;
@@ -104,7 +103,6 @@ contract HNSRegistrar {
       return uint(node);
     }
 
-
     /** @dev Allows anyone to prove that TLD is not set anymore and revoke teir ENS name
      * @param tld - human readable string 
     */
@@ -114,16 +112,20 @@ contract HNSRegistrar {
       returns (bytes32 requestId)
     {
       require(msg.value >= snitchDeposit, 'Insufficient snitch deposit');
+
       bytes32 node  = _getNamehash(tld);
       require(ens.recordExists(node), 'Cant snitch on unregistered TLD');
       require(tldDeposits[node] >= minTLDDeposit, 'No reward for snitching on TLD');
+
       (address addr,) = _getSnitch(node);
       require(addr == address(0), 'TLD already snitched on');
+
       snitches[node] = Snitch({
         addr: msg.sender,
         blockStart: block.timestamp
       });
       totalDeposits += snitchDeposit;
+
       return IXNHNSOracle(xnhnsOracle).requestTLDUpdate(tld);
     }
 
@@ -133,18 +135,19 @@ contract HNSRegistrar {
       require(block.timestamp > blockStart + 2 hours, 'Cannot snitch yet');
       delete snitches[node];
 
+      address owner = _getRoot().ownerOf(uint(node));
       if(IXNHNSOracle(xnhnsOracle).getTLDOwner(node) == address(0)) {
         // snitch successful
         uint256 tldDeposit = _unregister(node);
         payable(addr).transfer(snitchDeposit + (tldDeposit / 2));
         totalDeposits -= (snitchDeposit + tldDeposit);
-        emit SnitchedOn(node, _getRoot().ownerOf(uint(node)), addr, tldDeposit / 2);
+        emit SnitchedOn(node, owner, addr, tldDeposit / 2);
         return true;
       } else {
         // snitch failed
         // move snitch deposit to smart contract's fees
         totalDeposits -= snitchDeposit;
-        emit SnitchesGotStitches(node, _getRoot().ownerOf(uint(node)), addr, snitchDeposit);
+        emit SnitchesGotStitches(node, owner, addr, snitchDeposit);
         return false;
       }
     }

@@ -15,7 +15,7 @@ function publishContract(contractName, contractPath) {
   try {
     let contract;
     let address;
-    console.log('pulch contract', `${bre.config.paths.artifacts}/contracts${contractPath}/${contractName}.sol/${contractName}.json`);
+    console.log('publish contract', `${bre.config.paths.artifacts}/contracts${contractPath}${contractName}.sol/${contractName}.json`);
     try {
       contract = fs
         .readFileSync(`${bre.config.paths.artifacts}/contracts/${contractPath}/${contractName}.sol/${contractName}.json`)

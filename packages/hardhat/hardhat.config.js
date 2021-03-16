@@ -19,9 +19,11 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = 'kovan'
+const defaultNetwork = 'localhost'
 
-function mnemonic() {
+function mnemonic(generate) {
+  if(generate || defaultNetwork === 'localhost') return '';
+
   try {
     return fs.readFileSync('./mnemonic.txt').toString().trim()
   } catch (e) {
@@ -63,7 +65,7 @@ module.exports = {
     mainnet: {
       url: 'https://mainnet.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad', //<---- YOUR INFURA ID! (or it won't work)
       accounts: {
-        mnemonic: mnemonic(),
+        mnemonic: mnemonic(true),
       },
     },
     /* L2s */

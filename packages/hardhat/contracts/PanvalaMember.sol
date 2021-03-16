@@ -45,6 +45,9 @@ contract PanvalaMember is IPanvalaMember {
     _donatePAN(panDonated, msg.sender);
     return panDonated;
   }
+  
+  // asked Niran and if Panvala member wallet is staking then any PAN sent to their wallet
+  // will automatically stake so can remove staking from this contract
   function stakePAN(uint amount)
     public payable override
     enoughEthSent(amount)
@@ -101,6 +104,7 @@ contract PanvalaMember is IPanvalaMember {
     return true;
   }
 
+  // if removing staking functionality then can also remove withdrawal function
   function withdrawPAN() public override onlyMember returns (uint panWithdrawn) {
     IERC20 pan = IERC20(PAN_TOKEN);
     panWithdrawn = pan.balanceOf(address(this));

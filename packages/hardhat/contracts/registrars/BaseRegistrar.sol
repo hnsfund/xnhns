@@ -14,7 +14,7 @@ contract BaseRegistrar is
 
     bytes4 constant private RECLAIM_ID = bytes4(keccak256("reclaim(uint256,address)"));
 
-    constructor(ENS _ens, bytes32 _baseNode, string memory tld) {
+    constructor(ENS _ens, bytes32 _baseNode) {
         ens = _ens;
         baseNode = _baseNode;   
         _registerInterface(RECLAIM_ID);
@@ -72,24 +72,24 @@ contract BaseRegistrar is
     /**
      * @dev Register a name.
      * @param id The token ID (keccak256 of the label).
-     * @param owner The address that should own the registration.
+     * @param _owner The address that should own the registration.
      * @param duration Duration in seconds for the registration.
      */
-    function register(uint256 id, address owner, uint duration) override external returns(uint) {
-      return _register(id, owner, duration, true);
+    function register(uint256 id, address _owner, uint duration) override external returns(uint) {
+      return _register(id, _owner, duration, true);
     }
 
     /**
      * @dev Register a name, without modifying the registry.
      * @param id The token ID (keccak256 of the label).
-     * @param owner The address that should own the registration.
+     * @param _owner The address that should own the registration.
      * @param duration Duration in seconds for the registration.
      */
-    function registerOnly(uint256 id, address owner, uint duration) external returns(uint) {
-      return _register(id, owner, duration, false);
+    function registerOnly(uint256 id, address _owner, uint duration) external returns(uint) {
+      return _register(id, _owner, duration, false);
     }
 
-    function _register(uint256 id, address owner, uint duration, bool updateRegistry) internal live onlyController returns(uint) {
+    function _register(uint256 id, address _owner, uint duration, bool updateRegistry) internal live onlyController returns(uint) {
         require(available(id));
         require(block.timestamp + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD); // Prevent future overflow
 
@@ -98,12 +98,12 @@ contract BaseRegistrar is
             // Name was previously owned, and expired
             _burn(id);
         }
-        _mint(owner, id);
+        _mint(_owner, id);
         if(updateRegistry) {
-            ens.setSubnodeOwner(baseNode, bytes32(id), owner);
+            ens.setSubnodeOwner(baseNode, bytes32(id), _owner);
         }
 
-        emit NameRegistered(id, owner, block.timestamp + duration);
+        emit NameRegistered(id, _owner, block.timestamp + duration);
 
         return block.timestamp + duration;
     }
@@ -120,8 +120,8 @@ contract BaseRegistrar is
     /**
      * @dev Reclaim ownership of a name in ENS, if you own it in the registrar.
      */
-    function reclaim(uint256 id, address owner) override external live {
+    function reclaim(uint256 id, address _owner) override external live {
         require(_isApprovedOrOwner(msg.sender, id));
-        ens.setSubnodeOwner(baseNode, bytes32(id), owner);
+        ens.setSubnodeOwner(baseNode, bytes32(id), _owner);
     }
 }

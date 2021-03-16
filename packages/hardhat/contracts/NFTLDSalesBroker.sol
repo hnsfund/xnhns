@@ -124,6 +124,7 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
       require(!_isTradeStarted(tradeId), 'Trade already in progress');
 
       Root root = _getRoot();
+      _transferNFTLDs(ids, from, address(this));
       for (uint i=0; i< ids.length; i++) {
         require(from == root.ownerOf(ids[i]), 'Cannot sell a TLD you dont own');
         root.safeTransferFrom(from, address(this), ids[i]);
