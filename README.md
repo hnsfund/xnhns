@@ -1,15 +1,24 @@
-# Subdomain Registrar with NFT Restrictive Wrapper
+# XNHNS protocol
 
-> is everything you need to get started building decentralized applications powered by smart contracts
+XNHNS is an easy way for any [Handshake](https://handshake.org) TLD owner to use their domain trustlessly on other blockchains. XNHNS works on any [EVM compatible](https://github.com/ethereum-lists/chains) blockchain.
+We utilize [HIP5](https://github.com/handshake-org/HIPs/blob/master/HIP-0005.md) namespace delegation records to point to your blockchain of choice and TXT record with `xnhns={your address}` to claim your NFTLD to an address on that network. The [ChainLink](https://chain.link) decentralized oracle network securely verifies your DNS records on the Handshake chain to verify your TLD is valid on that chain (by checking NS record) and tells the XNHNS registry who to give ownership of NFTLD to.
+
+
+Built With:
+- Handshake
+- Solidity smart contracts
+- Ethereum Name Service
+- ChainLink oracles + custom external adapters
+- The Graph
 
 ---
 
 ## quickstart
 
 ```bash
-git clone https://github.com/austintgriffith/scaffold-eth.git your-next-dapp
+git clone https://github.com/hnsfund/xnhns.git
 
-cd your-next-dapp
+cd xnhns
 ```
 
 ```bash
@@ -28,7 +37,7 @@ yarn start
 
 ```bash
 
-yarn chain
+yarn chain --network hardhat
 
 ```
 
@@ -36,406 +45,52 @@ yarn chain
 
 ```bash
 
-yarn deploy
+yarn deploy:test
 
 ```
 
-🔏 Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
 
-📝 Edit your frontend `App.jsx` in `packages/react-app/src`
-
-📱 Open http://localhost:3000 to see the app
-
-📚 Keep [solidity by example](https://solidity-by-example.org) handy and check out the [Solidity globals and units](https://solidity.readthedocs.io/en/v0.6.6/units-and-global-variables.html)
-
-> With everything up your dev environment starts looking something like this:
-
-![image](https://user-images.githubusercontent.com/2653167/91858466-768bb080-ec26-11ea-9e9b-81519f7f1c90.png)
-
-> React dev server, HardHat blockchain, deploy terminal, code IDE, and frontend browser.
-
----
-
-🔁 You can `yarn run deploy` any time and get a fresh new contract in the frontend:
-
-![deploy](https://user-images.githubusercontent.com/2653167/93149199-f8fa8280-f6b2-11ea-9da7-3b26413ec8ab.gif)
-
----
-
-💵. Each browser has an account in the top right and you can use the faucet (bottom left) to get ⛽️ testnet eth for gas:
-
-![faucet](https://user-images.githubusercontent.com/2653167/93150077-6c04f880-f6b5-11ea-9ee8-5c646b5b7afc.gif)
-
----
-
-🔨 Once you have funds, you can call `setPurpose` on your contract and "write" to the `purpose` storage:
-
-![setp](https://user-images.githubusercontent.com/2653167/93229761-2d625300-f734-11ea-9036-44a75429ef0c.gif)
-
----
-
-Look for the [HardHat](https://hardhat.org) console.log() output in the `yarn run chain` terminal:
-
-![image](https://user-images.githubusercontent.com/2653167/93687934-2f534b80-fa7f-11ea-84b2-c0ba99533dc2.png)
-
----
-
-👨‍🏫 Maybe start super simple and add a counter `uint8 public count = 1;`
-
-⬇️ Then a `function dec() public {}` that does a `count = count - 1;`
-
-![image](https://user-images.githubusercontent.com/2653167/93150263-dae25180-f6b5-11ea-94e1-b24ab2a63fa5.png)
-
----
-
-🔬 What happens with you subtract 1 from 0? Try it out in the app to see what happens!
-
-![underflow](https://user-images.githubusercontent.com/2653167/93688066-46466d80-fa80-11ea-85df-81fbafa46575.gif)
-
-🚽 UNDERFLOW!
-
-🧫 You can iterate and learn as you go. Test your assumptions!
-
----
-
-💵 Send testnet ETH between browsers or even on an [instantwallet.io](https://instantwallet.io) selecting `localhost`:
-
-![sendingaroundinstantwallet](https://user-images.githubusercontent.com/2653167/93688154-05028d80-fa81-11ea-8643-2c447af59b5c.gif)
-
----
-
-🔐 Global variables like `msg.sender` and `msg.value` are cryptographically backed and can be used to make rules
-
-📝 Keep this [cheat sheet](https://solidity.readthedocs.io/en/v0.7.0/cheatsheet.html?highlight=global#global-variables) handy
-
-⏳ Maybe we could use `block.timestamp` or `block.number` to track time in our contract
-
-🔏 Or maybe keep track of an `address public owner;` then make a rule like `require( msg.sender == owner );` for an important function
-
-🧾 Maybe create a smart contract that keeps track of a `mapping ( address => uint256 ) public balance;`
-
-🏦 It could be like a decentralized bank that you `function deposit() public payable {}` and `withdraw()`
-
-📟 Events are really handy for signaling to the frontend. [Read more about events here.](https://solidity-by-example.org/0.6/events/)
-
-📲 Spend some time in `App.jsx` in `packages/react-app/src` and learn about the 🛰 [Providers](https://github.com/austintgriffith/scaffold-eth#-web3-providers)
-
-⚠️ Big numbers are stored as objects: `formatEther` and `parseEther` (ethers.js) will help with WEI->ETH and ETH->WEI.
-
-🧳 The single page (searchable) [ethers.js docs](https://docs.ethers.io/v5/single-page/) are pretty great too.
-
-🐜 The UI framework `Ant Design` has a [bunch of great components](https://ant.design/components/overview/).
-
-📃 Check the console log for your app to see some extra output from hooks like `useContractReader` and `useEventListener`.
-
-🏗 You'll notice the `<Contract />` component that displays the dynamic form as scaffolding for interacting with your contract.
-
-🔲 Try making a `<Button/>` that calls `writeContracts.YourContract.setPurpose("👋 Hello World")` to explore how your UI might work...
-
-💬 Wrap the call to `writeContracts` with a `tx()` helper that uses BlockNative's [Notify.js](https://www.blocknative.com/notify).
-
-🧬 Next learn about [structs](https://solidity-by-example.org/0.6/structs/) in Solidity.
-
-🗳 Maybe an make an array `YourStructName[] public proposals;` that could call be voted on with `function vote() public {}`
-
-🔭 Your dev environment is perfect for _testing assumptions_ and learning by prototyping.
-
-📝 Next learn about the [fallback function](https://solidity-by-example.org/0.6/fallback/)
-
-💸 Maybe add a `receive() external payable {}` so your contract will accept ETH?
-
-🚁 OH! Programming decentralized money! 😎 So rad!
-
-🛰 Ready to deploy to a testnet? Change the `defaultNetwork` in `packages/hardhat/hardhat.config.js`
-
-🔐 Generate a deploy account with `yarn generate` and view it with `yarn account`
-
-🔑 Create wallet links to your app with `yarn wallet` and `yarn fundedwallet`
-
-👩‍🎓 You can "graduate" from 🏗 scaffold-eth and start using 👷 [HardHat](https://hardhat.org/) and 📦 [create-eth-app](https://github.com/PaulRBerg/create-eth-app) "standalone"
-
-( You will probably want to take some of the 🔗 [hooks](#-hooks), 🎛 [components](#-components) with you from 🏗 scaffold-eth so we started 🖇 [eth-hooks](https://www.npmjs.com/package/eth-hooks) )
-
-🚀 Good luck!
-
----
-
-[<H3>⏱ Quickstart: 🔬 Smart Contract Sandbox</H3>](https://github.com/austintgriffith/scaffold-eth#-smart-contract-sandbox)
-
-Learn how to [quickly iterate on a smart contract app](https://github.com/austintgriffith/scaffold-eth#-smart-contract-sandbox) using the <b>\<Contract /\></b> component.
-
----
-
-Join the telegram [support chat 💬](https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA) to ask questions and find others building with 🏗 scaffold-eth!
-
----
-
-[![splash](https://user-images.githubusercontent.com/2653167/88085723-7ab2b180-cb43-11ea-832d-8db6efcbdc02.png)](https://www.youtube.com/watch?v=ShJZf5lsXiM&feature=youtu.be&t=19)
-
----
-
-🎥. [Watch the long form 🏗 scaffold-eth introduction on youtube for the EEA](https://youtu.be/_yRX8Qi75OE?t=289).
-
-[![image](https://user-images.githubusercontent.com/2653167/93264124-e9874200-f763-11ea-9519-94736b95b2d1.png)](https://youtu.be/_yRX8Qi75OE?t=289)
-
----
-
-[<H3>Tutorial 1: 🛠 Programming Decentralized Money</H3>](https://medium.com/@austin_48503/programming-decentralized-money-300bacec3a4f)
-
-Learn the basics of 🏗 <b>scaffold-eth</b> and building on <b>Ethereum</b>. 👷‍♂️ HardHat, 📦 create-eth-app, 🔥 hot reloading smart contracts, 🛰 providers, 🔗 hooks, 🎛 components, and building a decentralized application.
-[🎥 Guided Tutorial](https://youtu.be/7rq3TPL-tgI)
-
----
-
-<H3>Tutorial 2: 🏵 The Token</H3>
-
-Learn about tokens. [coming soon] What is a token? Why is it cool? How can I deploy one? Exotic mechanisms? (todo)
-
----
-
-[<H3>Tutorial 3: ⚖️ Minimum Viable Decentralized Exchange</H3>](https://medium.com/@austin_48503/%EF%B8%8F-minimum-viable-exchange-d84f30bd0c90)
-
-Learn the basics of Automated Market Makers like 🦄 Uniswap. Learn how 💰Reserves affect the 📉 price, ⚖️ trading, and 💦 slippage from low liqudity.
-
-[🏃‍♀️ SpeedRun 📹](https://youtu.be/eP5w6Ger1EQ)
-
----
-
-[<H3>Tutorial 4: 🚀 Connecting ETH to IPFS</H3>](https://medium.com/@austin_48503/tl-dr-scaffold-eth-ipfs-20fa35b11c35)
-
-Build a simple IPFS application in 🏗 <b>scaffold-eth</b> to learn more about distributed file storage and content addressing.
-[🎥 Live Tutorial](https://youtu.be/vqrLr5eOjLo?t=342)
-
----
-
-<H3>Tutorial 5: ⛽️GSN and Meta Transactions</H3>
-
-Learn about to provide your users with better UX by abstracting away gas fees and blockchain mechanics. (todo)
-
----
-
-[<H3>Tutorial 6: 🛰 Decentralized Deployment</H3>](https://medium.com/@austin_48503/decentralized-deployment-7d975c9d5016)
-
-Learn how to deploy your smart contract to a production blockchain. Then deploy your applicaton to Surge, S3, and IPFS. Finally, register an ENS and point it at the decentralized content! [🎥 Live Tutorial](https://youtu.be/vqrLr5eOjLo?t=1350)
-
----
-
-📡 Using The Graph with 🏗 scaffold-eth
-
-[![thegraphplayvideo](https://user-images.githubusercontent.com/2653167/101052782-4664ee00-3544-11eb-8805-887ad4d1406e.png)
-](https://youtu.be/T5ylzOTkn-Q)
-
----
-
-<h1>built with 🏗 scaffold-eth:</h1>
-
-[<H3>👩‍🎨 Nifty Ink</H3>](https://nifty.ink)
-
-Paintings come to life as you "ink" new creations and trade them on Ethereum. A deep dive into 🖼 NFTs, 🐳 OpenSea, 🖍 react-canvas-draw, 🎨 react-color, and 🛬 onboarding user experience.
-
-🏃‍♂️ SpeedRun 📹 (TODO)
-
-[💾 Source Code ](https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev)
-
----
-
-[<H3>🧙‍♂️ Instant Wallet</H3>](https://instantwallet.io)
-
-An instant wallet running on xDAI insired by [xdai.io](https://xdai.io).
-
-[💾 Source Code ](https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session)
-
----
-
-[<H3>🗳 Personal Token Voting</H3>](https://medium.com/@austin_48503/personal-token-voting-73b44a598d8e)
-
-Poll your holders! Build an example emoji voting system with 🏗 <b>scaffold-eth</b>. 🔏 Cryptographically signed votes but tracked off-chain with 📡 Zapier and 📑 Google Sheets.
-
-[🏃‍♂️ SpeedRun 📹 ](https://youtu.be/Q5zgxcQtwWI)
-
-[💾 Source Code ](https://github.com/austintgriffith/scaffold-eth/tree/emoji-vote-dev)
-
----
-
-[<H3>🌒 xmoon.exchange</H3>](https://xmoon.exchange/)
-
-Exchange Reddit MOONs for ETH or DAI through xDAI. Learn about different 🛰 providers and how 🌉 bridges can connect different chains with different security models.
-
-[🏃‍♂️ SpeedRun 📹 ](https://www.youtube.com/watch?v=_ikHSyThDiA)
-
-[💾 Source Code ](https://github.com/austintgriffith/scaffold-eth/tree/xmoon-dev)
-
----
-
-[<H3>Obituary.space</H3>](https://obituary.space/)
-
-Remember someone permanently on the blockchain. Write an obituary and upload a photo of a person and their memory will be encoded on the blockchain, forever.
-
----
-
-^^^ ⛏ <b>PR</b> your 🏗 scaffold-eth project in above!!! ^^^
-
----
-
-[<h5>🧫 Building on Ethereum in 2020 (research)</h5> ](https://medium.com/@austin_48503/building-on-ethereum-in-2020-dca52eda5f00)
-
----
-
-## ⏱ Original Quickstart with TODO List:
-
-First, you'll need [NodeJS>=10](https://nodejs.org/en/download/) plus [Yarn](https://classic.yarnpkg.com/en/docs/install/) and [Git](https://git-scm.com/downloads) installed.
-
-💾 <b>install</b>:
-
-```bash
-git clone https://github.com/austintgriffith/scaffold-eth.git rad-new-dapp
-
-cd rad-new-dapp
-
-git checkout quickstart
-
-yarn install
-```
-
-> ⌚️ This will take some time. How about a quick tour of the file structure with your favorite code editor?
-
-> 💡 Sometimes the install throws errors like "node-gyp", try the next step even if you see problems.<br/>
-> (You can also [download the Apple command line tools](https://developer.apple.com/download/more/) to fix the warning.)
-
----
-
-🎛 <b>frontend</b>
-
-```bash
-yarn start
-```
-
-📝 Edit your frontend `App.jsx` in `packages/react-app/src` and open http://localhost:3000
-
----
-
-⛓ <b>blockchain</b>
-
-```bash
-yarn run chain
-```
-
-**Note**: You'll need to run this command in a new terminal window
-
-> 🛠 [Use this eth.build](https://eth.build/build#1a21b864c6bcdb901070b64965fae825cdfc11b1915d74f058f00b114a8c129a) to double-check your local chain and account balances
-
----
-
-⚙️ Compile your contracts:
-
-```bash
-yarn run compile
-```
-
-🚢 Deploy your contracts to the frontend:
-
-```bash
-yarn run deploy
-```
-
-🔍 _Watch_ for changes then compile, deploy, and hot reload the frontend:
-
-```bash
-yarn run watch
-```
-
----
-
-🔥 Your dapp hot reloads as you build your smart contracts and frontend together 🔥
-
----
-
-📝 Edit your smart contract `SmartContractWallet.sol` in `packages/hardhat/contracts`
-
-> 🤡 There is a spelling error in `packages/hardhat/contracts/SmartContractWallet.sol`! <br/><br/>🤔 Can you fix it and deploy the contract locally?
-
-![Deployed Contract](https://user-images.githubusercontent.com/2653167/81483187-8146b380-91f9-11ea-80f0-3a8e1e3225dd.png)
-
-> ☢️ **Warning**: It is very important that you find `SmartContractWallet.sol` in `packages/hardhat/contracts` because there are other contract folders and it can get confusing.
-
-🔬Test your contracts by editing `myTest.js` in `packages/hardhat/contracts`:
-
-```bash
-yarn run test
-```
-
-🗝 List your local accounts:
-
-```bash
-yarn run accounts
-```
-
-💰 Check account balance:
-
-```bash
-yarn run balance **YOUR-ADDRESS**
-```
-
-💸 Send ETH:
-
-```bash
-yarn run send --from 0 --amount 0.5 --to **YOUR-ADDRESS**
-```
-
-> 🔧 Configure 👷[HardHat](https://hardhat.org/config/) by editing `hardhat.config.js` in `packages/hardhat`
-
----
-
-✨ The [HardHat network](https://hardhat.org/hardhat-network/) provides _stack traces_ and _console.log_ debugging for our contracts ✨
-
----
-
-## 🏃‍♂️ Speedrun (🎥 7 min):
-
-[![speedrun](https://user-images.githubusercontent.com/2653167/80823035-13ffa680-8b99-11ea-880e-ae37b752ca59.png)](https://youtu.be/eUAc2FtC0_s)
-
----
-
-## 🔬 Smart Contract Sandbox:
-
-💾 <b>install</b>:
-
-```bash
-git clone https://github.com/austintgriffith/scaffold-eth.git smart-contract-sandbox
-
-cd smart-contract-sandbox
-
-yarn install
-```
-
-⚙️ <b>start</b>
-
-```bash
-#run in original terminal window:
-yarn start
-#run in terminal window 2:
-yarn run chain
-#run in terminal window 3:
-yarn run deploy
-```
-
-🔏 Edit or rename your smart contract `YourContract.sol` in `packages/hardhat/contracts`
-
-📝 Edit your frontend `App.jsx` in `packages/react-app/src`
-
-📱 Open http://localhost:3000 to see the app
-
-☢️ Make sure are running your local chain `yarn run chain` and your contract is deployed with `yarn run deploy`
-
-🔥 Try `yarn run watch` and as you change your Solidity, your frontend <b>\<Contract/\></b> will hot reload to give you access to new variables and functions:
-
-📽 [Video Guide](https://youtu.be/ShJZf5lsXiM?t=34)
-
-📚 RTFM: Check out [solidity by example](https://solidity-by-example.org) and check out the [Solidity globals and units](https://solidity.readthedocs.io/en/v0.4.24/units-and-global-variables.html)
-
-🚀 Good luck, and go get 'em!
-
----
+dapp hot reloads as you build your smart contracts and frontend together
+
+## How It Works
+Lets say you are migrating the TLD `hnsregistry/`
+1. You submit your HIP5 NS records and TXT record with your address on the chain you are migrating hnsregistry/ to
+2. Wait for those transactions are mined on Handshake
+3. Submit a transaction on your host chain to `HNSRegistrar.verify(hnsregistry)` with a value of 0.1 ETH for your deposit (read more about [deposits](#xnhns-deposits))
+4. ChainLink oracles will verify you have appropriate records. They will update `XNHNSOracle` contract with owner of TLD to the address you set in your TXT record
+5. You can now call `HNSRegistrar.register( namehash(hnsregistry) )` to mint your NFTLD and list your TLD on the `ENSRegistry`
+6. Go wild, you are free. You have the power of NFTs and ENS at your disposal. (TODO write article of cool shit to do)
+7. When you are done using your NFTLD on this chain, call `HNSRegistrar.unregister( namehash(hnsregistry) )` to receive your deposit back.
+
+## XNHNS Deposits
+Deposits are simple on XNHNS. When you want to migrate a domain to another chain, you provide a deposit to "anchor" your TLD to that chain. The deposit amount is entirely up to you, although each type of registrar has a different minimum deposit. When you are done using your TLD on that chain you simply call `HNSRegistrar.unregister(hnsregistry)` and you will get your full deposit back. 
+### Why do I need to deposit?
+Anchoring your TLD with a deposit increases the utility of your domain on it's host chain. This shows you have skin in the game and are committing to using your TLD on that chain. This can be used by DeFi apps before you take a loan against your NFTLD to make sure you aren't borrowing more than is deposited in your TLD to prevent fraud and liquidate your NFTLD if you fail to pay your loan back on time. Identity systems can increase your reputation points based on your deposit value because you are committed to participating in that chains community.
+### Snitching
+Your deposit also prevents double spending your TLD across two different chains at once. This happens when you change your NS record to point at a chain other than the one with your deposit. When this happens, anyone can call `HNSRegistrar.snitchOn(hnsregistry)`. This will trigger the same ChainLink oracle job as when you call verify(), if the oracles return a null (address(0) in solidity) then the snitch was successful and can claim half your deposit (the other half gets donated to the [HNS Fund](https://hnsfund.titansofdata.org))
+
+## Types of XNHNS Registrars
+You can switch registrars at any time by calling unregister() on your current registrar, then inscreaseDeposit() and register() on your new registrar. You do not need to verify on the new registrar since your ownership will still be stored in the oracle (assuming no one snitches on you but there is no reward for snitches once you unregister so you should be fine).
+### HNSRegistrar
+Simple registrar. Deposit 0.1ETH to migrate your domain, get 0.1ETH back when you unregister your TLD on that chain.
+
+### HighValueHNSRegistrar
+(WIP) For owners of premium domains that want to maximize NFTLD utilization on your host chain. Minimum deposit of 20ETH to migrate your domain. Deposit is immediately invested in DeFi protocols (TBD) so you earn yield and increase capital efficiency of your deposit. When you unregister you get back more ETH than you deposited.
+
+### Your Suggested Registrar Here
+Always open to developing new cool ideas. Open an issue if you have an idea for a different type of TLD registrar.
+## Oracles
+We have built [external adapters](https://github.com/hnsfund/xnhns-domain-verification-clea) so any ChainLink oracle can join the XNHNS oracle network and help verify DNS records. ChainLink is inherently crosschain protocol just like XNHNS so it is a perfect fit since we can utilize the same smart contracts and service providers on every chain we use. 
+
+Any smart contract can read TLD owners registered by the `XNHNSOracle` contract. There is a whitelist of external contracts that are allowed to initiate requests to verify domains to prevent spam (deposit on verify() reduces spam). This allows multiple registrars to operate at once, and reducing .
+## The Graph
+Use the graph for data querying on the frontend. Pulled from [ENS subgraph](https://github.com/ensdomains/ens-subgraph) with some minor additions for XNHNS requirements like oracle events. 
+- [Subgraph.yaml](https://github.com/hnsfund/xnhns/blob/master/packages/subgraph/src/subgraph.template.yaml)
+- [Schema.graphql](https://github.com/hnsfund/xnhns/blob/master/packages/subgraph/schema.graphql)
+
+
+
+# WebApp code docs
 
 ## 🔏 Web3 Providers:
 
@@ -648,47 +303,6 @@ const price = useExchangePrice(mainnetProvider)
 ![providere](https://user-images.githubusercontent.com/2653167/80524033-3781e180-894c-11ea-8965-98eb5e2e5e71.gif)
 
 > 💡 **Notice**: you will need to check the network id of your `injectedProvider` compared to your `localProvider` or `mainnetProvider` and alert your users if they are on the wrong network!
-
----
-
-## 📄 Smart Contract Wallet:
-
-📝 Edit your smart contract `SmartContractWallet.sol` in `packages/hardhat/contracts`
-
-📝 Then edit the `SmartContractWallet.js` React component in `packages/react-app/src`
-
-▶️ Run `yarn run compile` and `yarn run deploy` or just `yarn run watch`
-
-![smortcontractwallet](https://user-images.githubusercontent.com/2653167/80741479-ece0a080-8ad6-11ea-9850-f576f7be2b85.gif)
-
-> 🛠 Run [this eth.build](https://eth.build/build#32f1ecd6d90518387f2f34c47176bf67fdf55c855bff39f85de08d76696b850f) with your contract address to ask it who its owner is.
-
----
-
-📚 OpenZeppelin Contracts -- TODO
-
-You can import any of the [OpenZeppelin contracts](https://github.com/OpenZeppelin/openzeppelin-contracts/tree/master/contracts):
-
-```jsx
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol'
-```
-
----
-
-🛰 The Graph -- TODO
-
-⛽️ GSN -- TODO
-
----
-
-## 📤 Save to your Git
-
-Create a new repo with the same name as this project and then:
-
-```bash
-git remote add origin https://github.com/**YOUR_GITHUB_USERNAME**/**YOUR_COOL_PROJECT_NAME**.git
-git push -u origin master
-```
 
 ---
 

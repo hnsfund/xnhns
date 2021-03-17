@@ -20,11 +20,29 @@ import {
 
 import {
   SnitchedOn as NewSnitchedOnEvent,
-  SnitchesGetStiches as NewSnitchesGetStichesEvent
+  SnitchesGetStiches as NewSnitchesGetStichesEvent,
+  MigrationRequest as MigrationRequestEvent
 } from './types/HNSRegistrar/HNSRegistrar'
 
 // Import entity types generated from the GraphQL schema
 import { Account, Domain, Resolver, NewOwner } from './types/schema'
+
+export function handleMigrationRequest(event: MigrationRequestEvent): void {
+  let account = new Account(event.params.owner.toHexString())
+  account.save()
+  let tld = event.params.label.toHexString()
+  let domain = new Domain(tld)
+  domain.registrar = event.address
+  domain.deposit = event.params.deposit
+
+  if(!domain) {
+    domain.createdAt = event.block.timestamp
+    domain.labelName = tld
+    domain.parent = event.params.node.toHexString()
+    domain.name = tld
+    domain.labelhash = event.params.label
+  }
+}
 
 // Handler for NewResolver events
 export function handleTLDRegistered(event: NewOwnerEvent): void {
@@ -33,12 +51,20 @@ export function handleTLDRegistered(event: NewOwnerEvent): void {
 
   let tld = event.params.label.toHexString()
   let domain = new Domain(tld)
-  if(!domain) {
-    domain.createdAt = event.block.timestamp
+  if(!domain && !domain.name) {
     domain.labelName = tld
     domain.parent = event.params.node.toHexString()
     domain.name = tld
     domain.labelhash = event.params.label
+  }
+
+  if(!domain.registrar) {
+    domain.registrar = event.address
+  }
+
+  // domain logged in migration request but not created/registered yet
+  if(!domain.createdAt) {
+    domain.createdAt = event.block.timestamp
   }
   
   domain.owner = account.id // set new owner

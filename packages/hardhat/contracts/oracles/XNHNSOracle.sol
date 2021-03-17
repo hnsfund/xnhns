@@ -10,7 +10,6 @@ import "../../interfaces/IXNHNSOracle.sol";
  */
 contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
     string public constant NAMESPACE = "{namespace}";
-    string public constant NS_RECORD = "{ENSRegistrt.address}._{namespace}.";
 
     address public hnsOracle;
     bytes32 public verifyHnsTldJobId;

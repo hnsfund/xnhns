@@ -7,7 +7,6 @@ import "../../interfaces/IXNHNSOracle.sol";
  */
 contract DummyXNHNSOracle is IXNHNSOracle {
     string public NAMESPACE;
-    string public NS_RECORD;
 
     // tld namehash -> owner adddres on HNS
     mapping(bytes32 => address) public tldOwners;

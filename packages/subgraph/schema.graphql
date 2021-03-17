@@ -9,6 +9,7 @@ type Domain @entity {
   owner: Account!
   resolver: Resolver
   ttl: BigInt
+  registrar: Bytes
   createdAt: BigInt!
   events: [DomainEvent!]! @derivedFrom(field: "domain")
 }
@@ -36,6 +37,15 @@ type NewOwner implements DomainEvent @entity {
   blockNumber: Int!
   transactionID: Bytes!
   owner: Account!
+}
+
+type MigrationRequest implements DomainEvent @entity {
+  id: ID!
+  domain: Domain!
+  blockNumber: Int!
+  transactionID: Bytes!
+  deposit: BigInt!
+  registrar: Bytes!
 }
 
 type NewResolver implements DomainEvent @entity {

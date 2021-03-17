@@ -36,6 +36,7 @@ contract HNSRegistrar {
     );
 
     event NewOracle(address oracle);
+    event TLDMigrationRequested(bytes32 indexed node, address indexed owner, uint256 deposit);
     // NewOwner identitcal to IENS.sol
     event NewOwner(bytes32 indexed node, bytes32 indexed label, address owner);
     event SnitchedOn(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchReward);
@@ -81,7 +82,9 @@ contract HNSRegistrar {
       require(msg.value >= minTLDDeposit, 'Insufficient tld deposit');
       tldDeposits[_getNamehash(tld)] = msg.value;
       totalDeposits += msg.value;
-      return xnhnsOracle.requestTLDUpdate(tld);
+      requestId = xnhnsOracle.requestTLDUpdate(tld);
+      emit TLDMigrationRequested(_getNamehash(tld), msg.sender, msg.value);
+      return requestId;
     }
 
     /**
@@ -96,9 +99,18 @@ contract HNSRegistrar {
       require(tldOwner != address(0), 'TLD is invalid on this namespace');
       require(tldOwner == msg.sender, 'Only TLD owner can register');
 
-       _getRoot().register(uint(node), msg.sender);
-      emit NewOwner(bytes32(0), node, msg.sender);
+       _getRoot().register(uint(node), tldOwner);
+      emit NewOwner(bytes32(0), node, tldOwner);
       return uint(node);
+    }
+
+    function increaseDeposit(bytes32 node, uint256 amount) public payable returns (bool) {
+      address tldOwner = IXNHNSOracle(xnhnsOracle).getTLDOwner(node);
+      require(tldOwner != address(0), 'TLD is invalid on this namespace');
+      require(tldOwner == msg.sender, 'Only TLD owner can register');
+      uint256 total = tldDeposits[node] + msg.value;
+      require(total>= minTLDDeposit, 'Insufficient deposit for TLD');
+      return true;
     }
 
     /** @dev Allows anyone to prove that TLD is not set anymore and revoke teir ENS name

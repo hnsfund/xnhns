@@ -48,10 +48,14 @@ dataSources:
         entities:
           - Domain
           - Account
+          - NewOwner
+          - MigrationRequest
         abis:
           - name: HNSRegistrar
             file: ./abis/HNSRegistrar.json
         eventHandlers:
+          - event: 'TLDMigrationRequested(indexed bytes32, indexed address, uint256)'
+            handler: handleMigrationRequest
           - event: 'NewOwner(indexed bytes32, indexed bytes32, indexed address)'
             handler: handleTLDRegistered
           - event: 'SnitchedOn(indexed bytes32, indexed address, indexed address)'

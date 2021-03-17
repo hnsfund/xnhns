@@ -33,7 +33,7 @@
     "test": "hardhat test",
     "compile": "hardhat compile",
     "deploy": "yarn run deploy-xnhns",
-    "deploy:test": "hardhat run --network ropsten scripts/deploy-xnhns-local.js && hardhat run scripts/publish.js",
+    "deploy:test": "hardhat run scripts/deploy-xnhns-local.js && hardhat run scripts/publish.js",
     "deploy:singleton": "hardhat run scripts/deploy-single-tld-ens.js && hardhat run scripts/publish.js",
     "deploy-xnhns": "hardhat run scripts/deploy-xnhns.js",
     "postdeploy": " hardhat run scripts/publish.js",
