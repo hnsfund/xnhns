@@ -7,7 +7,9 @@ import { Row, Col, Button, Menu, Alert, Switch as SwitchD } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
+import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader,
+    useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
+import { getGraphQLAPI } from "./graphql/apolloClient"
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
@@ -84,10 +86,10 @@ function App(props) {
 
   // You can warn the user if you would like them to be on a specific network
   let localChainId = localProvider && localProvider._network && localProvider._network.chainId
-  if(DEBUG) console.log("🏠 localChainId",localChainId)
+  if(DEBUG) console.log("🏠 localChainId", localChainId)
 
   let selectedChainId = userProvider && userProvider._network && userProvider._network.chainId
-  if(DEBUG) console.log("🕵🏻‍♂️ selectedChainId:",selectedChainId)
+  if(DEBUG) console.log("🕵🏻‍♂️ selectedChainId:", selectedChainId)
 
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
@@ -123,12 +125,13 @@ function App(props) {
 
 
   // keep track of a variable from the contract in the local React state:
-  // const tldOracle = useContractReader(readContracts, "DummyXNHNSOracle", "tldOwners")
+  // const tldOracle = useContractReader(readContracts, oracleContract, "tldOwners")
   // const tldDeposits = useContractReader(readContracts, "HNSRegistrar", "tldDeposits")
   // console.log("🤗 tldOracle:", tldOracle, tldDeposits)
 
   //📟 Listen for broadcast events
-  const oracleNewOwnerEvents = useEventListener(readContracts, "DummyXNHNSOracle", "NewOwner", localProvider, 1);
+  const oracleContract = targetNetwork.name === 'localhost' ? "DummyXNHNSOracle" : "XNHNSOracle"
+  const oracleNewOwnerEvents = useEventListener(readContracts, oracleContract, "NewOwner", localProvider, 1);
   const registrarNewOwnerEvents = useEventListener(readContracts, "HNSRegistrar", "NewOwner", localProvider, 1);
   console.log("📟 NewOwner events:", oracleNewOwnerEvents)
 
@@ -230,7 +233,7 @@ function App(props) {
             */}
 
             <Contract
-              name="XNHNSOracle"
+              name={oracleContract}
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
@@ -271,10 +274,10 @@ function App(props) {
           </Route>
           <Route path="/subgraph">
             <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
+              subgraphUri={getGraphQLAPI(targetNetwork)}
+              tx={tx}
+              writeContracts={writeContracts}
+              mainnetProvider={mainnetProvider}
             />
           </Route>
         </Switch>

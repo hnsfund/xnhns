@@ -1,10 +1,13 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 
 import React, { useState } from "react";
-import { Typography, Button, List, Divider, Input } from "antd";
+import { Link } from "react-router-dom";
+import { useQuery } from "@apollo/react-hooks";
+import { Typography, Button, List, Divider, Input, Modal } from "antd";
 import { namehash } from "@ensdomains/ensjs";
-import { parseEther, formatEther } from "@ethersproject/units";
-import { Address } from "../components";
+import { formatUnits } from "@ethersproject/units";
+import { BigNumber } from "@ethersproject/bignumber";
+import { Address, PostMigrationModal } from "../components";
 import { useContractReader, useLocalStorage } from '../hooks';
 import { TLD_STORAGE } from '../constants';
 const { Text } = Typography;
@@ -19,41 +22,43 @@ export default function Migrate({
   writeContracts,
   network,
 }) {
-  const [tldToMigrate, setTLDToMigrate] = useState("mytld");
-  const tldOracle = useContractReader(readContracts, "DummyXNHNSOracle", "tldOwners", namehash(tldToMigrate));
-  const minDepositAmount = useContractReader(readContracts, "HNSRegistrar", "minTLDDeposit", 10000) || "0.1";
-  const [depositAmount, setDepositAmount] = useState(minDepositAmount);
-  const [tldStorage, setTldStorage] = useLocalStorage(TLD_STORAGE, {});
 
-  console.log('min deposit', minDepositAmount);
-  if(!network) return null;
+  const formatNumber = (n = 0, units = 'ether') => Number(formatUnits(BigNumber.from(n), units));
+  // get amount needed to migrate from this networks Registrar contract
+  const minDepositAmount = useContractReader(readContracts, 'HNSRegistrar', 'minTLDDeposit');
+  const [tldToMigrate, setTLDToMigrate] = useState('test');
+  const [depositAmount, setDepositAmount] = useState(0.1);
+  const [migrateTxStatus, setMigrationtxStatus] = useState(null);
+
+  console.log('network balance', activeNetworkBalance, formatNumber(activeNetworkBalance));
+
+  if(!network || !network.xnhnsRegistry) return null; // TODO create InvalidNetwork component
   return (
     <div>
-      {/*
-        ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
-      */}
       <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
 
-        <h2>
-          You are migrating <i> {tldToMigrate}/ </i> <br />
-          to the <i> {network.name} </i> network <br />
+        <h2 style={{textAlign: 'left'}}>
+          You are migrating <i> {tldToMigrate}/  </i> <br />
+          to <i> {network.name} </i>  <br />
           with a deposit of  <i> {depositAmount} ETH </i>
         </h2>
-        <h4> It costs a minimum of {minDepositAmount} ETH to deposit on {network.name} </h4>
+        <h4 style={{textAlign: 'left'}}>
+          It costs a minimum of {formatNumber(minDepositAmount)} ETH to deposit on {network.name}
+        </h4>
 
-        <div style={{margin:8}}>
-          <Input addonBefore='TLD' placeholder={tldToMigrate}
+        <div style={{marginTop:32, marginBottom: 32}}>
+          <Input addonBefore='TLD' placeholder={tldToMigrate} defaultValue={tldToMigrate}
             onChange={(e) => {setTLDToMigrate(e.target.value)}} />
           
           <Divider/>
 
-          <Input addonBefore='Deposit Amount' placeholder={depositAmount}
-            onChange={(e) => {setDepositAmount(e.target.value)}} />
+          <Input addonBefore='Deposit Amount' placeholder={depositAmount} type="number" defaultValue={depositAmount}
+            onChange={(e) => {setDepositAmount(Number(e.target.value))}} />
         </div>
 
         <Divider size='large' />
 
-        <h3>
+        <h3 style={{textAlign: 'left'}}>
           Make sure you add these records directly <b> ONCHAIN </b> (not your nameserver)
           to {tldToMigrate}/ and the transactions are mined <b> BEFORE </b> pressing 'Migrate':
         </h3>
@@ -78,30 +83,44 @@ export default function Migrate({
 
         <Divider />
 
-        {activeNetworkBalance < depositAmount ? (
+        {formatNumber(activeNetworkBalance) < depositAmount ? (
           <Text>
-            Your ETH balance ({activeNetworkBalance}) is below your deposit amount.
+            Your balance ({formatNumber(activeNetworkBalance)} ETH) is below your deposit amount.
             Please make sure you are on the right network
           </Text> 
         ) : (
           <Button onClick={() => {
-            const { hash } = tx( writeContracts.HNSRegistrar.verify(
+            // TODO Graph query to check that tld is not registered yet
+            console.log('migrating domain', depositAmount, depositAmount * 10e17)
+            const migrateTx = tx( writeContracts.HNSRegistrar.verify(
               tldToMigrate,
-              { value: parseEther(depositAmount) }
+              { value: String(depositAmount * 10e17) } // I swear it really has to be a string to work idk y
             ))
-            // save tld to local storage to use in other pages
-            setTldStorage({
-              ...tldStorage,
-              [tldToMigrate]: {
-                network: network.chainId,
-                namehash: namehash(tldToMigrate),
-                status: 'verifying'
-              }
+            .then((result) => {
+              console.log('migration tx success', result);
+              setMigrationtxStatus('success');
             })
+            .catch((err) => {
+              console.log('error  in migration tx', err);
+              setMigrationtxStatus(err);
+            })
+            console.log('tx hash', migrateTx)
+            
           }}>
             Migrate
           </Button>
         )}
+
+        {migrateTxStatus && <PostMigrationModal
+          migratedNode={namehash(tldToMigrate)}
+          networkName={network.name}
+          closeModal={setMigrationtxStatus(null)}
+          setupNextMigration={() => {
+            setMigrationtxStatus(null)
+            setDepositAmount(minDepositAmount)
+            setTLDToMigrate('')
+          }}
+        />}
         
       </div>
 
