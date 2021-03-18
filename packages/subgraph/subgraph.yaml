@@ -10,7 +10,7 @@ dataSources:
     name: ENSRegistry
     network: localhost
     source:
-      address: '0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f'
+      address: '0x5FbDB2315678afecb367f032d93F642f64180aa3'
       abi: EnsRegistry
     mapping:
       kind: ethereum/events

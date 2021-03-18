@@ -40,8 +40,15 @@ yarn start
 yarn chain --network hardhat
 
 ```
+> in a third terminal window (docker daemon needs to be running):
 
-> in a third terminal window:
+```bash
+
+yarn graph-node
+
+```
+
+> in a fourth terminal window:
 
 ```bash
 

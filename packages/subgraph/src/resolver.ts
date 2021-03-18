@@ -178,7 +178,7 @@ function getOrCreateResolver(node: Bytes, address: Address): Resolver {
 }
 
 function createEventID(event: ethereum.Event): string {
-  const id = event.block.number.toString().concat('-').concat(event.logIndex.toString())
+  let id = event.block.number.toString().concat('-').concat(event.logIndex.toString())
   // log("\n\n generat event id - ", id)
   return id;
 }

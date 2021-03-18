@@ -74,13 +74,12 @@ async function main() {
   // console.log('oracle', oracleAddr, linkAddr, verifyTldJobId);
   
   console.log('Allowing HNSRegistrar to update Root...');
-  console.log('???', Root.deployTransaction.wait);
   // Allow registrar to update ENS Registry to issue TLDs
   await (Root.deployTransaction && Root.deployTransaction.wait())
   await Root.setController(HNSRegistrar.address, true)
 
+  // TODO: Oh shit i forgot to give ownership of root node to actual ROOT contract
   console.log('Allowing HNSRegistrar to call oracle...');
-  console.log('???', XNHNSOracle.deployTransaction.wait);
   // allow registrar to call oracle to update tld status
   await (XNHNSOracle.deployTransaction && XNHNSOracle.deployTransaction.wait())
   await XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);

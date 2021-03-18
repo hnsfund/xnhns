@@ -22,7 +22,7 @@
     "start": "yarn workspace @scaffold-eth/react-app start",
     "compile": "yarn workspace @scaffold-eth/hardhat compile",
     "deploy": "yarn workspace @scaffold-eth/hardhat deploy",
-    "deploy:local": "yarn workspace @scaffold-eth/hardhat deploy:singleton && yarn graph-ship-local",
+    "deploy:local": "yarn workspace @scaffold-eth/hardhat deploy:test && yarn graph-ship-local",
     "watch": "yarn workspace @scaffold-eth/hardhat watch",
     "accounts": "yarn workspace @scaffold-eth/hardhat accounts",
     "balance": "yarn workspace @scaffold-eth/hardhat balance",
@@ -36,7 +36,8 @@
     "wallet": "cd packages/hardhat && npx hardhat wallet",
     "fundedwallet": "cd packages/hardhat && npx hardhat fundedwallet",
     "flatten": "cd packages/hardhat && npx hardhat flatten",
-    "graph-node": "rm -rf docker/graph-node/data && cd docker/graph-node && docker-compose up",
+    "pregraph-node": "rm -r docker/graph-node/data/postgres/* ",
+    "graph-node": "cd docker/graph-node && docker-compose up",
     "graph-remove-node": "cd docker/graph-node && docker-compose down",
     "graph-prepare": "mustache packages/subgraph/config/config.json packages/subgraph/src/subgraph.template.yaml > packages/subgraph/subgraph.yaml",
     "graph-codegen": "yarn workspace @scaffold-eth/subgraph graph codegen",
@@ -45,7 +46,7 @@
     "graph-create-local": "yarn workspace @scaffold-eth/subgraph graph create --node http://localhost:8020/ kibagateaux/xnhns-local",
     "graph-remove-local": "yarn workspace @scaffold-eth/subgraph graph remove --node http://localhost:8020/ kibagateaux/xnhns-local",
     "graph-deploy-local": "yarn workspace @scaffold-eth/subgraph graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 kibagateaux/xnhns-local",
-    "graph-ship-local": "yarn graph-prepare && yarn graph-codegen && yarn graph-create-local && yarn graph-deploy-local"
+    "graph-ship-local": "yarn graph-create-local && yarn graph-deploy-local"
   },
   "workspaces": {
     "packages": [

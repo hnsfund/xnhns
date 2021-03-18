@@ -42,7 +42,7 @@ export function uint256ToByteArray(i: BigInt): ByteArray {
   return byteArrayFromHex(hex)
 }
 
-const BIG_INT_ZERO = BigInt.fromI32(0)
+let BIG_INT_ZERO = BigInt.fromI32(0)
 
 function createDomain(node: string, timestamp: BigInt): Domain {
   let domain = new Domain(node)

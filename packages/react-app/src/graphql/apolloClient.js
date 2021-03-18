@@ -1,9 +1,10 @@
 
-import { ApolloClient, from, BatchHttpLink } from '@apollo/client'
+import { ApolloClient, from } from '@apollo/client'
+import { BatchHttpLink } from "@apollo/client/link/batch-http";
+
 import { RetryLink } from '@apollo/client/link/retry';
 import { InMemoryCache } from 'apollo-cache-inmemory'
 
-import resolvers, { defaults } from './types'
 import typeDefs from './schema'
 
 let client;
@@ -46,7 +47,6 @@ export async function setupClient(network) {
   });
 
   const option = {
-    resolvers,
     fetchOptions: {
       mode: 'no-cors'
     },

@@ -84,6 +84,8 @@ async function main() {
   await Root.deployTransaction.wait()
   await Root.setController(HNSRegistrar.address, true)
 
+  // TODO: Oh shit i forgot to give ownership of root node to actual ROOT contract
+
   // allow registrar to call oracle to update tld status
   await XNHNSOracle.deployTrasnaction.wait()
   XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
