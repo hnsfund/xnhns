@@ -84,7 +84,7 @@ We have built [external adapters](https://github.com/hnsfund/xnhns-domain-verifi
 
 Any smart contract can read TLD owners registered by the `XNHNSOracle` contract. There is a whitelist of external contracts that are allowed to initiate requests to verify domains to prevent spam (deposit on verify() reduces spam). This allows multiple registrars to operate at once, and reducing .
 ## The Graph
-Use the graph for data querying on the frontend. Pulled from [ENS subgraph](https://github.com/ensdomains/ens-subgraph) with some minor additions for XNHNS requirements like oracle events. 
+Use the graph for data querying on the frontend. Pulled from [ENS subgraph](https://github.com/ensdomains/ens-subgraph) with some minor additions for XNHNS requirements like oracle events. Subgraphs names follow the format `xnhns-{networkName}` where networkName is the short code used in the HIP5 NS record e.g. 'eth' for Ethereum mainnet.
 - [Subgraph.yaml](https://github.com/hnsfund/xnhns/blob/master/packages/subgraph/src/subgraph.template.yaml)
 - [Schema.graphql](https://github.com/hnsfund/xnhns/blob/master/packages/subgraph/schema.graphql)
 

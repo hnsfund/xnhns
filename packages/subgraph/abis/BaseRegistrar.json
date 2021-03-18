@@ -460,7 +460,7 @@
       },
       {
         "internalType": "address",
-        "name": "owner",
+        "name": "_owner",
         "type": "address"
       }
     ],
@@ -478,7 +478,7 @@
       },
       {
         "internalType": "address",
-        "name": "owner",
+        "name": "_owner",
         "type": "address"
       },
       {
@@ -507,7 +507,7 @@
       },
       {
         "internalType": "address",
-        "name": "owner",
+        "name": "_owner",
         "type": "address"
       },
       {
@@ -657,7 +657,7 @@
     "inputs": [
       {
         "internalType": "bytes4",
-        "name": "interfaceID",
+        "name": "interfaceId",
         "type": "bytes4"
       }
     ],

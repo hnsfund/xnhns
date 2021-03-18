@@ -51,7 +51,6 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
       );
       Chainlink.add(request, "tld", tld);
       Chainlink.add(request, "namespace", NAMESPACE);
-      Chainlink.add(request, "nsRecord", NS_RECORD);
       
       tldRunIds[request.id] = _getNamehash(tld);
 

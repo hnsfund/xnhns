@@ -42,9 +42,9 @@
     "graph-codegen": "yarn workspace @scaffold-eth/subgraph graph codegen",
     "graph-deploy": "yarn run graph-prepare && yarn run graph-codegen && yarn workspace @scaffold-eth/subgraph deploy",
     "graph-build": "yarn workspace @scaffold-eth/subgraph graph build",
-    "graph-create-local": "yarn workspace @scaffold-eth/subgraph graph create --node http://localhost:8020/ kibagateaux/badassens",
-    "graph-remove-local": "yarn workspace @scaffold-eth/subgraph graph remove --node http://localhost:8020/ kibagateaux/badassens",
-    "graph-deploy-local": "yarn workspace @scaffold-eth/subgraph graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 kibagateaux/badassens",
+    "graph-create-local": "yarn workspace @scaffold-eth/subgraph graph create --node http://localhost:8020/ kibagateaux/xnhns-local",
+    "graph-remove-local": "yarn workspace @scaffold-eth/subgraph graph remove --node http://localhost:8020/ kibagateaux/xnhns-local",
+    "graph-deploy-local": "yarn workspace @scaffold-eth/subgraph graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 kibagateaux/xnhns-local",
     "graph-ship-local": "yarn graph-prepare && yarn graph-codegen && yarn graph-create-local && yarn graph-deploy-local"
   },
   "workspaces": {
