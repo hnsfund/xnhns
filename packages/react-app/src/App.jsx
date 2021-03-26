@@ -14,7 +14,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, Migrate, Subgraph } from "./views"
+import { Hints, Migrate, Subgraph, Manage } from "./views"
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 /*
@@ -133,7 +133,7 @@ function App(props) {
   const oracleContract = targetNetwork.name === 'localhost' ? "DummyXNHNSOracle" : "XNHNSOracle"
   const oracleNewOwnerEvents = useEventListener(readContracts, oracleContract, "NewOwner", localProvider, 1);
   const registrarNewOwnerEvents = useEventListener(readContracts, "HNSRegistrar", "NewOwner", localProvider, 1);
-  console.log("📟 NewOwner events:", oracleNewOwnerEvents)
+  console.log("📟 NewOwner events:", oracleNewOwnerEvents, registrarNewOwnerEvents)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -211,7 +211,10 @@ function App(props) {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/migrate">
-            <Link onClick={()=>{setRoute("/migrate")}} to="/migrate">Migrate TLD</Link>
+            <Link onClick={()=>{setRoute("/migrate")}} to="/migrate">Migrate</Link>
+          </Menu.Item>
+          <Menu.Item key="/manage">
+            <Link onClick={()=>{setRoute("/manage")}} to="/manage">Manage</Link>
           </Menu.Item>
           <Menu.Item key="/">
             <Link onClick={()=>{setRoute("/")}} to="/">XNHNS Oracle</Link>
@@ -233,7 +236,7 @@ function App(props) {
             */}
 
             <Contract
-              name={oracleContract}
+              name="Root"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
@@ -242,6 +245,14 @@ function App(props) {
 
             <Contract
               name="HNSRegistrar"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+
+            <Contract
+              name={oracleContract}
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
@@ -259,6 +270,21 @@ function App(props) {
           </Route>
           <Route path="/migrate">
             <Migrate
+              network={NETWORK(selectedChainId)}
+              address={address}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              activeNetworkBalance={activeNetworkBalance}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              oracleNewOwnerEvents={oracleNewOwnerEvents}
+              registrarNewOwnerEvents={registrarNewOwnerEvents}
+            />
+          </Route>
+          <Route path="/manage">
+            <Manage
               network={NETWORK(selectedChainId)}
               address={address}
               userProvider={userProvider}

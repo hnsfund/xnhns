@@ -111,6 +111,15 @@ export default function Migrate({
           </Button>
         )}
 
+        <Button onClick={() => {
+           tx( writeContracts.DummyXNHNSOracle.setTLDOwner(
+              namehash(tldToMigrate),
+              address,
+            ))
+        }}>
+          Confirm TLD
+        </Button>
+
         {migrateTxStatus && <PostMigrationModal
           migratedNode={namehash(tldToMigrate)}
           networkName={network.name}
