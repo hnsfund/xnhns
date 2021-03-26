@@ -18,6 +18,7 @@ contract DummyXNHNSOracle is IXNHNSOracle {
       require(allowedCallers[msg.sender], 'Caller does not have permission to initiate oracle requests');
       bytes32 node = _getNamehash(tld);
       tldOwners[node] = tx.origin;
+      emit NewOwner(bytes32(0), _getLabelhash(tld), tx.origin);
       return node;
     }
 
@@ -46,6 +47,9 @@ contract DummyXNHNSOracle is IXNHNSOracle {
 
     function _getNamehash(string memory tld) internal pure returns (bytes32) {
       return keccak256(abi.encodePacked(bytes32(0), tld));
+    }
+    function _getLabelhash(string memory tld) internal pure returns (bytes32) {
+      return keccak256(abi.encodePacked(tld));
     }
 
 }

@@ -22,7 +22,6 @@ contract HNSRegistrar {
     // add versioning var too?
     uint256 public constant snitchDeposit = 0.1 ether;
     uint256 public constant minTLDDeposit = 0.1 ether;
-
     // total tld + snitch deposits in contract
     uint256 public totalDeposits;
 
@@ -80,10 +79,13 @@ contract HNSRegistrar {
       returns (bytes32 requestId)
     {
       require(msg.value >= minTLDDeposit, 'Insufficient tld deposit');
-      tldDeposits[_getNamehash(tld)] = msg.value;
-      totalDeposits += msg.value;
+      uint256 total = msg.value + totalDeposits;
+      require(total > totalDeposits, 'Maximum deposits limit hit'); // uint overflow
+      bytes32 node = _getNamehash(tld);
+      tldDeposits[node] = msg.value;
+      totalDeposits = total;
       requestId = xnhnsOracle.requestTLDUpdate(tld);
-      emit TLDMigrationRequested(_getNamehash(tld), msg.sender, msg.value);
+      emit TLDMigrationRequested(node, msg.sender, msg.value);
       return requestId;
     }
 
@@ -205,7 +207,7 @@ contract HNSRegistrar {
     }
 
     function _getNamehash(string memory tld) public pure returns (bytes32) {
-      return keccak256(abi.encodePacked(bytes32(0), tld));
+      return keccak256(abi.encodePacked(bytes32(0), keccak256(abi.encodePacked(tld))));
     }
 
     function _getRoot() internal view returns (Root) {
