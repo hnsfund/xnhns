@@ -93,16 +93,17 @@ contract HNSRegistrar {
      * @dev Claims a name by proving ownership of its HNS equivalent.
      * Chainlink node verifies that NS record is pointed to namespace of this contract (Ethereum)
      * and pulls TXT record with address to give ownership to.
-     * @param node The HNS domain to claim
+     * @param tld The HNS domain to claim
      */
-    function register(bytes32 node) public returns (uint id) {
+    function register(string memory tld) public returns (uint id) {
+      bytes32 node = _getNamehash(tld);
       require(tldDeposits[node] >= minTLDDeposit, 'Insufficient deposit for TLD');
       address tldOwner = IXNHNSOracle(xnhnsOracle).getTLDOwner(node);
       require(tldOwner != address(0), 'TLD is invalid on this namespace');
       require(tldOwner == msg.sender, 'Only TLD owner can register');
 
        _getRoot().register(uint(node), tldOwner);
-      emit NewOwner(bytes32(0), node, tldOwner);
+      emit NewOwner(bytes32(0), _getLabelhash(tld), tldOwner);
       return uint(node);
     }
 
@@ -206,8 +207,12 @@ contract HNSRegistrar {
       return xnhnsNS;
     }
 
-    function _getNamehash(string memory tld) public pure returns (bytes32) {
-      return keccak256(abi.encodePacked(bytes32(0), keccak256(abi.encodePacked(tld))));
+    function _getNamehash(string memory tld) internal pure returns (bytes32) {
+      return keccak256(abi.encodePacked(bytes32(0), _getLabelhash(tld)));
+    }
+
+    function _getLabelhash(string memory tld) internal pure returns (bytes32) {
+      return keccak256(abi.encodePacked(tld));
     }
 
     function _getRoot() internal view returns (Root) {

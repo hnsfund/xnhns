@@ -2,6 +2,7 @@ const fs = require('fs')
 const chalk = require('chalk')
 const { config, ethers } = require('hardhat')
 const { utils } = ethers
+const { namehash } = require('@ensdomains/ensjs');
 // contract addresses after deployment
 const addresses = {}
 
@@ -63,6 +64,17 @@ async function main() {
 
   
   const Root = await deploy('Root', [registryAddress])
+  if(EnsRegistry.deployTransaction) {
+    console.log('Giving Root control of rootzone...');
+    EnsRegistry.deployTransaction.wait()
+      .then(async () => {
+        const rootTransferTx = await EnsRegistry.setOwner(namehash(''), Root.address)
+        console.log('Successfully transferred ownership of rootzone to Root contract');
+      })
+      .catch((err) => {
+        console.log('error giving Root contract control of root zone: ', err);
+      })
+  }
   const XNHNSOracle = await deploy('DummyXNHNSOracle')
   const HNSRegistrar = await deploy('HNSRegistrar', [
     registryAddress,
@@ -75,15 +87,19 @@ async function main() {
   
   console.log('Allowing HNSRegistrar to update Root...');
   // Allow registrar to update ENS Registry to issue TLDs
-  await (Root.deployTransaction && Root.deployTransaction.wait())
+  if(Root.deployTransaction) {
+    await Root.deployTransaction.wait()
+  }
   await Root.setController(HNSRegistrar.address, true)
 
   // TODO: Oh shit i forgot to give ownership of root node to actual ROOT contract
-  console.log('Allowing HNSRegistrar to call oracle...');
-  // allow registrar to call oracle to update tld status
-  await (XNHNSOracle.deployTransaction && XNHNSOracle.deployTransaction.wait())
-  await XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
 
+  // allow registrar to call oracle to update tld status
+  if(XNHNSOracle.deployTransaction) {
+    await XNHNSOracle.deployTransaction.wait()
+  }
+  await XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
+  
   // const HnsFund = deploy('PanvalaMember', [HNS_FUND_TREASURY])
   // const TLDBroker = await deploy('TLDSalesBroker', [
   //   registryAddress,

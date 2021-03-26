@@ -148,25 +148,6 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "tld",
-        "type": "string"
-      }
-    ],
-    "name": "_getNamehash",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes32",
         "name": "node",
         "type": "bytes32"
@@ -299,9 +280,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "node",
-        "type": "bytes32"
+        "internalType": "string",
+        "name": "tld",
+        "type": "string"
       }
     ],
     "name": "register",

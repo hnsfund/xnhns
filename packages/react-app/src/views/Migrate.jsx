@@ -28,6 +28,7 @@ export default function Migrate({
   const minDepositAmount = useContractReader(readContracts, 'HNSRegistrar', 'minTLDDeposit');
   const [tldToMigrate, setTLDToMigrate] = useState('test');
   const [depositAmount, setDepositAmount] = useState(0.1);
+  const [tldStorage, setTldStorage] = useLocalStorage(TLD_STORAGE, {});
   const [migrateTxStatus, setMigrationtxStatus] = useState(null);
 
   console.log('network balance', activeNetworkBalance, formatNumber(activeNetworkBalance));
@@ -92,13 +93,22 @@ export default function Migrate({
           <Button onClick={() => {
             // TODO Graph query to check that tld is not registered yet
             console.log('migrating domain', depositAmount, depositAmount * 10e17)
+            const migrationTLD = tldToMigrate;
             const migrateTx = tx( writeContracts.HNSRegistrar.verify(
-              tldToMigrate,
+              migrationTLD,
               { value: String(depositAmount * 10e17) } // I swear it really has to be a string to work idk y
             ))
             .then((result) => {
               console.log('migration tx success', result);
               setMigrationtxStatus('success');
+              setTldStorage({
+                ...tldStorage,
+                [migrationTLD]: {
+                  namehash: namehash(migrationTLD),
+                  status: 'verifying',
+                  network: network.chainId
+                }
+              })
             })
             .catch((err) => {
               console.log('error  in migration tx', err);

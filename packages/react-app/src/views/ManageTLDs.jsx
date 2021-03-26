@@ -30,6 +30,8 @@ export default function Manage({
       .sort((a, b) => a.blockNumber < b.blockNumber) // find latest update
     return eventsOrderedByBlock[0]
   }
+  
+  // TODO pull t lds from events instead of storage
   const tlds = Object.entries(tldStorage).map(([tld, { network, status }]) => {
     const verificationEvent = getLatestEventForTLD(tld, oracleNewOwnerEvents);
     const registrationEvent = getLatestEventForTLD(tld, registrarNewOwnerEvents);
@@ -38,7 +40,15 @@ export default function Manage({
     
     console.log('render tld', tld, validRegistration, verificationEvent, registrationEvent);
     const updatedStatus =  validRegistration ? 'minted' : verificationEvent ? 'verified' : status;
-
+    if(status !== updatedStatus) {
+      setTldStorage({
+        ...tldStorage,
+        [tld]: {
+          ...tldStorage[tld],
+          status: updatedStatus,
+        }
+      })
+    }
     const net = NETWORK(network);
     return {
       tld,
@@ -78,7 +88,7 @@ export default function Manage({
             return <h5> Awaiting Verification...</h5>;
           case 'verified':
             return (
-              <Button onClick={() => { writeContracts.HNSRegistrar.register(namehash(tld)) }}>
+              <Button onClick={() => { writeContracts.HNSRegistrar.register(tld) }}>
                 Mint NFTLD
               </Button>
             );

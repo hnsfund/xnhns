@@ -2,6 +2,7 @@ const fs = require('fs')
 const chalk = require('chalk')
 const { config, ethers } = require('hardhat')
 const { utils } = ethers
+const { namehash } = require('@ensdomains/ensjs');
 // contract addresses after deployment
 const addresses = {}
 
@@ -66,6 +67,7 @@ async function main() {
   console.log('XNHNS registry form namespace --- ', `${registryAddress}._${namespace}.`);
   
   const Root = await deploy('Root', [registryAddress])
+
   const XNHNSOracle = await deploy('XNHNSOracle', [
     oracleAddr,
     linkAddr,
@@ -79,16 +81,27 @@ async function main() {
   ])
 
   console.log('oracle', oracleAddr, linkAddr, verifyTldJobId);
-  
+  if(EnsRegistry.deployTransaction) {
+    EnsRegistry.deployTransaction.wait()
+      .then(async () => {
+        const rootTransferTx = await EnsRegistry.setOwner(namehash(''), Root.address)
+        console.log('Successfully transferred ownership of rootzone to Root contract');
+      })
+      .catch((err) => {
+        console.log('error giving Root contract control of root zone: ', err);
+      })
+  }
   // Allow registrar to update ENS Registry to issue TLDs
-  await Root.deployTransaction.wait()
+  if(Root.deployTransaction) {
+    await Root.deployTransaction.wait()
+  }
   await Root.setController(HNSRegistrar.address, true)
 
-  // TODO: Oh shit i forgot to give ownership of root node to actual ROOT contract
-
   // allow registrar to call oracle to update tld status
-  await XNHNSOracle.deployTrasnaction.wait()
-  XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
+  if(XNHNSOracle.deployTransaction) {
+    await XNHNSOracle.deployTransaction.wait()
+  }
+  await XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
   
   // const HnsFund = deploy('PanvalaMember', [HNS_FUND_TREASURY])
   // const TLDBroker = await deploy('TLDSalesBroker', [
