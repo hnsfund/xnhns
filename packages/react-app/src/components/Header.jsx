@@ -5,12 +5,11 @@ import { PageHeader } from "antd";
 
 export default function Header() {
   return (
-    <a href="/">
-      <PageHeader
-        title="XNHNS"
-        subTitle="Handshake domains anywhere"
-        style={{ cursor: "pointer" }}
-      />
-    </a>
+    <div id='header-logo-container'>
+      <a href="/">
+        <h2 id="logo"> XNHNS </h2>
+        <h4> Handshake domains anywhere </h4>
+      </a>
+    </div>
   );
 }

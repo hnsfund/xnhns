@@ -1,13 +1,13 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@apollo/react-hooks";
 import { Typography, Button, List, Divider, Input, Modal } from "antd";
 import { namehash } from "@ensdomains/ensjs";
 import { formatUnits } from "@ethersproject/units";
 import { BigNumber } from "@ethersproject/bignumber";
-import { Address, PostMigrationModal } from "../components";
+import { Address, PostMigrationModal, AppWrapper } from "../components";
 import { useContractReader, useLocalStorage } from '../hooks';
 import { TLD_STORAGE } from '../constants';
 const { Text } = Typography;
@@ -26,16 +26,16 @@ export default function Migrate({
   const formatNumber = (n = 0, units = 'ether') => Number(formatUnits(BigNumber.from(n), units));
   // get amount needed to migrate from this networks Registrar contract
   const minDepositAmount = useContractReader(readContracts, 'HNSRegistrar', 'minTLDDeposit');
-  const [tldToMigrate, setTLDToMigrate] = useState('test');
+  const [tldToMigrate, setTLDToMigrate] = useState('');
   const [depositAmount, setDepositAmount] = useState(0.1);
   const [tldStorage, setTldStorage] = useLocalStorage(TLD_STORAGE, {});
   const [migrateTxStatus, setMigrationtxStatus] = useState(null);
 
-  console.log('network balance', activeNetworkBalance, formatNumber(activeNetworkBalance));
-
   if(!network || !network.xnhnsRegistry) return null; // TODO create InvalidNetwork component
+
+  console.log('migration data', tldToMigrate, depositAmount, migrateTxStatus);
   return (
-    <div>
+    <AppWrapper>
       <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
 
         <h2 style={{textAlign: 'left'}}>
@@ -48,13 +48,22 @@ export default function Migrate({
         </h4>
 
         <div style={{marginTop:32, marginBottom: 32}}>
-          <Input addonBefore='TLD' placeholder={tldToMigrate} defaultValue={tldToMigrate}
-            onChange={(e) => {setTLDToMigrate(e.target.value)}} />
+          <Input
+            addonBefore='TLD'
+            placeholder={tldToMigrate}
+            value={tldToMigrate}
+            onChange={(e) => {setTLDToMigrate(e.target.value)}}
+          />
           
           <Divider/>
 
-          <Input addonBefore='Deposit Amount' placeholder={depositAmount} type="number" defaultValue={depositAmount}
-            onChange={(e) => {setDepositAmount(Number(e.target.value))}} />
+          <Input
+            addonBefore='Deposit Amount'
+            placeholder={depositAmount}
+            value={depositAmount}
+            type="number"
+            onChange={(e) => {setDepositAmount(Number(e.target.value))}}
+          />
         </div>
 
         <Divider size='large' />
@@ -93,14 +102,16 @@ export default function Migrate({
           <Button onClick={() => {
             // TODO Graph query to check that tld is not registered yet
             console.log('migrating domain', depositAmount, depositAmount * 10e17)
-            const migrationTLD = tldToMigrate;
+            const migrationTLD = tldToMigrate; // save for async call if they start migrating a new tld after submiting
             const migrateTx = tx( writeContracts.HNSRegistrar.verify(
               migrationTLD,
               { value: String(depositAmount * 10e17) } // I swear it really has to be a string to work idk y
             ))
             .then((result) => {
               console.log('migration tx success', result);
-              setMigrationtxStatus('success');
+              if(!result || result.code) {
+                throw result;
+              }
               setTldStorage({
                 ...tldStorage,
                 [migrationTLD]: {
@@ -109,6 +120,10 @@ export default function Migrate({
                   network: network.chainId
                 }
               })
+              // update ui
+              setMigrationtxStatus('success');
+              setDepositAmount(formatNumber(minDepositAmount))
+              setTLDToMigrate('')
             })
             .catch((err) => {
               console.log('error  in migration tx', err);
@@ -130,16 +145,17 @@ export default function Migrate({
           Confirm TLD
         </Button>
 
-        {migrateTxStatus && <PostMigrationModal
-          migratedNode={namehash(tldToMigrate)}
+        <PostMigrationModal
+          txStatus={migrateTxStatus}
+          migratedTLD={tldToMigrate}
           networkName={network.name}
-          closeModal={setMigrationtxStatus(null)}
+          closeModal={() => setMigrationtxStatus(null)}
           setupNextMigration={() => {
+            console.log('setup next migration!')
             setMigrationtxStatus(null)
-            setDepositAmount(minDepositAmount)
-            setTLDToMigrate('')
+            window.scrollTo({ top: 0, behavior: 'smooth'})
           }}
-        />}
+        />
         
       </div>
 
@@ -166,6 +182,6 @@ export default function Migrate({
         />
       </div>
 
-    </div>
+    </AppWrapper>
   );
 }

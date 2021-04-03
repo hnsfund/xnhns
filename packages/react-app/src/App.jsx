@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter, Switch, Route, NavLink } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
@@ -8,13 +8,13 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader,
-    useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
+    useContractReader, useEventListener, useBalance, useExternalContractLoader, useBreakpoints } from "./hooks";
 import { getGraphQLAPI } from "./graphql/apolloClient"
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, Migrate, Subgraph, Manage } from "./views"
+import { Hints, Migrate, Subgraph, Manage, Home } from "./views"
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 /*
@@ -135,6 +135,7 @@ function App(props) {
   const registrarNewOwnerEvents = useEventListener(readContracts, "HNSRegistrar", "NewOwner", localProvider, 1);
   console.log("📟 NewOwner events:", oracleNewOwnerEvents, registrarNewOwnerEvents)
 
+  const { isMobile } = useBreakpoints();
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
@@ -157,7 +158,7 @@ function App(props) {
         />
       </div>
     )
-  }else{
+  } else {
     networkDisplay = (
       <div style={{zIndex:-1, position:'absolute', right:154,top:28,padding:16,color:targetNetwork.color}}>
         {targetNetwork.name}
@@ -201,64 +202,45 @@ function App(props) {
     )
   }
 
+  console.log('isMobile', isMobile);
+
   return (
-    <div className="App">
+    <div className={`App  ${isMobile ? 'app-mobile' : 'app-desktop'}`}>
 
-      {/* ✏️ Edit the header and change the title to your project name */}
-      <Header />
-      {networkDisplay}
       <BrowserRouter>
+        <div className={`menu-wrapper ${isMobile ? 'menu-wrapper-mobile' : 'menu-wrapper-desktop'}`}>
+          <Menu 
+            selectedKeys={[route]}
+            mode="vertical"
+          >
+            <Header />
+            <Menu.Item key="/migrate">
+              <NavLink exact onClick={()=>{setRoute("/migrate")}} to="/migrate">Migrate</NavLink>
+            </Menu.Item>
+            <Menu.Item key="/manage">
+              <NavLink exact onClick={()=>{setRoute("/manage")}} to="/manage">Manage</NavLink>
+            </Menu.Item>
+            <Menu.Item key="/">
+              <NavLink exact onClick={()=>{setRoute("/")}} to="/">XNHNS Oracle</NavLink>
+            </Menu.Item>
+            <Menu.Item key="/hints">
+              <NavLink exact onClick={()=>{setRoute("/hints")}} to="/hints">Hints</NavLink>
+            </Menu.Item>
+            <Menu.Item key="/subgraph">
+              <NavLink exact onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</NavLink>
+            </Menu.Item>
+          </Menu>
+        </div>
 
-        <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/migrate">
-            <Link onClick={()=>{setRoute("/migrate")}} to="/migrate">Migrate</Link>
-          </Menu.Item>
-          <Menu.Item key="/manage">
-            <Link onClick={()=>{setRoute("/manage")}} to="/manage">Manage</Link>
-          </Menu.Item>
-          <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">XNHNS Oracle</Link>
-          </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
-          </Menu.Item>
-          <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
-          </Menu.Item>
-        </Menu>
-
-        <Switch>
+        <Switch style={{ flex: 4 }}>
           <Route exact path="/">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-
-            <Contract
-              name="Root"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
+            <Home
+              oracleContract={oracleContract}
+              userProvider={userProvider}
+              locaclProvider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
             />
-
-            <Contract
-              name="HNSRegistrar"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
-
-            <Contract
-              name={oracleContract}
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
-
           </Route>
           <Route path="/hints">
             <Hints

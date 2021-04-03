@@ -55,6 +55,7 @@
     "react-css-theme-switcher": "^0.2.2",
     "react-dom": "^16.14.0",
     "react-qr-reader": "^2.2.1",
+    "react-responsive": "^8.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^3.4.3",
     "web3modal": "^1.9.1"

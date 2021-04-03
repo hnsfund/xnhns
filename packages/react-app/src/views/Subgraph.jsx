@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import "antd/dist/antd.css";
 import { Button, Typography, Table, Input } from "antd";
 import { useQuery, gql } from '@apollo/client';
-import { Address } from "../components";
+import { Address, AppWrapper } from "../components";
 import GraphiQL from 'graphiql';
 import 'graphiql/graphiql.min.css';
 import fetch from 'isomorphic-fetch';
@@ -72,7 +72,7 @@ function Subgraph(props) {
   )
 
   return (
-      <>
+      <AppWrapper>
           <div style={{ margin: "auto", marginTop: 32 }}>
             You will find that parsing/tracking events with the <span class="highlight" style={highlight}>useEventListener</span> hook becomes a chore for every new project.
           </div>
@@ -153,7 +153,7 @@ function Subgraph(props) {
           <div style={{padding:64}}>
           ...
           </div>
-      </>
+      </AppWrapper>
   );
 }
 

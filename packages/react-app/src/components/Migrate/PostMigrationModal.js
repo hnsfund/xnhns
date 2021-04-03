@@ -7,10 +7,10 @@ export default function Migrate({
   setupNextMigration,
   closeModal,
   txStatus,
-  migratedNode,
+  migratedTLD,
   networkName,
 }) {
-  if(!txStatus) return null
+  if(!txStatus) return null;
   return txStatus !== 'success' ? (
     <Modal
       visible centered
@@ -26,13 +26,9 @@ export default function Migrate({
       visible centered
       cancelText='Migrate Another TLD'
       onCancel={setupNextMigration}
-      okText={
-        <Link to={`/manage/${migratedNode}`}>
-          <Button>
-            View Migration
-          </Button>
-        </Link>
-      }
+      okText='View Migration'
+      onOk={closeModal}
+      okButtonProps={{ href: `/manage/${migratedTLD}` }}
       afterClose={closeModal}
     >
       <h2> Your TLD is being migrated to {networkName}! </h2>

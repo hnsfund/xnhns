@@ -1,3 +1,39 @@
 .App {
   text-align: center;
+  display: flex;
+}
+.app-mobile {
+  flex-direction: column;
+}
+
+.app-desktop {
+  flex-direction: row;
+}
+
+.menu-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.menu-wrapper-mobile {
+  width: 100vw;
+}
+
+.menu-wrapper-desktop {
+  height: 100vh;
+  min-width: 5vw;
+}
+
+.menu {
+  position: fixed;
+}
+
+.app-wrapper {
+  flex: 5;
+  margin: 10vh 0;
+}
+
+#header-logo-container {
+  padding: 20px;
+  line-height: 1em;
 }
