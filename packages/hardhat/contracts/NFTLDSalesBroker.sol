@@ -5,14 +5,14 @@ import "@chainlink/contracts/src/v0.7/ChainlinkClient.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "../interfaces/IENS.sol";
+import { IENS } from "./interfaces/IENS.sol";
 import "./Root.sol";
 
 contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    ENS public ens;
+    IENS public ens;
     uint256 public escrowFee; // fee = trade.amount / escrowFee
     uint256 public constant maxFee = 10; // 10%
 
@@ -57,7 +57,7 @@ contract NFTLDEscrowManager is IERC721Receiver, ChainlinkClient, Ownable {
     mapping(address => uint256) private feesCollected;
 
 
-    function initializeEscrowManager(ENS _ens, address _oracle, address _link, bytes32 _jobId) internal {
+    function initializeEscrowManager(IENS _ens, address _oracle, address _link, bytes32 _jobId) internal {
       ens = _ens;
       hnsOracle = _oracle;
       link = _link;

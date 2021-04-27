@@ -1,7 +1,7 @@
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../../interfaces/IENS.sol";
+import "../interfaces/IENS.sol";
 import "./ABIResolver.sol";
 import "./AddrResolver.sol";
 import "./ContentHashResolver.sol";

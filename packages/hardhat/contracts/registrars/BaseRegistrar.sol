@@ -1,127 +1,210 @@
 pragma solidity ^0.7.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "../utils/ERC721.sol";
-import "../../interfaces/IENS.sol";
-import "../../interfaces/IBaseRegistrar.sol";
+import { LibHNSRegistrar } from "../utils/LibHNSRegistrar.sol";
+import { ERC165 } from "@openzeppelin/contracts/introspection/ERC165.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IENS } from "../interfaces/IENS.sol";
+import { IXNHNSOracle } from "../interfaces/IXNHNSOracle.sol";
 
-contract BaseRegistrar is
-  IBaseRegistrar,
-  ERC721("NFTLD Domain Registrar", "NFTLD") 
-{
-    // A map of expiry times
-    mapping(uint256=>uint) expiries;
+/**
+ * @dev An ENS registrar that allows the owner of a HNS TLD to claim the
+ *      corresponding TLD in ENS.
+ */
+abstract contract BaseRegistrar is ERC165 {
 
-    bytes4 constant private RECLAIM_ID = bytes4(keccak256("reclaim(uint256,address)"));
+  event TLDVerificationRequested(bytes32 indexed node, address indexed caller); // is this really needed for anything?
+  event NewOwner(bytes32 indexed node, address indexed owner);
 
-    constructor(ENS _ens, bytes32 _baseNode) {
-        ens = _ens;
-        baseNode = _baseNode;   
-        _registerInterface(RECLAIM_ID);
-    }
+  mapping(bytes32 => LibHNSRegistrar.TLD) tlds; // ENS namehash -> TLD data
 
-    modifier live {
-        require(ens.owner(baseNode) == address(this));
-        _;
-    }
 
-    modifier onlyController {
-        require(controllers[msg.sender]);
-        _;
-    }
+  // HIP05 namespace that this contract lives in
+  string public xnhnsNS;
 
-    // /**
-    //  * @dev Gets the owner of the specified token ID. Names become uned
-    //  *      when their registration expires.
-    //  * @param tokenId uint256 ID of the token to query the owner of
-    //  * @return address currently marked as the owner of the given token ID
-    //  */
-    function ownerOf(uint256 tokenId) override public view returns (address) {
-        require(expiries[tokenId] > block.timestamp);
-        return super.ownerOf(tokenId);
-    }
+  // ENS registry instance for this namespace
+  IENS public ens;
 
-    // Authorises a controller, who can register and renew domains.
-    function addController(address controller) override external onlyOwner {
-        controllers[controller] = true;
-        emit ControllerAdded(controller);
-    }
+  // oracle that requests and stores tld verification data
+  IXNHNSOracle public xnhnsOracle;
 
-    // Revoke controller permission for an address.
-    function removeController(address controller) override external onlyOwner {
-        controllers[controller] = false;
-        emit ControllerRemoved(controller);
-    }
+  // for snitch and/or TLD deposits
+  address depositToken;
 
-    // Set the resolver for the TLD this registrar manages.
-    function setResolver(address resolver) override external onlyOwner {
-        ens.setResolver(baseNode, resolver);
-    }
+  // in depositToken. For snitchs and TLDs
+  uint256 minDepositAmount;
 
-    // Returns the expiration timestamp of the specified id.
-    function nameExpires(uint256 id) override external view returns(uint) {
-        return expiries[id];
-    }
+  // TODO precompute
+  // ID for core registrar functionality
+  bytes4 constant private XNHNS_REGISTRAR_ID = bytes4(
+    keccak256("register(string)") ^
+    keccak256("unregister(string)") ^
+    keccak256("migrate(bytes32,address)") ^
+    keccak256("namespace()") ^
+    keccak256("oracle()")
+  );
 
-    // Returns true iff the specified name is available for registration.
-    function available(uint256 id) override public view returns(bool) {
-        // Not available if it's registered here or in its grace period.
-        return expiries[id] + GRACE_PERIOD < block.timestamp;
-    }
 
-    /**
-     * @dev Register a name.
-     * @param id The token ID (keccak256 of the label).
-     * @param _owner The address that should own the registration.
-     * @param duration Duration in seconds for the registration.
-     */
-    function register(uint256 id, address _owner, uint duration) override external returns(uint) {
-      return _register(id, _owner, duration, true);
-    }
+  constructor(
+    IENS _ens,
+    string memory _xnhnsNS,
+    IXNHNSOracle _oracle,
+    address _depositToken,
+    uint256 _minDepositAmount
+  ) {
+    ens = _ens;
+    xnhnsNS = _xnhnsNS;
+    xnhnsOracle = _oracle;
+    depositToken = _depositToken;
+    minDepositAmount = _minDepositAmount;
+  }
 
-    /**
-     * @dev Register a name, without modifying the registry.
-     * @param id The token ID (keccak256 of the label).
-     * @param _owner The address that should own the registration.
-     * @param duration Duration in seconds for the registration.
-     */
-    function registerOnly(uint256 id, address _owner, uint duration) external returns(uint) {
-      return _register(id, _owner, duration, false);
-    }
 
-    function _register(uint256 id, address _owner, uint duration, bool updateRegistry) internal live onlyController returns(uint) {
-        require(available(id));
-        require(block.timestamp + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD); // Prevent future overflow
+  /**
+    * @dev Ensures Registrar can call Oracle to update records and Root to un/register
+   */
+  modifier whileRegistrarEnabled {
+    require(
+      LibHNSRegistrar.isRegistrarEnabled(address(this), ens, xnhnsOracle),
+      'BaseRegistrar: registrar disabled'
+    );
+    _;
+  }
 
-        expiries[id] = block.timestamp + duration;
-        if(_exists(id)) {
-            // Name was previously owned, and expired
-            _burn(id);
-        }
-        _mint(_owner, id);
-        if(updateRegistry) {
-            ens.setSubnodeOwner(baseNode, bytes32(id), _owner);
-        }
+  /**
+    * @dev only owner of the NFT for ENS node issued by Root can call functions with this modifier
+   */
+  modifier onlyNFTLDOwner(bytes32 node) {
+    require(
+      LibHNSRegistrar.isValidTLDOwner( LibHNSRegistrar.getRoot(ens).ownerOf(uint(node)) ),
+      'BaseRegistrar: invalid owner to unregister tld'
+    );
+  }
 
-        emit NameRegistered(id, _owner, block.timestamp + duration);
+  function _verify(string calldata tld)
+    internal view
+    whileRegistrarEnabled
+    returns (bytes32)
+  {
+    tlds[LibHNSRegistrar.toNamehash(tld)] = LibHNSRegistrar.TLD({
+      id: uint(bytes32),
+      depositToken: address(0),
+      depositAMount: 0,
+      unlockTime: 0,
+      referrer: address(0)
+    });
 
-        return block.timestamp + duration;
-    }
+    // add TLD data
+    return xnhnsOracle.requestTLDUpdate(tld);
+  }
 
-    function renew(uint256 id, uint duration) override external live onlyController returns(uint) {
-        require(expiries[id] + GRACE_PERIOD >= block.timestamp); // Name must be registered here or in grace period
-        require(expiries[id] + duration + GRACE_PERIOD > duration + GRACE_PERIOD); // Prevent future overflow
+  /**
+    * @dev 
+   */
+  function _register(bytes32 node, address referrer)
+    internal
+    whileRegistrarEnabled
+    returns(bool success)
+  {
+    address tldOwner = IXNHNSOracle(xnhnsOracle).getTLDOwner(node);
+    require(LibHNSRegistrar.isValidTLDOwner(tldOwner), 'BaseRegistrar: invalid owner to register tld');
 
-        expiries[id] += duration;
-        emit NameRenewed(id, expiries[id]);
-        return expiries[id];
-    }
+    LibHNSRegistrar.getRoot(ens).register(uint(node), tldOwner);
+    // update TLD data with referrer
+    emit NewOwner(node, tldOwner);
+    return true;
+  }
 
-    /**
-     * @dev Reclaim ownership of a name in ENS, if you own it in the registrar.
-     */
-    function reclaim(uint256 id, address _owner) override external live {
-        require(_isApprovedOrOwner(msg.sender, id));
-        ens.setSubnodeOwner(baseNode, bytes32(id), _owner);
-    }
+  /**
+    * @dev only owner of NFTLD can unregister. Calls unregister() on Root
+   */
+  function _unregister(bytes32 node)
+    internal
+    onlyNFTLDOwner(node)
+    returns(bool success)
+  {
+    LibHNSRegistrar.getRoot(ens).unregister(uint(node));
+    delete tlds[node];
+    emit NewOwner(node, address(0));
+    return true;
+  }
+
+  function _migrate(bytes32 node, address to, address owner)
+    internal
+    onlyNFTLDOwner(node)
+    returns (bool success)
+  {
+    LibHNSRegistrar.getRoot(ens).migrate(uint(node), to, owner);
+    delete tlds[node];
+
+    return true;
+  }
+
+  function _snitch(string calldata tld)
+    internal view
+    returns (bytes32)
+  {
+    return _verify(tld);
+  }
+
+  // GETTERS
+
+  function getTLD(bytes32 node)
+    external view
+    returns (
+      uint256 id,
+      address token,
+      uint256 deposit,
+      uint256 unlockTime,
+      address referrer
+    )
+  {
+    LibHNSRegistrar.TLD memory tld = tlds[node];
+    return (tld.id, tld.depositToken, tld.depositAmount, tld.unlockTime, tld.referrer);
+  }
+
+  // HOOKS
+
+  // Ok there has to be a better way than all these hooks lol
+  // maybe an library with only internal functions
+
+  function preVerifyHook(bytes32 node, address registrar, address caller) internal virtual {
+    require(!ens.recordExists(node), 'BaseRegistrar: TLD is already claimed');
+  }
+  function postVerifyHook(bytes32 node, address registrar, address caller) internal virtual {}
+
+  function preSnitchHook(bytes32 node, address registrar, address caller) internal virtual {
+    require(
+      LibHNSRegistrar.isSnitchable(node, ens, registrar),
+      'BaseRegistrar: invalid TLD to snitch'
+    );
+    require(
+      IERC20(depositToken).transferFrom(msg.sender, address(this), minDepositAmount),
+      'BaseRegistrar: snitch deposit failed'
+    );
+  }
+
+  function postSnitchHook(bytes32 node, address registrar, address caller) internal virtual {}
+
+
+  function preRegisterHook(bytes32 node, address registrar, address caller) internal virtual {}
+  function postRegisterHook(bytes32 node, address registrar, address caller) internal virtual {}
+
+  function preUnregisterHook(bytes32 node, address registrar, address caller) internal virtual {}
+  function postUnregisterHook(bytes32 node, address registrar, address caller) internal virtual {}
+  
+
+  function preMigrationHook(bytes32 node, address registrar, address caller) internal virtual {
+    require(
+      LibHNSRegistrar.isValidMigrationInvocation(node, ens, msg.sender, tx.origin),
+      'BaseRegistrar: invalid migration initiator'
+    );
+  }
+
+  function postMigrationHook(bytes32 node, address registrar, address caller) internal virtual {
+    require(
+      LibHNSRegistrar.getRoot(ens).getControllerForNFTLD(uint(node)) == address(this),
+      'BaseRegistrar: migration goofed'
+    );
+  }
+
 }

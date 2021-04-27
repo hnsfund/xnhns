@@ -1,6 +1,6 @@
 pragma solidity ^0.7.0;
 
-import "../../interfaces/IENS.sol";
+import "../interfaces/IENS.sol";
 import "../registrars/ReverseRegistrar.sol";
 
 /**

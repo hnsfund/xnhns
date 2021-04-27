@@ -1,11 +1,11 @@
 pragma solidity >=0.6.0 <0.8.0;
 
-import "../interfaces/IENS.sol";
+import { IENS } from "./interfaces/IENS.sol";
 
 /**
  * The ENS registry contract.
  */
-contract ENSRegistry is ENS {
+contract ENSRegistry is IENS {
     struct Record {
         address owner;
         address resolver;

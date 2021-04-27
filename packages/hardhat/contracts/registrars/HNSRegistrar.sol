@@ -1,8 +1,8 @@
 pragma solidity ^0.7.0;
 
-import "../../interfaces/IENS.sol";
-import "../../interfaces/IXNHNSOracle.sol";
-import "../../interfaces/IPanvalaMember.sol";
+import "../interfaces/IENS.sol";
+import "../interfaces/IXNHNSOracle.sol";
+import "../interfaces/IPanvalaMember.sol";
 import "../Root.sol";
 
 /**
@@ -11,7 +11,7 @@ import "../Root.sol";
  */
 contract HNSRegistrar {
 
-    ENS public ens;
+    IENS public ens;
     // IPanvalaMember public hnsFund;
 
     // oracle that requests and stores tld verification data
@@ -37,7 +37,7 @@ contract HNSRegistrar {
     event NewOracle(address oracle);
     event TLDMigrationRequested(bytes32 indexed node, address indexed owner, uint256 deposit);
     // NewOwner identitcal to IENS.sol
-    event NewOwner(bytes32 indexed node, bytes32 indexed label, address owner);
+    event NewOwner(bytes32 indexed node, address owner);
     event SnitchedOn(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchReward);
     event SnitchesGotStitches(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchPenalty);
 
@@ -49,7 +49,7 @@ contract HNSRegistrar {
     mapping(bytes32 => Snitch) snitches; // namehash -> snitcher
     mapping(bytes32 => uint256) public tldDeposits; // namehash -> tld deposit
 
-    constructor(ENS _ens, string memory _namespace, IXNHNSOracle _oracle) {
+    constructor(IENS _ens, string memory _namespace, IXNHNSOracle _oracle) {
         ens = _ens;
         xnhnsNS = _namespace;
         xnhnsOracle = _oracle;
@@ -84,6 +84,7 @@ contract HNSRegistrar {
       bytes32 node = _getNamehash(tld);
       tldDeposits[node] = msg.value;
       totalDeposits = total;
+
       requestId = xnhnsOracle.requestTLDUpdate(tld);
       emit TLDMigrationRequested(node, msg.sender, msg.value);
       return requestId;
@@ -103,7 +104,7 @@ contract HNSRegistrar {
       require(tldOwner == msg.sender, 'Only TLD owner can register');
 
        _getRoot().register(uint(node), tldOwner);
-      emit NewOwner(bytes32(0), _getLabelhash(tld), tldOwner);
+      emit NewOwner(_getNamehash(tld), tldOwner);
       return uint(node);
     }
 
@@ -166,8 +167,7 @@ contract HNSRegistrar {
     }
 
     function unregister(bytes32 node) public payable {
-      uint id = uint(node);
-      address owner = _getRoot().ownerOf(id);
+      address owner = _getRoot().ownerOf(uint(node));
       require(msg.sender == owner, 'Only TLD owner can unregister');
 
       uint256 deposit = _unregister(node);
@@ -208,13 +208,11 @@ contract HNSRegistrar {
     }
 
     function _getNamehash(string memory tld) internal pure returns (bytes32) {
-      return keccak256(abi.encodePacked(bytes32(0), _getLabelhash(tld)));
+      return keccak256(abi.encodePacked(
+        bytes32(0),
+        keccak256(abi.encodePacked(tld))
+      ));
     }
-
-    function _getLabelhash(string memory tld) internal pure returns (bytes32) {
-      return keccak256(abi.encodePacked(tld));
-    }
-
     function _getRoot() internal view returns (Root) {
       return Root(ens.owner(bytes32(0)));
     }
@@ -225,9 +223,11 @@ contract HNSRegistrar {
     }
 
     function _registrarEnabled() internal returns (bool) {
-      return IXNHNSOracle(xnhnsOracle).getCallerPermission(address(this));
+      return (
+        _getRoot().isController(address(this)) &&
+        IXNHNSOracle(xnhnsOracle).getCallerPermission(address(this))
+      );
     }
-
 
     function supportsInterface(bytes4 interfaceID) public pure returns (bool) {
         return interfaceID == INTERFACE_META_ID ||

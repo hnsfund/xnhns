@@ -22,12 +22,6 @@
         "type": "bytes32"
       },
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "label",
-        "type": "bytes32"
-      },
-      {
         "indexed": false,
         "internalType": "address",
         "name": "owner",

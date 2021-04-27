@@ -1,7 +1,7 @@
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
-import "../interfaces/IPanvalaMember.sol";
+import "./interfaces/IPanvalaMember.sol";
 contract PanvalaMember is IPanvalaMember {
   using SafeMath for uint;
 

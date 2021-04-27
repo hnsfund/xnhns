@@ -2,7 +2,7 @@ pragma solidity ^0.7.0;
 
 import "@chainlink/contracts/src/v0.7/ChainlinkClient.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../../interfaces/IXNHNSOracle.sol";
+import "../interfaces/IXNHNSOracle.sol";
 
 /**
  * @dev Oracle that verifies a TLD is configured for this XNHNS namespace
@@ -18,7 +18,7 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
     // tld namehash -> owner adddres on HNS
     mapping(bytes32 => address) public tldOwners;
     // Link request id -> tld namehash
-    mapping(bytes32 => string) private tldRunIds;
+    mapping(bytes32 => bytes32) private tldRunIds;
     // contracts that are allowed to initiate oracle requests
     mapping(address => bool) private allowedCallers;
 
@@ -52,7 +52,7 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
       Chainlink.add(request, "tld", tld);
       Chainlink.add(request, "namespace", NAMESPACE);
       
-      tldRunIds[request.id] = tld;
+      tldRunIds[request.id] = _getNamehash(tld);
 
       return sendChainlinkRequestTo(hnsOracle, request, oracleFee);
     }
@@ -62,10 +62,10 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
       recordChainlinkFulfillment(requestId)
       returns (bool)
     {
-      string memory tld = tldRunIds[requestId];
-      tldOwners[_getNamehash((tld))] = _owner; // oracle returns addres(0) if invalid claim
+      bytes32 node = tldRunIds[requestId];
+      tldOwners[node] = _owner; // oracle returns addres(0) if invalid claim
       // bytes32(0) is root node which is always parent of a tld
-      emit NewOwner(bytes32(0), _getLabelhash(tld), _owner);
+      emit NewOwner(node, _owner);
       return true;
     }
 
@@ -96,11 +96,10 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
     }
 
     function _getNamehash(string memory tld) internal pure returns (bytes32) {
-      return keccak256(abi.encodePacked(bytes32(0), _getLabelhash(tld)));
-    }
-
-    function _getLabelhash(string memory tld) internal pure returns (bytes32) {
-      return keccak256(abi.encodePacked(tld));
+      return keccak256(abi.encodePacked(
+        bytes32(0),
+        keccak256(abi.encodePacked(tld))
+      ));
     }
 
 }

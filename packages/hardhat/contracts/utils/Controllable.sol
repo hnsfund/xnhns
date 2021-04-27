@@ -16,4 +16,8 @@ contract Controllable is Ownable {
         controllers[controller] = enabled;
         emit ControllerChanged(controller, enabled);
     }
+
+    function isController(address controller) public returns (bool) {
+      return controllers[controller];
+    }
 }

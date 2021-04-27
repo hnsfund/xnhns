@@ -2,6 +2,7 @@
   text-align: center;
   display: flex;
 }
+
 .app-mobile {
   flex-direction: column;
 }

@@ -1,6 +1,6 @@
 pragma solidity >=0.6.0 <0.8.0;
 
-interface ENS {
+interface IENS {
     // Logged when the owner of a node assigns a new owner to a subnode.
     event NewOwner(bytes32 indexed node, bytes32 indexed label, address owner);
 

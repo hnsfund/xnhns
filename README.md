@@ -13,6 +13,16 @@ Built With:
 
 ---
 
+
+## V2 dev notes
+__Hooks__
+Set Protocol hooks are via an external smart contract that gets called, not internal functions inside contract like OpenZeppelin
+
+__Migrating__
+- Since we are passing "owner" address through all the contracts there is no way for migration receiver to actually verify that `caller`/`owner` passed as param is who actually called. In `HNSRegistrarV2.migrate()` the  `caller`/`owner` param to `Root.migrate()` is the entrypoint of vulnerability and all registrars audits should speifically verify that function call does not have vulnerabilities.
+
+__Refferals__
+Referrer is set in register() instead of verify() because any person or register can call verify(). Only the owner of NFTLD can acll register() meaning that they have given consent to referrer by signing tx with their address.
 ## quickstart
 
 ```bash
