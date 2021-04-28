@@ -8,8 +8,8 @@ import "../../interfaces/IXNHNSOracle.sol";
  * @dev Oracle that verifies a TLD is configured for this XNHNS namespace
  * and assigns ownership to an address
  */
-contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
-    string public constant NAMESPACE = "{namespace}";
+contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
+    string public NAMESPACE;
 
     address public hnsOracle;
     bytes32 public verifyHnsTldJobId;
@@ -23,10 +23,12 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
     mapping(address => bool) private allowedCallers;
 
     constructor(
+        string memory _namespace,
         address _oracle,
         address _link,
         bytes32 _jobId
       ) {
+        NAMESPACE = _namespace;
         hnsOracle = _oracle;
         setChainlinkToken(_link);
         verifyHnsTldJobId = _jobId;
@@ -40,7 +42,7 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
      * and pulls TXT record with address to give ownership to.
      * @param tld The HNS domain to claim
      */
-    function requestTLDUpdate(string calldata tld) public override returns (bytes32) {
+    function requestTLDUpdate(string calldata tld) external override returns (bytes32) {
       require(bytes(tld).length > 0, 'Invalid TLD');
       require(allowedCallers[msg.sender], 'Caller does not have permission to initiate oracle requests');
 
@@ -59,13 +61,14 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
 
     function receiveTLDUpdate(bytes32 requestId, address _owner)
       public
+      override
       recordChainlinkFulfillment(requestId)
       returns (bool)
     {
       string memory tld = tldRunIds[requestId];
       tldOwners[_getNamehash((tld))] = _owner; // oracle returns addres(0) if invalid claim
       // bytes32(0) is root node which is always parent of a tld
-      emit NewOwner(bytes32(0), _getLabelhash(tld), _owner);
+      emit NewOwner(_getNamehash(tld), _owner);
       return true;
     }
 
@@ -82,25 +85,21 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
       return true;
     }
 
-    function getTLDOwner(bytes32 node) public view  override returns (address) {
+    function getTLDOwner(bytes32 node) external view  override returns (address) {
       return tldOwners[node];
     }
 
-    function getCallerPermission(address addr) public view override returns (bool) {
+    function getCallerPermission(address addr) external view override returns (bool) {
       return allowedCallers[addr];
     }
 
-    function setCallerPermission(address addr, bool _permission) public  override onlyOwner returns (bool) {
+    function setCallerPermission(address addr, bool _permission) external  override onlyOwner returns (bool) {
       allowedCallers[addr] = _permission;
       return true;
     }
 
     function _getNamehash(string memory tld) internal pure returns (bytes32) {
-      return keccak256(abi.encodePacked(bytes32(0), _getLabelhash(tld)));
-    }
-
-    function _getLabelhash(string memory tld) internal pure returns (bytes32) {
-      return keccak256(abi.encodePacked(tld));
+      return keccak256(abi.encodePacked(bytes32(0), keccak256(abi.encodePacked(tld))));
     }
 
 }

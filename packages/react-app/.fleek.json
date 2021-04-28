@@ -1,0 +1,15 @@
+{
+  "site": {
+    "id": "1da91d9b-c958-4b1c-a6fd-4e57ac605688",
+    "team": "kibagateaux-team",
+    "platform": "ipfs",
+    "source": "github",
+    "name": "flat-boat-7992"
+  },
+  "build": {
+    "baseDir": "",
+    "publicDir": "packages/react-app/build",
+    "command": "yarn && yarn build",
+    "rootDir": ""
+  }
+}

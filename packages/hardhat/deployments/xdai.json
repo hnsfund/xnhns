@@ -1,0 +1,15 @@
+{
+  "ENSRegistry": {
+    "address": "0xdcbEe2063Ff761943122121AB3EEC16666AE816e"
+  },
+  "Root": {
+    "address": "0x053852b009C1C4d4c3af4086928e94a5E1F613eb"
+  },
+  "TrustedXNHNSOracle": {
+    "address": "0x4922AF5047a64ecA38Bba3E14f44e4a9696ecA80"
+  },
+  "HNSRegistrar": {
+    "address": "0x3bB7267C68008057fd8D4c7FBFE035e10eb1FA33"
+  }
+  
+}

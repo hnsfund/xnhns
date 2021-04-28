@@ -19,13 +19,13 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = 'localhost'
+const defaultNetwork = 'xdai'
 
 function mnemonic(generate) {
   if(generate || defaultNetwork === 'localhost') return '';
 
   try {
-    return fs.readFileSync('./mnemonic.txt').toString().trim()
+    return fs.readFileSync('./prod.txt').toString().trim()
   } catch (e) {
     console.log('deploying  from non mnomnic account', );
     if (defaultNetwork !== 'localhost') {
@@ -70,7 +70,7 @@ module.exports = {
     },
     /* L2s */
     xdai: {
-      url: 'https://dai.poa.network',
+      url: 'https://rpc.xdaichain.com/',
       gasPrice: 1000000000,
       accounts: {
         mnemonic: mnemonic(),
