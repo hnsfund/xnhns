@@ -1,8 +1,8 @@
 const fs = require('fs')
 const chalk = require('chalk')
 const { config, ethers } = require('hardhat')
+const { arch } = require('os')
 const { utils } = ethers
-const { namehash } = require('@ensdomains/ensjs');
 // contract addresses after deployment
 const addresses = {}
 
@@ -92,21 +92,21 @@ async function main() {
 
   // console.log('oracle', oracleAddr, linkAddr, verifyTldJobId);
   if(EnsRegistry.deployTransaction) {
-    EnsRegistry.deployTransaction.wait()
-      .then(async () => {
-        const rootTransferTx = await EnsRegistry.setOwner(namehash(''), Root.address)
-        console.log('Successfully transferred ownership of rootzone to Root contract');
-      })
-      .catch((err) => {
-        console.log('error giving Root contract control of root zone: ', err);
-      })
+    await EnsRegistry.deployTransaction.wait()
   }
+  try {
+    const rootTransferTx = await EnsRegistry.setOwner(namehash(''), Root.address)
+    console.log('Successfully transferred ownership of rootzone to Root contract');
+  } catch(e) {
+    console.log('error giving Root contract control of root zone: ', e);
+  }
+
   // Allow registrar to update ENS Registry to issue TLDs
   if(Root.deployTransaction) {
     await Root.deployTransaction.wait()
   }
   console.log('Adding registrar to Root...');
-  // await Root.setController(HNSRegistrar.address, true)
+  await Root.setController(HNSRegistrar.address, true)
 
   // allow registrar to call oracle to update tld status
   if(XNHNSOracle.deployTransaction) {

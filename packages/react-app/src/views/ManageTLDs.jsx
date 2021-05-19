@@ -88,7 +88,7 @@ export default function Manage({
                 // update status to show loading while tx mines
                 console.log('minting tld', tld)
                 updateTld(tld, { status: 'minting' })
-                writeContracts.HNSRegistrar.register(tld)
+                writeContracts.HNSRegistrar.register(namehash(tld))
                   .catch(() => {
                     // mint tx failed, revert to verified status
                     updateTld(tld, { status: 'verified' });

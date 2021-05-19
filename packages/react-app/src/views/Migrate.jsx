@@ -28,7 +28,6 @@ export default function Migrate({
   const minDepositAmount = useContractReader(readContracts, 'HNSRegistrar', 'minTLDDeposit');
   const [tldToMigrate, setTLDToMigrate] = useState('');
   const [depositAmount, setDepositAmount] = useState(0.1);
-  const [tldStorage, setTldStorage] = useLocalStorage(TLD_STORAGE, {});
   const [migrateTxStatus, setMigrationtxStatus] = useState(null);
 
   if(!network || !network.xnhnsRegistry) return null; // TODO create InvalidNetwork component
@@ -104,7 +103,7 @@ export default function Migrate({
             console.log('migrating domain', depositAmount, depositAmount * 10e17)
             const migrationTLD = tldToMigrate; // save for async call if they start migrating a new tld after submiting
             const migrateTx = tx( writeContracts.HNSRegistrar.verify(
-              migrationTLD,
+              tldToMigrate,
               { value: String(depositAmount * 10e17) } // I swear it really has to be a string to work idk y
             ))
             .then((result) => {

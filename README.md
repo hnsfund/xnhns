@@ -40,8 +40,15 @@ yarn start
 yarn chain --network hardhat
 
 ```
+> in a third terminal window (docker daemon needs to be running):
 
-> in a third terminal window:
+```bash
+
+yarn graph-node
+
+```
+
+> in a fourth terminal window:
 
 ```bash
 
@@ -51,16 +58,6 @@ yarn deploy:test
 
 
 dapp hot reloads as you build your smart contracts and frontend together
-
-## Testing
-- Go to Migrate page /migrate
-- Type in whatever TLD you want to migrate
-- Click "Migrate" button
-- Then Click "Confirm TLD"  (this stubs call the oracle call to confirm you own TLD)
-- Go over to Manage page /manage (working on modal to help this UX)
-- Your TLD should show up there and have a "Mint NFTLD" button next to it. Click it
-- If that tx goes through, congrats you have an NFT on Ethereum representing ownership of you HNS TLD
-
 
 ## How It Works
 Lets say you are migrating the TLD `hnsregistry/`
@@ -87,9 +84,6 @@ Simple registrar. Deposit 0.1ETH to migrate your domain, get 0.1ETH back when yo
 ### HighValueHNSRegistrar
 (WIP) For owners of premium domains that want to maximize NFTLD utilization on your host chain. Minimum deposit of 20ETH to migrate your domain. Deposit is immediately invested in DeFi protocols (TBD) so you earn yield and increase capital efficiency of your deposit. When you unregister you get back more ETH than you deposited.
 
-### TimeLockedHNSRegistrar
-TODO. A registrar that timelocks a TLD owners deposit for set amount of time. The TLD owner will not be able to call unregister() until timelock has passed at which point they can renew the lock
-
 ### Your Suggested Registrar Here
 Always open to developing new cool ideas. Open an issue if you have an idea for a different type of TLD registrar.
 ## Oracles
@@ -101,7 +95,7 @@ Use the graph for data querying on the frontend. Pulled from [ENS subgraph](http
 - [Subgraph.yaml](https://github.com/hnsfund/xnhns/blob/master/packages/subgraph/src/subgraph.template.yaml)
 - [Schema.graphql](https://github.com/hnsfund/xnhns/blob/master/packages/subgraph/schema.graphql)
 
- 
+
 
 # WebApp code docs
 
