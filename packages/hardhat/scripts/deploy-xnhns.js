@@ -3,13 +3,15 @@ const chalk = require('chalk')
 const { config, ethers } = require('hardhat')
 const { arch } = require('os')
 const { utils } = ethers
+const { namehash } = require('@ensdomains/ensjs')
+
 // contract addresses after deployment
 const addresses = {}
 
 const HNS_FUND_TREASURY = '0xd25A803E24FFd3C0033547BE04D8C43FFBa7486b';
 const HNS_PANVALA_CONTRACT = '';
 
-const namespace = 'xdai',
+const namespace = 'localhost',
   oracleAddr = '0x31Da52dFe5168e2b029703152a877149ea3fB064',
   linkAddr = '0xa36085F69e2889c224210F603D836748e7dC0088',
   verifyTldJobId = utils.id('41e9e8e2678f4d5f98e4bebe02cc1ccc'),
@@ -66,7 +68,7 @@ async function main() {
   console.log('📡 Deploy \n')
   const addresses = await ethers.getSigners();
   const deployer = addresses[0].address
-  console.log('deploying from - ', deployer, addresses);
+  console.log('deploying from - ', deployer, addresses[0].privateKey, addresses[0]);
   // deploy 
   const EnsRegistry = await deploy('ENSRegistry')
   const registryAddress = EnsRegistry.address
@@ -91,10 +93,13 @@ async function main() {
   ])
 
   // console.log('oracle', oracleAddr, linkAddr, verifyTldJobId);
+  // console.log('ENS Registry ontr', EnsRegistry);
   if(EnsRegistry.deployTransaction) {
     await EnsRegistry.deployTransaction.wait()
   }
+  console.log('giving root contract control of rootzone');
   try {
+
     const rootTransferTx = await EnsRegistry.setOwner(namehash(''), Root.address)
     console.log('Successfully transferred ownership of rootzone to Root contract');
   } catch(e) {

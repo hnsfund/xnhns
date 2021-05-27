@@ -31,7 +31,11 @@ export default function Manage({
   const getLatestEventForTLD = (tld, contractEvents) => {
     const node = namehash(tld);
     const eventsOrderedByBlock = contractEvents
-      .filter((event) => event.node === node && event.owner === address) // get events for this user and tld
+      .filter((event) => {
+        console.log('node, owner', node, address, event.owner);
+       return  event.node === node && event.owner === address
+      }
+      ) // get events for this user and tld
       .sort((a, b) => a.blockNumber < b.blockNumber) // find latest update
     return eventsOrderedByBlock[0]
   }
@@ -41,6 +45,7 @@ export default function Manage({
     const net = NETWORK(network);
     const verificationEvent = getLatestEventForTLD(tld, oracleNewOwnerEvents);
     const registrationEvent = getLatestEventForTLD(tld, registrarNewOwnerEvents);
+    console.log('event for tld', tld, verificationEvent, registrationEvent);
     const validRegistration = verificationEvent && registrationEvent &&
       verificationEvent.owner === address; // make sure tld owner hasnt been updated since registration event
     
@@ -83,15 +88,25 @@ export default function Manage({
           case 'verifying':
             return <h5> Awaiting Verification...</h5>;
           case 'verified':
+            let buttonLoadingStatus;
             return (
-              <Button onClick={() => {
+              <Button loading={buttonLoadingStatus} onClick={() => {
                 // update status to show loading while tx mines
                 console.log('minting tld', tld)
                 updateTld(tld, { status: 'minting' })
+                buttonLoadingStatus = true;
                 writeContracts.HNSRegistrar.register(namehash(tld))
-                  .catch(() => {
+                  .then((result) => {
+                    console.log(' tld registered', result)
+
                     // mint tx failed, revert to verified status
                     updateTld(tld, { status: 'verified' });
+                    buttonLoadingStatus = false;
+
+                  })
+                  .catch((err) => {
+                    console.log('error registering tld', err)
+                    buttonLoadingStatus = false;
                   })
               }}>
                 Mint NFTLD

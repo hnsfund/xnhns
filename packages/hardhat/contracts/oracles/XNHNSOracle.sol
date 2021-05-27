@@ -24,15 +24,15 @@ contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
 
     constructor(
         string memory _namespace,
-        address _oracle,
-        address _link,
-        bytes32 _jobId
+        address oracle,
+        address link,
+        bytes32 jobId
       ) {
         NAMESPACE = _namespace;
-        hnsOracle = _oracle;
-        setChainlinkToken(_link);
-        verifyHnsTldJobId = _jobId;
-        emit NewOracle(address(_oracle));
+        hnsOracle = oracle;
+        setChainlinkToken(link);
+        verifyHnsTldJobId = jobId;
+        emit NewOracle(address(oracle));
     }
 
 
@@ -60,8 +60,7 @@ contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
     }
 
     function receiveTLDUpdate(bytes32 requestId, address _owner)
-      public
-      override
+      public override
       recordChainlinkFulfillment(requestId)
       returns (bool)
     {
@@ -72,15 +71,14 @@ contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
       return true;
     }
 
-    function setOracle(address _oracle, uint _fee, bytes32 _jobId)
-      public
-      override 
+    function setOracle(address oracle, uint fee, bytes32 jobId)
+      public override 
       onlyOwner
       returns (bool)
     {
-      hnsOracle = _oracle;
-      verifyHnsTldJobId = _jobId;
-      oracleFee = _fee;
+      hnsOracle = oracle;
+      verifyHnsTldJobId = jobId;
+      oracleFee = fee;
       emit NewOracle(address(hnsOracle));
       return true;
     }
@@ -93,8 +91,8 @@ contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
       return allowedCallers[addr];
     }
 
-    function setCallerPermission(address addr, bool _permission) external  override onlyOwner returns (bool) {
-      allowedCallers[addr] = _permission;
+    function setCallerPermission(address addr, bool permission) external  override onlyOwner returns (bool) {
+      allowedCallers[addr] = permission;
       return true;
     }
 

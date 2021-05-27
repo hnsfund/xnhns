@@ -31,17 +31,17 @@ contract TrustedXNHNSOracle is IXNHNSOracle, Ownable {
       return node;
     }
 
-    function receiveTLDUpdate(bytes32 node, address _owner)
+    function receiveTLDUpdate(bytes32 node, address owner_)
       external
       override
       onlyOwner returns (bool)
     {
-      tldOwners[node] = _owner;
-      emit NewOwner(node, _owner);
+      tldOwners[node] = owner_;
+      emit NewOwner(node, owner_);
       return true;
     }
 
-    function setOracle(address _oracle, uint _fee, bytes32 _jobId)
+    function setOracle(address oracle, uint fee, bytes32 jobId)
       external override
       returns (bool)
     {
@@ -56,13 +56,13 @@ contract TrustedXNHNSOracle is IXNHNSOracle, Ownable {
       return tldOwners[node];
     }
 
-    function setCallerPermission(address addr, bool _permission)
+    function setCallerPermission(address addr, bool permission)
       external
       override
       onlyOwner
       returns (bool)
     {
-      return allowedCallers[addr] = _permission;
+      return allowedCallers[addr] = permission;
     }
     function getCallerPermission(address addr) external view override returns (bool) {
       return allowedCallers[addr];

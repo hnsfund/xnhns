@@ -3,17 +3,17 @@
     "inputs": [
       {
         "internalType": "contract ENS",
-        "name": "_ens",
+        "name": "ens_",
         "type": "address"
       },
       {
         "internalType": "string",
-        "name": "_namespace",
+        "name": "namespace",
         "type": "string"
       },
       {
         "internalType": "contract IXNHNSOracle",
-        "name": "_oracle",
+        "name": "oracle",
         "type": "address"
       }
     ],
@@ -40,12 +40,6 @@
         "indexed": true,
         "internalType": "bytes32",
         "name": "node",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "label",
         "type": "bytes32"
       },
       {
@@ -144,6 +138,19 @@
     ],
     "name": "TLDMigrationRequested",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "NAMESPACE",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [
@@ -318,20 +325,20 @@
   {
     "inputs": [
       {
-        "internalType": "contract IXNHNSOracle",
-        "name": "_oracle",
-        "type": "address"
+        "internalType": "string",
+        "name": "tld",
+        "type": "string"
       }
     ],
-    "name": "setOracle",
+    "name": "snitch",
     "outputs": [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
+        "internalType": "bytes32",
+        "name": "requestId",
+        "type": "bytes32"
       }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -345,25 +352,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "tld",
-        "type": "string"
-      }
-    ],
-    "name": "snitchOn",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "requestId",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -447,19 +435,6 @@
       }
     ],
     "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "xnhnsNS",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

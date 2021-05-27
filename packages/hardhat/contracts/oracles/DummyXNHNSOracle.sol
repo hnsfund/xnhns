@@ -27,7 +27,7 @@ contract DummyXNHNSOracle is IXNHNSOracle {
       return true;
     }
 
-    function setOracle(address _oracle, uint _fee, bytes32 _jobId)
+    function setOracle(address _oracle, uint fee, bytes32 jobId)
       public override
       returns (bool)
     {
@@ -39,8 +39,8 @@ contract DummyXNHNSOracle is IXNHNSOracle {
     }
 
    
-    function setCallerPermission(address addr, bool _permission) public override returns (bool) {
-      return allowedCallers[addr] = _permission;
+    function setCallerPermission(address addr, bool permission) public override returns (bool) {
+      return allowedCallers[addr] = permission;
     }
     function getCallerPermission(address addr) public view override returns (bool) {
       return allowedCallers[addr];

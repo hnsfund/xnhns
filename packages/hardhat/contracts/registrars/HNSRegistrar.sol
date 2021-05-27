@@ -1,5 +1,6 @@
 pragma solidity ^0.7.0;
 
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../../interfaces/IENS.sol";
 import "../../interfaces/IXNHNSOracle.sol";
 import "../../interfaces/IPanvalaMember.sol";
@@ -10,6 +11,7 @@ import "../Root.sol";
  *      corresponding TLD in ENS.
  */
 contract HNSRegistrar {
+    using SafeMath for uint256;
 
     ENS public ens;
     // IPanvalaMember public hnsFund;
@@ -18,7 +20,7 @@ contract HNSRegistrar {
     IXNHNSOracle public xnhnsOracle;
     // namespace that this contract lives in
     // formal registry of namespaces tbd in a HIP
-    string public xnhnsNS;
+    string public NAMESPACE;
     // add versioning var too?
     uint256 public constant snitchDeposit = 0.1 ether;
     uint256 public constant minTLDDeposit = 0.1 ether;
@@ -37,23 +39,23 @@ contract HNSRegistrar {
     event NewOracle(address oracle);
     event TLDMigrationRequested(bytes32 indexed node, address indexed owner, uint256 deposit);
     // NewOwner identitcal to IENS.sol
-    event NewOwner(bytes32 indexed node, bytes32 indexed label, address owner);
+    event NewOwner(bytes32 indexed node, address owner);
     event SnitchedOn(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchReward);
     event SnitchesGotStitches(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchPenalty);
 
     struct Snitch {
       address addr;
-      uint256 blockStart;
+      uint256 startTime;
     }
     
     mapping(bytes32 => Snitch) snitches; // namehash -> snitcher
     mapping(bytes32 => uint256) public tldDeposits; // namehash -> tld deposit
 
-    constructor(ENS _ens, string memory _namespace, IXNHNSOracle _oracle) {
-        ens = _ens;
-        xnhnsNS = _namespace;
-        xnhnsOracle = _oracle;
-        emit NewOracle(address(_oracle));
+    constructor(ENS ens_, string memory namespace, IXNHNSOracle oracle) {
+        ens = ens_;
+        NAMESPACE = namespace;
+        xnhnsOracle = oracle;
+        emit NewOracle(address(oracle));
     }
 
     /**
@@ -79,11 +81,9 @@ contract HNSRegistrar {
       returns (bytes32 requestId)
     {
       require(msg.value >= minTLDDeposit, 'Insufficient tld deposit');
-      uint256 total = msg.value + totalDeposits;
-      require(total > totalDeposits, 'Maximum deposits limit hit'); // uint overflow
       bytes32 node = _getNamehash(tld);
-      tldDeposits[node] = msg.value;
-      totalDeposits = total;
+      totalDeposits = totalDeposits.add(msg.value);
+      tldDeposits[node] = tldDeposits[node].add(msg.value); // add to protect user funds incase they have to verify multiple times
       requestId = xnhnsOracle.requestTLDUpdate(tld);
       emit TLDMigrationRequested(node, msg.sender, msg.value);
       return requestId;
@@ -98,67 +98,61 @@ contract HNSRegistrar {
     function register(bytes32 node) public returns (uint id) {
       require(tldDeposits[node] >= minTLDDeposit, 'Insufficient deposit for TLD');
       address tldOwner = IXNHNSOracle(xnhnsOracle).getTLDOwner(node);
-      require(tldOwner != address(0), 'TLD is invalid on this namespace');
+      require(tldOwner != address(0), 'Invalid TLD in namespace');
       require(tldOwner == msg.sender, 'Only TLD owner can register');
 
        _getRoot().register(uint(node), tldOwner);
-      emit NewOwner(bytes32(0), node, tldOwner);
+      emit NewOwner(node, tldOwner);
       return uint(node);
     }
 
     function increaseDeposit(bytes32 node, uint256 amount) public payable returns (bool) {
-      address tldOwner = IXNHNSOracle(xnhnsOracle).getTLDOwner(node);
-      require(tldOwner != address(0), 'TLD is invalid on this namespace');
-      require(tldOwner == msg.sender, 'Only TLD owner can register');
-      uint256 total = tldDeposits[node] + msg.value;
-      require(total>= minTLDDeposit, 'Insufficient deposit for TLD');
+      uint256 total = tldDeposits[node].add(msg.value);
+      totalDeposits = totalDeposits.add(msg.value);
       return true;
     }
 
     /** @dev Allows anyone to prove that TLD is not set anymore and revoke teir ENS name
      * @param tld - human readable string 
     */
-    function snitchOn(string memory tld)
+    function snitch(string memory tld)
       public payable
       whileRegistrarEnabled
       returns (bytes32 requestId)
     {
       require(msg.value >= snitchDeposit, 'Insufficient snitch deposit');
-
       bytes32 node  = _getNamehash(tld);
       require(ens.recordExists(node), 'Cant snitch on unregistered TLD');
-      // require(tldDeposits[node] >= minTLDDeposit, 'No reward for snitching on TLD');
 
       (address addr,) = _getSnitch(node);
       require(addr == address(0), 'TLD already snitched on');
 
       snitches[node] = Snitch({
         addr: msg.sender,
-        blockStart: block.timestamp
+        startTime: block.timestamp
       });
-      totalDeposits += snitchDeposit;
+      totalDeposits = totalDeposits.add(snitchDeposit);
 
       return IXNHNSOracle(xnhnsOracle).requestTLDUpdate(tld);
     }
 
     function claimSnitchReward(bytes32 node) public returns (bool) {
-      (address addr, uint256 blockStart) = _getSnitch(node);
+      (address addr, uint256 startTime) = _getSnitch(node);
       // prevent snitch front running oracle response
-      require(block.timestamp > blockStart + 2 hours, 'Cannot snitch yet');
+      require(block.timestamp > startTime.add(2 hours), 'Cant snitch yet');
       delete snitches[node];
 
       address owner = _getRoot().ownerOf(uint(node));
       if(IXNHNSOracle(xnhnsOracle).getTLDOwner(node) == address(0)) {
         // snitch successful
         uint256 tldDeposit = _unregister(node);
-        payable(addr).transfer(snitchDeposit + (tldDeposit / 2));
-        totalDeposits -= (snitchDeposit + tldDeposit);
-        emit SnitchedOn(node, owner, addr, tldDeposit / 2);
+        payable(addr).transfer( snitchDeposit.add(tldDeposit.div(2)) );
+        totalDeposits = totalDeposits.sub( snitchDeposit.add(tldDeposit) );
+        emit SnitchedOn(node, owner, addr, tldDeposit.div(2));
         return true;
       } else {
-        // snitch failed
-        // move snitch deposit to smart contract's fees
-        totalDeposits -= snitchDeposit;
+        // snitch failed, claim snitch deposit 
+        totalDeposits = totalDeposits.sub(snitchDeposit);
         emit SnitchesGotStitches(node, owner, addr, snitchDeposit);
         return false;
       }
@@ -167,7 +161,7 @@ contract HNSRegistrar {
     function unregister(bytes32 node) public payable {
       uint id = uint(node);
       address owner = _getRoot().ownerOf(id);
-      require(msg.sender == owner, 'Only TLD owner can unregister');
+      require(msg.sender == owner, 'Only NFTLD owner can unregister');
 
       uint256 deposit = _unregister(node);
       payable(owner).transfer(deposit);
@@ -176,22 +170,16 @@ contract HNSRegistrar {
     function _unregister(bytes32 node) internal returns (uint256 deposit) {
       _getRoot().unregister(uint(node));
       deposit = tldDeposits[node];
-      totalDeposits -= deposit;
-      tldDeposits[node] = 0;
+      delete tldDeposits[node];
+      totalDeposits = totalDeposits.sub(deposit);
       return deposit;
-    }
-
-    function setOracle(IXNHNSOracle _oracle) public onlyOwner returns (bool) {
-      xnhnsOracle = _oracle;
-      emit NewOracle(address(xnhnsOracle));
-      return true;
     }
 
     /**
      * @dev donate fees collected by registrar to HNS Fund via Panvala League
     */
     function donateProfits() public returns(uint) {
-      uint feesCollected = address(this).balance - totalDeposits;
+      uint feesCollected = address(this).balance.sub(totalDeposits) ;
       // hnsFund.regenerate.value(feesCollected)(feesCollected);
       return feesCollected;
     }
@@ -203,11 +191,14 @@ contract HNSRegistrar {
     }
     
     function namespace() public view returns (string memory) {
-      return xnhnsNS;
+      return NAMESPACE;
     }
 
     function _getNamehash(string memory tld) public pure returns (bytes32) {
-      return keccak256(abi.encodePacked(bytes32(0), keccak256(abi.encodePacked(tld))));
+      return keccak256(abi.encodePacked(
+        bytes32(0),
+        keccak256(abi.encodePacked(tld))
+      ));
     }
 
     function _getRoot() internal view returns (Root) {
@@ -216,7 +207,7 @@ contract HNSRegistrar {
 
     function _getSnitch(bytes32 node) public view returns (address, uint256) {
       Snitch memory _snitch = snitches[node];
-      return (_snitch.addr, _snitch.blockStart);
+      return (_snitch.addr, _snitch.startTime);
     }
 
     function _registrarEnabled() internal returns (bool) {

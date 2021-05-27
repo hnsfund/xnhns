@@ -134,7 +134,7 @@ module.exports = [
       },
       {
         "internalType": "address",
-        "name": "_owner",
+        "name": "owner_",
         "type": "address"
       }
     ],
@@ -184,7 +184,7 @@ module.exports = [
       },
       {
         "internalType": "bool",
-        "name": "_permission",
+        "name": "permission",
         "type": "bool"
       }
     ],
@@ -203,17 +203,17 @@ module.exports = [
     "inputs": [
       {
         "internalType": "address",
-        "name": "_oracle",
+        "name": "oracle",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "_fee",
+        "name": "fee",
         "type": "uint256"
       },
       {
         "internalType": "bytes32",
-        "name": "_jobId",
+        "name": "jobId",
         "type": "bytes32"
       }
     ],

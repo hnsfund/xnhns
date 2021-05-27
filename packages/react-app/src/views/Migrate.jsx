@@ -29,7 +29,8 @@ export default function Migrate({
   const [tldToMigrate, setTLDToMigrate] = useState('');
   const [depositAmount, setDepositAmount] = useState(0.1);
   const [migrateTxStatus, setMigrationtxStatus] = useState(null);
-
+  const [tldStorage, setTldStorage] = useLocalStorage(TLD_STORAGE, {})
+  console.log('migrate networ', network);
   if(!network || !network.xnhnsRegistry) return null; // TODO create InvalidNetwork component
 
   console.log('migration data', tldToMigrate, depositAmount, migrateTxStatus);
@@ -103,7 +104,7 @@ export default function Migrate({
             console.log('migrating domain', depositAmount, depositAmount * 10e17)
             const migrationTLD = tldToMigrate; // save for async call if they start migrating a new tld after submiting
             const migrateTx = tx( writeContracts.HNSRegistrar.verify(
-              tldToMigrate,
+              migrationTLD,
               { value: String(depositAmount * 10e17) } // I swear it really has to be a string to work idk y
             ))
             .then((result) => {
@@ -135,14 +136,15 @@ export default function Migrate({
           </Button>
         )}
 
+        {/* move to admin page
         <Button onClick={() => {
-           tx( writeContracts.DummyXNHNSOracle.setTLDOwner(
+           tx( writeContracts.DummyXNHNSOracle.receiveTLDUpdate(
               namehash(tldToMigrate),
               address,
             ))
         }}>
           Confirm TLD
-        </Button>
+        </Button> */}
 
         <PostMigrationModal
           txStatus={migrateTxStatus}

@@ -3,17 +3,17 @@ module.exports = [
     "inputs": [
       {
         "internalType": "contract ENS",
-        "name": "_ens",
+        "name": "ens_",
         "type": "address"
       },
       {
         "internalType": "string",
-        "name": "_namespace",
+        "name": "namespace",
         "type": "string"
       },
       {
         "internalType": "contract IXNHNSOracle",
-        "name": "_oracle",
+        "name": "oracle",
         "type": "address"
       }
     ],
@@ -40,12 +40,6 @@ module.exports = [
         "indexed": true,
         "internalType": "bytes32",
         "name": "node",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "label",
         "type": "bytes32"
       },
       {
@@ -144,6 +138,38 @@ module.exports = [
     ],
     "name": "TLDMigrationRequested",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "NAMESPACE",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "tld",
+        "type": "string"
+      }
+    ],
+    "name": "_getNamehash",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
   },
   {
     "inputs": [
@@ -280,9 +306,9 @@ module.exports = [
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "tld",
-        "type": "string"
+        "internalType": "bytes32",
+        "name": "node",
+        "type": "bytes32"
       }
     ],
     "name": "register",
@@ -299,20 +325,20 @@ module.exports = [
   {
     "inputs": [
       {
-        "internalType": "contract IXNHNSOracle",
-        "name": "_oracle",
-        "type": "address"
+        "internalType": "string",
+        "name": "tld",
+        "type": "string"
       }
     ],
-    "name": "setOracle",
+    "name": "snitch",
     "outputs": [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
+        "internalType": "bytes32",
+        "name": "requestId",
+        "type": "bytes32"
       }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -326,25 +352,6 @@ module.exports = [
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "tld",
-        "type": "string"
-      }
-    ],
-    "name": "snitchOn",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "requestId",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -428,19 +435,6 @@ module.exports = [
       }
     ],
     "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "xnhnsNS",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

@@ -38,7 +38,7 @@ import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants"
 
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['xdai']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
@@ -130,7 +130,7 @@ function App(props) {
   // console.log("🤗 tldOracle:", tldOracle, tldDeposits)
 
   //📟 Listen for broadcast events
-  const oracleContract = targetNetwork.name === 'localhost' ? "DummyXNHNSOracle" : "XNHNSOracle"
+  const oracleContract = targetNetwork.name === 'localhost' ? "TrustedXNHNSOracle" : "XNHNSOracle"
   const oracleNewOwnerEvents = useEventListener(readContracts, oracleContract, "NewOwner", localProvider, 1);
   const registrarNewOwnerEvents = useEventListener(readContracts, "HNSRegistrar", "NewOwner", localProvider, 1);
   console.log("📟 NewOwner events:", oracleNewOwnerEvents, registrarNewOwnerEvents)
@@ -143,28 +143,28 @@ function App(props) {
 
 
   let networkDisplay = ""
-  if(localChainId && selectedChainId && localChainId != selectedChainId ){
-    networkDisplay = (
-      <div style={{zIndex:2, position:'absolute', right:0,top:60,padding:16}}>
-        <Alert
-          message={"⚠️ Wrong Network"}
-          description={(
-            <div>
-              You have <b>{NETWORK(selectedChainId).name}</b> selected and you need to be on <b>{NETWORK(localChainId).name}</b>.
-            </div>
-          )}
-          type="error"
-          closable={false}
-        />
-      </div>
-    )
-  } else {
+  // if(localChainId && selectedChainId && localChainId != selectedChainId ){
+  //   networkDisplay = (
+  //     <div style={{zIndex:2, position:'absolute', right:0,top:60,padding:16}}>
+  //       <Alert
+  //         message={"⚠️ Wrong Network"}
+  //         description={(
+  //           <div>
+  //             You have <b>{NETWORK(selectedChainId).name}</b> selected and you need to be on <b>{NETWORK(localChainId).name}</b>.
+  //           </div>
+  //         )}
+  //         type="error"
+  //         closable={false}
+  //       />
+  //     </div>
+  //   )
+  // } else {
     networkDisplay = (
       <div style={{zIndex:-1, position:'absolute', right:154,top:28,padding:16,color:targetNetwork.color}}>
         {targetNetwork.name}
       </div>
     )
-  }
+  // }
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -201,7 +201,7 @@ function App(props) {
       </div>
     )
   }
-
+  console.log('chain id', selectedChainId);
   console.log('isMobile', isMobile);
 
   return (
