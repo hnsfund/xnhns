@@ -38,7 +38,7 @@ import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants"
 
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS['xdai']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
@@ -130,9 +130,9 @@ function App(props) {
   // console.log("🤗 tldOracle:", tldOracle, tldDeposits)
 
   //📟 Listen for broadcast events
-  const oracleContract = targetNetwork.name === 'localhost' ? "TrustedXNHNSOracle" : "XNHNSOracle"
-  const oracleNewOwnerEvents = useEventListener(readContracts, oracleContract, "NewOwner", localProvider, 1);
-  const registrarNewOwnerEvents = useEventListener(readContracts, "HNSRegistrar", "NewOwner", localProvider, 1);
+  const oracleContract = targetNetwork.name === 'localhost' ? "TrustedXNHNSOracle" : "TrustedXNHNSOracle"
+  const oracleNewOwnerEvents = useEventListener(readContracts, oracleContract, "NewOwner", userProvider, 1);
+  const registrarNewOwnerEvents = useEventListener(readContracts, "HNSRegistrar", "NewOwner", userProvider, 1);
   console.log("📟 NewOwner events:", oracleNewOwnerEvents, registrarNewOwnerEvents)
 
   const { isMobile } = useBreakpoints();

@@ -31,7 +31,13 @@ export default function Migrate({
   const [migrateTxStatus, setMigrationtxStatus] = useState(null);
   const [tldStorage, setTldStorage] = useLocalStorage(TLD_STORAGE, {})
   console.log('migrate networ', network);
-  if(!network || !network.xnhnsRegistry) return null; // TODO create InvalidNetwork component
+  if(!network || !network.xnhnsRegistry) {
+    return (
+      <AppWrapper>
+        <h3> XNHNS not supported on this chain yet </h3>
+      </AppWrapper>
+    );
+  }
 
   console.log('migration data', tldToMigrate, depositAmount, migrateTxStatus);
   return (
@@ -41,10 +47,10 @@ export default function Migrate({
         <h2 style={{textAlign: 'left'}}>
           You are migrating <i> {tldToMigrate}/  </i> <br />
           to <i> {network.name} </i>  <br />
-          with a deposit of  <i> {depositAmount} ETH </i>
+          with a deposit of  <i> {depositAmount} {network.namespace.toUpperCase()}  </i>
         </h2>
         <h4 style={{textAlign: 'left'}}>
-          It costs a minimum of {formatNumber(minDepositAmount)} ETH to deposit on {network.name}
+          It costs a minimum of {formatNumber(minDepositAmount)} {network.namespace.toUpperCase()} to deposit on {network.name}
         </h4>
 
         <div style={{marginTop:32, marginBottom: 32}}>
@@ -95,7 +101,7 @@ export default function Migrate({
 
         {formatNumber(activeNetworkBalance) < depositAmount ? (
           <Text>
-            Your balance ({formatNumber(activeNetworkBalance)} ETH) is below your deposit amount.
+            Your balance ({formatNumber(activeNetworkBalance)} {network.namespace.toUpperCase()}) is below your deposit amount.
             Please make sure you are on the right network
           </Text> 
         ) : (

@@ -80,15 +80,18 @@ export const NETWORKS = {
     xdai: {
         name: "xdai",
         color: '#48a9a6',
+        namespace: 'xdai',
         chainId: 100,
         price: 1,
         gasPrice:1000000000,
         rpcUrl: "https://dai.poa.network",
         faucet: "https://xdai-faucet.top/",
         blockExplorer: "https://blockscout.com/poa/xdai/",
+        xnhnsRegistry: "0x398f1d25D4e77120E4D776dc3bf7B3Cf7b7f5d64",
     },
     matic: {
         name: "matic",
+        namespace: 'matic',
         color: '#2bbdf7',
         chainId: 137,
         price: 1,

@@ -1,15 +1,16 @@
 {
   "ENSRegistry": {
-    "address": "0xdcbEe2063Ff761943122121AB3EEC16666AE816e"
+    "address": "0x398f1d25D4e77120E4D776dc3bf7B3Cf7b7f5d64"
   },
   "Root": {
-    "address": "0x053852b009C1C4d4c3af4086928e94a5E1F613eb"
+    "address": "0xBb79C43feee69343Ae43aDe89BfB7132C2f26176"
   },
   "TrustedXNHNSOracle": {
-    "address": "0x4922AF5047a64ecA38Bba3E14f44e4a9696ecA80"
+    "address": "0x4d807285db099bDcd334877f2705d1f7Db157006"
+
   },
   "HNSRegistrar": {
-    "address": "0x3bB7267C68008057fd8D4c7FBFE035e10eb1FA33"
+    "address": "0xA08857E895F655591Eab9B0C8404B30b17da304C"
   }
   
 }

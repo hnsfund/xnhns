@@ -15,6 +15,7 @@ const themes = {
 const prevTheme = window.localStorage.getItem("theme");
 const dom = async () => {
   const client = await setupClient();
+  window.ethereum.enable();
   return ReactDOM.render(
     <ApolloProvider client={client}>
       <ThemeSwitcherProvider themeMap={themes} defaultTheme={prevTheme ? prevTheme : "light"}>
