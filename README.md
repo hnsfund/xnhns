@@ -59,22 +59,31 @@ yarn deploy:test
 
 dapp hot reloads as you build your smart contracts and frontend together
 
+## Testing
+- Go to Migrate page /migrate
+- Type in whatever TLD you want to migrate
+- Click "Migrate" button
+- Then Click "Confirm TLD"  (this stubs call the oracle call to confirm you own TLD)
+- Go over to Manage page /manage (working on modal to help this UX)
+- Your TLD should show up there and have a "Mint NFTLD" button next to it. Click it
+- If that tx goes through, congrats you have an NFT on Ethereum representing ownership of you HNS TLD
+
 ## How It Works
 Lets say you are migrating the TLD `hnsregistry/`
 1. You submit your HIP5 NS records and TXT record with your address on the chain you are migrating hnsregistry/ to
 2. Wait for those transactions are mined on Handshake
-3. Submit a transaction on your host chain to `HNSRegistrar.verify(hnsregistry)` with a value of 0.1 ETH for your deposit (read more about [deposits](#xnhns-deposits))
+3. Submit a transaction on your host chain to `HNSRegistrar.verify("hnsregistry")` with a value of 0.1 ETH for your deposit (read more about [deposits](#xnhns-deposits))
 4. ChainLink oracles will verify you have appropriate records. They will update `XNHNSOracle` contract with owner of TLD to the address you set in your TXT record
-5. You can now call `HNSRegistrar.register( namehash(hnsregistry) )` to mint your NFTLD and list your TLD on the `ENSRegistry`
+5. You can now call `HNSRegistrar.register( namehash("hnsregistry") )` to mint your NFTLD and list your TLD on the `ENSRegistry`
 6. Go wild, you are free. You have the power of NFTs and ENS at your disposal. (TODO write article of cool shit to do)
-7. When you are done using your NFTLD on this chain, call `HNSRegistrar.unregister( namehash(hnsregistry) )` to receive your deposit back.
+7. When you are done using your NFTLD on this chain, call `HNSRegistrar.unregister( namehash("hnsregistry") )` to receive your deposit back.
 
 ## XNHNS Deposits
-Deposits are simple on XNHNS. When you want to migrate a domain to another chain, you provide a deposit to "anchor" your TLD to that chain. The deposit amount is entirely up to you, although each type of registrar has a different minimum deposit. When you are done using your TLD on that chain you simply call `HNSRegistrar.unregister(hnsregistry)` and you will get your full deposit back. 
+Deposits are simple on XNHNS. When you want to migrate a domain to another chain, you provide a deposit to "anchor" your TLD to that chain. The deposit amount is entirely up to you, although each type of registrar has a different minimum deposit. When you are done using your TLD on that chain you simply call `HNSRegistrar.unregister("hnsregistry")` and you will get your full deposit back. 
 ### Why do I need to deposit?
 Anchoring your TLD with a deposit increases the utility of your domain on it's host chain. This shows you have skin in the game and are committing to using your TLD on that chain. This can be used by DeFi apps before you take a loan against your NFTLD to make sure you aren't borrowing more than is deposited in your TLD to prevent fraud and liquidate your NFTLD if you fail to pay your loan back on time. Identity systems can increase your reputation points based on your deposit value because you are committed to participating in that chains community.
 ### Snitching
-Your deposit also prevents double spending your TLD across two different chains at once. This happens when you change your NS record to point at a chain other than the one with your deposit. When this happens, anyone can call `HNSRegistrar.snitchOn(hnsregistry)`. This will trigger the same ChainLink oracle job as when you call verify(), if the oracles return a null (address(0) in solidity) then the snitch was successful and can claim half your deposit (the other half gets donated to the [HNS Fund](https://hnsfund.titansofdata.org))
+Your deposit also prevents double spending your TLD across two different chains at once. This happens when you change your NS record to point at a chain other than the one with your deposit. When this happens, anyone can call `HNSRegistrar.snitch("hnsregistry")`. This will trigger the same ChainLink oracle job as when you call verify(), if the oracles return a null (address(0) in solidity) then the snitch was successful and can claim half your deposit (the other half gets donated to the [HNS Fund](https://hnsfund.titansofdata.org))
 
 ## Types of XNHNS Registrars
 You can switch registrars at any time by calling unregister() on your current registrar, then inscreaseDeposit() and register() on your new registrar. You do not need to verify on the new registrar since your ownership will still be stored in the oracle (assuming no one snitches on you but there is no reward for snitches once you unregister so you should be fine).
@@ -83,6 +92,8 @@ Simple registrar. Deposit 0.1ETH to migrate your domain, get 0.1ETH back when yo
 
 ### HighValueHNSRegistrar
 (WIP) For owners of premium domains that want to maximize NFTLD utilization on your host chain. Minimum deposit of 20ETH to migrate your domain. Deposit is immediately invested in DeFi protocols (TBD) so you earn yield and increase capital efficiency of your deposit. When you unregister you get back more ETH than you deposited.
+### TimeLockedHNSRegistrar
+TODO. A registrar that timelocks a TLD owners deposit for set amount of time. The TLD owner will not be able to call unregister() until timelock has passed at which point they can renew the lock
 
 ### Your Suggested Registrar Here
 Always open to developing new cool ideas. Open an issue if you have an idea for a different type of TLD registrar.
