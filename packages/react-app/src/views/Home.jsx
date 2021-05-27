@@ -15,31 +15,22 @@ export default function Home({
 }) {
   return (
     <AppWrapper>
-
-      <Contract
-        name="Root"
-        signer={userProvider.getSigner()}
-        provider={localProvider}
-        address={address}
-        blockExplorer={blockExplorer}
-      />
-
-      <Contract
-        name="HNSRegistrar"
-        signer={userProvider.getSigner()}
-        provider={localProvider}
-        address={address}
-        blockExplorer={blockExplorer}
-      />
-
-      <Contract
-        name={oracleContract}
-        signer={userProvider.getSigner()}
-        provider={localProvider}
-        address={address}
-        blockExplorer={blockExplorer}
-      />
-
+      <div className='content-wrapper'>
+        <h2>
+          Cross-Network Handshake (XNHNS) is the best way to easily move your TLD on any smart contract platform
+        </h2>
+        <p>
+          XNHNS accomplishes two goals for Handshake TLD owners -
+          managing DNS records on another chain (resolver bridge) and
+          tokenizing TLDs as assets on another chain (asset bridge).
+        </p>
+        <Button
+          href='https://titansofdata.substack.com/p/what-is-cross-network-handshake-xnhns'
+          target="_blank"
+        >
+          Learn More
+        </Button>
+      </div>
     </AppWrapper>
   )
 }

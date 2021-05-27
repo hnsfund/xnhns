@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Switch, Route, NavLink } from "react-router-dom";
+import { BrowserRouter, Switch, Route, NavLink, Redirect } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
@@ -214,21 +214,21 @@ function App(props) {
             mode="vertical"
           >
             <Header />
+            <Menu.Item key="/">
+              <NavLink exact onClick={()=>{setRoute("/")}} to="/">Home</NavLink>
+            </Menu.Item>
             <Menu.Item key="/migrate">
               <NavLink exact onClick={()=>{setRoute("/migrate")}} to="/migrate">Migrate</NavLink>
             </Menu.Item>
             <Menu.Item key="/manage">
               <NavLink exact onClick={()=>{setRoute("/manage")}} to="/manage">Manage</NavLink>
             </Menu.Item>
-            <Menu.Item key="/">
-              <NavLink exact onClick={()=>{setRoute("/")}} to="/">XNHNS Oracle</NavLink>
-            </Menu.Item>
-            <Menu.Item key="/hints">
+            {/* <Menu.Item key="/hints">
               <NavLink exact onClick={()=>{setRoute("/hints")}} to="/hints">Hints</NavLink>
             </Menu.Item>
             <Menu.Item key="/subgraph">
               <NavLink exact onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</NavLink>
-            </Menu.Item>
+            </Menu.Item> */}
           </Menu>
         </div>
 

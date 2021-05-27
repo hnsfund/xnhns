@@ -132,7 +132,7 @@ export default function Manage({
   
   return (
     <AppWrapper>
-      <Table dataSource={tlds} columns={columns} />;
+      <Table dataSource={tlds} columns={columns} />
     </AppWrapper>
   )
 

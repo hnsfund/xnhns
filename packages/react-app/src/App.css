@@ -33,6 +33,18 @@
   margin: 10vh 0;
 }
 
+.content-wrapper {
+  padding: 5vh 10vw;
+  /* width: 50%; */
+  width: 100%;
+  max-width: 800px;
+  text-align: left;
+
+  /* h1,h2,h3,h4,,h5,h6 {
+    text-align: left;
+  } */
+}
+
 #header-logo-container {
   padding: 20px;
   line-height: 1em;
