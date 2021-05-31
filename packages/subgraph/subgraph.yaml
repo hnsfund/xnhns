@@ -10,7 +10,7 @@ dataSources:
     name: ENSRegistry
     network: localhost
     source:
-      address: '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+      address: '0x398f1d25D4e77120E4D776dc3bf7B3Cf7b7f5d64'
       abi: EnsRegistry
     mapping:
       kind: ethereum/events
@@ -20,7 +20,6 @@ dataSources:
       entities:
         - Domain
         - Account
-        - Resolver
       abis:
         - name: EnsRegistry
           file: ./abis/ENSRegistry.json
@@ -29,127 +28,57 @@ dataSources:
           handler: handleTransfer
         - event: 'NewOwner(indexed bytes32,indexed bytes32,address)'
           handler: handleNewOwner
-        - event: 'NewResolver(indexed bytes32,address)'
-          handler: handleNewResolver
-        - event: 'NewTTL(indexed bytes32,uint64)'
-          handler: handleNewTTL
-  # Core XNHNS subgraph
+  # Registrars
   - kind: ethereum/contract
     name: HNSRegistrar
     network: localhost
     source:
-      address: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9'
+      address: '0xA08857E895F655591Eab9B0C8404B30b17da304C'
       abi: HNSRegistrar
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
-      file: ./src/resolver.ts
+      file: ./src/xnhns.ts
       entities:
         - Domain
         - Account
         - NewOwner
-        - MigrationRequest
+        - MigrationRequested
+        - Deposit
       abis:
         - name: HNSRegistrar
           file: ./abis/HNSRegistrar.json
       eventHandlers:
         - event: 'TLDMigrationRequested(indexed bytes32,indexed address,uint256)'
           handler: handleMigrationRequest
-        - event: 'NewOwner(indexed bytes32,indexed bytes32,address)'
+        - event: 'NewOwner(indexed bytes32,address)'
           handler: handleTLDRegistered
         - event: 'SnitchedOn(indexed bytes32,indexed address,address,uint256)'
           handler: handleSnitchedOn
         - event: 'SnitchesGotStitches(indexed bytes32,indexed address,address,uint256)'
           handler: handleSnitchesGetStiches
-  # Registrars
+  # Oracles
   - kind: ethereum/contract
-    name: BaseRegistrar
+    name: TrustedXNHNSOracle
     network: localhost
     source:
-      address: '0x09635F643e140090A9A8Dcd712eD6285858ceBef'
-      abi: BaseRegistrar
+      address: '0x4d807285db099bDcd334877f2705d1f7Db157006'
+      abi: TrustedXNHNSOracle
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
-      file: ./src/badassRegistrar.ts
+      file: ./src/xnhns.ts
       entities:
-        - Registration
-        - NameRegistered
-        - NameRenewed
-        - NameTransferred
+        - Domain
+        - Account
+        - NewOwner
       abis:
-        - name: BaseRegistrar
-          file: ./abis/BaseRegistrar.json
+        - name: TrustedXNHNSOracle
+          file: ./abis/TrustedXNHNSOracle.json
       eventHandlers:
-        - event: 'NameRegistered(indexed uint256,indexed address,uint256)'
-          handler: handleNameRegistered
-        - event: 'NameRenewed(indexed uint256,uint256)'
-          handler: handleNameRenewed
-        - event: 'Transfer(indexed address,indexed address,indexed uint256)'
-          handler: handleNameTransferred
-  - kind: ethereum/contract
-    name: RegistrarController
-    network: localhost
-    source:
-      address:  '0xc5a5C42992dECbae36851359345FE25997F5C42d'
-      abi: RegistrarController
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      file: ./src/badassRegistrar.ts
-      entities:
-        - Registration
-      abis:
-        - name: RegistrarController
-          file: ./abis/RegistrarController.json
-      eventHandlers:
-        - event: 'NameRegistered(string,indexed bytes32,indexed address,uint256,uint256)'
-          handler: handleNameRegisteredByController
-        - event: 'NameRenewed(string,indexed bytes32,uint256,uint256)'
-          handler: handleNameRenewedByController
-  # Resolvers
-  - kind: ethereum/contract
-    name: Resolver
-    network: localhost
-    source:
-      abi: Resolver
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      file: ./src/resolver.ts
-      entities:
-        - AddrChanged
-        - MulticoinAddrChanged
-        - NameChanged
-        - AbiChanged
-        - PubkeyChanged
-        - Textchanged
-        - ContenthashChanged
-        - InterfaceChanged
-        - AuthorisationChanged
-      abis:
-        - name: Resolver
-          file: ./abis/PublicResolver.json
-      eventHandlers:
-        - event: 'ABIChanged(indexed bytes32,indexed uint256)'
-          handler: handleABIChanged
-        - event: 'AddrChanged(indexed bytes32,address)'
-          handler: handleAddrChanged
-        - event: 'AddressChanged(indexed bytes32,uint256,bytes)'
-          handler: handleMulticoinAddrChanged
-        - event: 'AuthorisationChanged(indexed bytes32,indexed address,indexed address,bool)'
-          handler: handleAuthorisationChanged
-        - event: 'ContenthashChanged(indexed bytes32,bytes)'
-          handler: handleContentHashChanged
-        - event: 'InterfaceChanged(indexed bytes32,indexed bytes4,address)'
-          handler: handleInterfaceChanged
-        - event: 'NameChanged(indexed bytes32,string)'
-          handler: handleNameChanged
-        - event: 'PubkeyChanged(indexed bytes32,bytes32,bytes32)'
-          handler: handlePubkeyChanged
-        - event: 'TextChanged(indexed bytes32,indexed string,string)'
-          handler: handleTextChanged
+        - event: 'NewOwner(indexed bytes32,address)'
+          handler: handleOracleUpdateReceived
+        - event: 'NewOracle(address)'
+          handler: handleOracleUpdated

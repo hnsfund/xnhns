@@ -7,11 +7,18 @@ type Domain @entity {
   subdomains: [Domain!]! @derivedFrom(field: "parent")  # Can count domains from length of array
   resolvedAddress: Account # Address logged from current resolver, if any
   owner: Account!
+  deposit: Deposit!
   resolver: Resolver
   ttl: BigInt
   registrar: Bytes
   createdAt: BigInt!
   events: [DomainEvent!]! @derivedFrom(field: "domain")
+
+}
+
+type Account @entity {
+  id: ID!
+  domains: [Domain!]! @derivedFrom(field: "owner")
 }
 
 interface DomainEvent {
@@ -21,6 +28,24 @@ interface DomainEvent {
   transactionID: Bytes!
 }
 
+type Deposit implements DomainEvent @entity {
+  id: ID!
+  domain: Domain! @derivedFrom(field: "deposit")
+  blockNumber: Int!
+  transactionID: Bytes!
+  amount: BigInt!       # amount of tokens deposited
+  token: Bytes!         # token address that was deposited
+  epochStart: BigInt    # when deposit timelock started
+  epochLength: BigInt   # when deposit timelock ends
+}
+
+type OracleUpdateReceived implements DomainEvent @entity {
+  id: ID!
+  domain: Domain!
+  blockNumber: Int!
+  transactionID: Bytes!
+  owner: Account!
+}
 
 type Transfer implements DomainEvent @entity {
   id: ID!
@@ -39,12 +64,13 @@ type NewOwner implements DomainEvent @entity {
   owner: Account!
 }
 
-type MigrationRequest implements DomainEvent @entity {
+type MigrationRequested implements DomainEvent @entity {
   id: ID!
   domain: Domain!
   blockNumber: Int!
   transactionID: Bytes!
   deposit: BigInt!
+  token: Bytes!
   registrar: Bytes!
 }
 
@@ -64,66 +90,17 @@ type NewTTL implements DomainEvent @entity {
   ttl: BigInt!
 }
 
-type Account @entity {
-  id: ID!
-  domains: [Domain!]! @derivedFrom(field: "owner")
-  registrations: [Registration!] @derivedFrom(field: "registrant")
-}
-
-type Registration @entity {
-  id: ID!
-  domain: Domain
-  registrationDate: BigInt!
-  expiryDate: BigInt!
-  cost: BigInt
-  registrant: Account!
-  labelName: String
-  events: [RegistrationEvent!]! @derivedFrom(field: "registration")
-}
-
-interface RegistrationEvent {
-  id: ID!
-  registration: Registration!
-  blockNumber: Int!
-  transactionID: Bytes!
-}
-
-type NameRegistered implements RegistrationEvent @entity {
-  id: ID!
-  registration: Registration!
-  blockNumber: Int!
-  transactionID: Bytes!
-  registrant: Account!
-  expiryDate: BigInt!
-}
-
-type NameRenewed implements RegistrationEvent @entity {
-  id: ID!
-  registration: Registration!
-  blockNumber: Int!
-  transactionID: Bytes!
-  expiryDate: BigInt!
-}
-
-type NameTransferred implements RegistrationEvent @entity {
-  id: ID!
-  registration: Registration!
-  blockNumber: Int!
-  transactionID: Bytes!
-  newOwner: Account!
-}
-
 type SnitchedOn implements DomainEvent @entity {
   id: ID!
   domain: Domain!
   blockNumber: Int!
   transactionID: Bytes!
   snitch: Account!
-  absconder: Account!
+  owner: Account!
   snitchReward: BigInt!
 }
 
-type SnitchesGetStiches implements DomainEvent @entity {
+type SnitchesGotStitches implements DomainEvent @entity {
   id: ID!
   domain: Domain!
   blockNumber: Int!
@@ -131,7 +108,6 @@ type SnitchesGetStiches implements DomainEvent @entity {
   snitch: Account!
   snitchPenalty: BigInt!
 }
-
 
 type Resolver @entity {
   id: ID!                   # Concatenation of resolver address and namehash
@@ -150,81 +126,4 @@ interface ResolverEvent {
   resolver: Resolver!       # Used to derive relationships to Resolvers
   blockNumber: Int!
   transactionID: Bytes!
-}
-
-type AddrChanged implements ResolverEvent @entity {
-  id: ID!
-  resolver: Resolver!
-  blockNumber: Int!
-  transactionID: Bytes!
-  addr: Account!
-}
-
-type MulticoinAddrChanged implements ResolverEvent @entity {
-  id: ID!
-  resolver: Resolver!
-  blockNumber: Int!
-  transactionID: Bytes!
-  coinType: Int!
-  addr: Bytes!
-}
-
-type NameChanged implements ResolverEvent @entity {
-  id: ID!
-  resolver: Resolver!
-  blockNumber: Int!
-  transactionID: Bytes!
-  name: String!
-}
-
-type AbiChanged implements ResolverEvent @entity {
-  id: ID!
-  resolver: Resolver!
-  blockNumber: Int!
-  transactionID: Bytes!
-  contentType: BigInt!
-}
-
-type PubkeyChanged implements ResolverEvent @entity {
-  id: ID!
-  resolver: Resolver!
-  blockNumber: Int!
-  transactionID: Bytes!
-  x: Bytes!
-  y: Bytes!
-}
-
-type TextChanged implements ResolverEvent @entity {
-  id: ID!
-  resolver: Resolver!
-  blockNumber: Int!
-  transactionID: Bytes!
-  key: String!
-}
-
-type ContenthashChanged implements ResolverEvent @entity {
-  id: ID!
-  resolver: Resolver!
-  blockNumber: Int!
-  transactionID: Bytes!
-  hash: Bytes!
-}
-
-type InterfaceChanged implements ResolverEvent @entity {
-  id: ID!
-  resolver: Resolver!
-  blockNumber: Int!
-  transactionID: Bytes!
-  interfaceID: Bytes!
-  implementer: Bytes!
-}
-
-type AuthorisationChanged implements ResolverEvent @entity {
-  id: ID!
-  resolver: Resolver!
-  blockNumber: Int!
-  transactionID: Bytes!
-  owner: Bytes!
-  target: Bytes!
-  isAuthorized: Boolean!
 }

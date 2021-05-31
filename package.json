@@ -40,7 +40,7 @@
     "graph-node": "cd docker/graph-node && docker-compose up",
     "graph-remove-node": "cd docker/graph-node && docker-compose down",
     "graph-prepare": "mustache packages/subgraph/config/config.json packages/subgraph/src/subgraph.template.yaml > packages/subgraph/subgraph.yaml",
-    "graph-codegen": "yarn workspace @scaffold-eth/subgraph graph codegen",
+    "graph-codegen": "yarn workspace @scaffold-eth/subgraph codegen",
     "graph-deploy": "yarn run graph-prepare && yarn run graph-codegen && yarn workspace @scaffold-eth/subgraph deploy",
     "graph-build": "yarn workspace @scaffold-eth/subgraph graph build",
     "graph-create-local": "yarn workspace @scaffold-eth/subgraph graph create --node http://localhost:8020/ kibagateaux/xnhns-local",

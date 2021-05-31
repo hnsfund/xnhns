@@ -85,7 +85,7 @@ contract HNSRegistrar {
       totalDeposits = totalDeposits.add(msg.value);
       tldDeposits[node] = tldDeposits[node].add(msg.value); // add to protect user funds incase they have to verify multiple times
       requestId = xnhnsOracle.requestTLDUpdate(tld);
-      emit TLDMigrationRequested(node, msg.sender, msg.value);
+      emit TLDMigrationRequested(node, msg.sender, tldDeposits[node]);
       return requestId;
     }
 
@@ -146,8 +146,8 @@ contract HNSRegistrar {
       if(IXNHNSOracle(xnhnsOracle).getTLDOwner(node) == address(0)) {
         // snitch successful
         uint256 tldDeposit = _unregister(node);
-        payable(addr).transfer( snitchDeposit.add(tldDeposit.div(2)) );
         totalDeposits = totalDeposits.sub( snitchDeposit.add(tldDeposit) );
+        payable(addr).transfer( snitchDeposit.add(tldDeposit.div(2)) );
         emit SnitchedOn(node, owner, addr, tldDeposit.div(2));
         return true;
       } else {

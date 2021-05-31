@@ -62,10 +62,3 @@ export function getDomain(node: string, timestamp: BigInt = BIG_INT_ZERO): Domai
   }
   return domain
 }
-
-export function createDomainEvent(EventType: ethereum.Event, eventData: ethereum.Event): ethereum.Event {
-  let event = new EventType(createEventID(eventData));
-  event.blockNumber = event.block.number.toI32()
-  event.transactionID = event.transaction.hash
-  return event
-}

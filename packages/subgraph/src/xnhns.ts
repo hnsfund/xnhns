@@ -1,68 +1,97 @@
 // Import types and APIs from graph-ts
 import {
   BigInt,
+  Address,
   crypto,
   ens,
   log,
 } from '@graphprotocol/graph-ts'
 
 import {
-  createDomainEvent, getDomain, concat, ROOT_NODE, EMPTY_ADDRESS
+  createEventID, ROOT_NODE, EMPTY_ADDRESS,
 } from './utils'
 
 // Import event types from the registry contract ABI
 import {
-  NewOwner as NewOwnerEvent,
-  Transfer as TransferEvent,
-  NewResolver as NewResolverEvent,
-  NewTTL as NewTTLEvent,
+  NewOwner as NewOwnerEvent
 } from './types/ENSRegistry/EnsRegistry'
 
 import {
   SnitchedOn as NewSnitchedOnEvent,
-  SnitchesGetStiches as NewSnitchesGetStichesEvent,
-  MigrationRequest as MigrationRequestEvent
+  SnitchesGotStitches as NewSnitchesGotStichesEvent,
+  TLDMigrationRequested as NewMigrationRequestedEvent,
+  SnitchesGotStitches as NewOracleUpdateReceivedEvent,
 } from './types/HNSRegistrar/HNSRegistrar'
 
 // Import entity types generated from the GraphQL schema
-import { Account, Domain, Resolver, NewOwner } from './types/schema'
+import {
+  Account, Domain, NewOwner, Deposit,
+  SnitchedOn, SnitchesGotStitches, OracleUpdateReceived
+} from './types/schema'
 
-export function handleMigrationRequest(event: MigrationRequestEvent): void {
+// Event handlers in chronological order to when events *should* be called
+
+// When TLD deposit is created and oracle request sent
+export function handleMigrationRequest(event: NewMigrationRequestedEvent): void {
   let account = new Account(event.params.owner.toHexString())
   account.save()
-  let tld = event.params.label.toHexString()
+  let tld = event.params.node.toHexString()
   let domain = new Domain(tld)
+  let deposit = new Deposit(createEventID(event))
+  deposit.amount = event.params.deposit;
+  deposit.token = Address.fromString(EMPTY_ADDRESS)
+  deposit.save()
+
   domain.registrar = event.address
-  domain.deposit = event.params.deposit
+  domain.owner = account.id
+
+  domain.deposit = deposit.id
 
   if(!domain) {
-    domain.createdAt = event.block.timestamp
     domain.labelName = tld
-    domain.parent = event.params.node.toHexString()
+    domain.parent = ROOT_NODE
     domain.name = tld
-    domain.labelhash = event.params.label
+    domain.labelhash = event.params.node // need to generate label hash from tld string
   }
 }
 
-// Handler for NewResolver events
+// When oracle response is submitted
+export function handleOracleUpdateReceived(event: NewOracleUpdateReceivedEvent): void {
+  let account = new Account(event.params.owner.toHexString())
+  account.save()
+
+  let tld = event.params.node.toHexString()
+  let domain = new Domain(tld)
+  domain.save()
+
+  let domainEvent = new OracleUpdateReceived(createEventID(event))
+  domainEvent.blockNumber = event.block.number.toI32()
+  domainEvent.transactionID = event.transaction.hash
+  domainEvent.domain = domain.id
+  domainEvent.owner = account.id
+  domainEvent.save()
+}
+
+
+// When NFTLD is minted after oracle validates owner
 export function handleTLDRegistered(event: NewOwnerEvent): void {
   let account = new Account(event.params.owner.toHexString())
   account.save()
 
-  let tld = event.params.label.toHexString()
+  let tld = event.params.node.toHexString()
   let domain = new Domain(tld)
   if(!domain && !domain.name) {
     domain.labelName = tld
-    domain.parent = event.params.node.toHexString()
+    domain.parent = ROOT_NODE
     domain.name = tld
-    domain.labelhash = event.params.label
+    domain.labelhash = event.params.node // need to generate label hash from tld string
   }
 
   if(!domain.registrar) {
     domain.registrar = event.address
   }
 
-  // domain logged in migration request but not created/registered yet
+  // // domain logged in migration request but not created/registered yet
   if(!domain.createdAt) {
     domain.createdAt = event.block.timestamp
   }
@@ -70,43 +99,56 @@ export function handleTLDRegistered(event: NewOwnerEvent): void {
   domain.owner = account.id // set new owner
   domain.save()
 
-  let domainEvent = createDomainEvent(NewOwner, event)
-  domainEvent.parentDomain = event.params.node.toHexString()
+  // let domainEvent = createDomainEvent(NewOwner, event)
+  let domainEvent = new NewOwner(createEventID(event))
+  domainEvent.blockNumber = event.block.number.toI32()
+  domainEvent.transactionID = event.transaction.hash
+  domainEvent.parentDomain = ROOT_NODE
   domainEvent.domain = domain.id
   domainEvent.owner = account.id
   domainEvent.save()
 }
 
+// After snitch when NFTLD is caught double spending
 export function handleSnitchedOn(event: NewSnitchedOnEvent): void {
   let account = new Account(event.params.snitch.toHexString())
   account.save()
 
-  let tld = event.params.label.toHexString()
+  let tld = event.params.node.toHexString()
   let domain = new Domain(tld)
   
   
-  let domainEvent = createDomainEvent(NewSnitchedOnEvent, event)
+  let domainEvent = new SnitchedOn(createEventID(event))
+  domainEvent.blockNumber = event.block.number.toI32()
+  domainEvent.transactionID = event.transaction.hash
   domainEvent.domain = domain.id // assume tld exists bc smart contract wouldnt work otherwise 
   domainEvent.snitch = account.id
-  domainEvent.absconder = domain.owner
+  domainEvent.owner = domain.owner
   domainEvent.snitchReward = event.params.snitchReward
   domainEvent.save()
 
-  // remove owner because tld no longer in XNHNS system on this namespace
-  domain.owner = EMPTY_ADDRESS
+  let nullAcct = new Account(EMPTY_ADDRESS)
+  nullAcct.save()
+
+  // remove owner/registrar because tld no longer in XNHNS system on this namespace
+  domain.owner = nullAcct.id
+  domain.registrar = Address.fromString(EMPTY_ADDRESS)
   domain.save()
 }
 
-
-export function handleSnitchesGetStiches(event: NewSnitchesGetStichesEvent): void {
+// After snitch when NFTLD is properly setup
+export function handleSnitchesGotStiches(event: NewSnitchesGotStichesEvent): void {
   let account = new Account(event.params.snitch.toHexString())
   account.save()
 
-  let tld = event.params.label.toHexString()
+  let tld = event.params.node.toHexString()
   let domain = new Domain(tld)
+  domain.save()
   
-  
-  let domainEvent = createDomainEvent(NewSnitchesGetStichesEvent, event)
+  let domainEvent = new SnitchesGotStitches(createEventID(event))
+  // let domainEvent = createDomainEvent(SnitchesGotStitches, event)
+  domainEvent.blockNumber = event.block.number.toI32()
+  domainEvent.transactionID = event.transaction.hash
   domainEvent.domain = domain.id // assume tld exists bc smart contract wouldnt work otherwise 
   domainEvent.snitch = account.id
   domainEvent.snitchPenalty = event.params.snitchPenalty
