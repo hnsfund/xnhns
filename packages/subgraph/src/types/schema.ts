@@ -434,6 +434,15 @@ export class OracleUpdateReceived extends Entity {
     this.set("transactionID", Value.fromBytes(value));
   }
 
+  get oracle(): Bytes {
+    let value = this.get("oracle");
+    return value.toBytes();
+  }
+
+  set oracle(value: Bytes) {
+    this.set("oracle", Value.fromBytes(value));
+  }
+
   get owner(): string {
     let value = this.get("owner");
     return value.toString();

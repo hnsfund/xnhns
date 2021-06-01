@@ -28,6 +28,28 @@ dataSources:
           handler: handleTransfer
         - event: 'NewOwner(indexed bytes32,indexed bytes32,address)'
           handler: handleNewOwner
+  # Root
+  - kind: ethereum/contract
+    name: Root
+    network: localhost
+    source:
+      address: '0xBb79C43feee69343Ae43aDe89BfB7132C2f26176'
+      abi: Root
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/xnhns.ts
+      entities:
+        - Domain
+        - Account
+        - NewOwner
+      abis:
+        - name: Root
+          file: ./abis/Root.json
+      eventHandlers:
+        - event: 'Transfer(indexed address,indexed address,indexed uint256)'
+          handler: handleNFTLDTransfer
   # Registrars
   - kind: ethereum/contract
     name: HNSRegistrar

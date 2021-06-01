@@ -13,7 +13,6 @@ contract Root is
 
     event TLDRegistered(uint indexed id, address indexed owner);
     event TLDUnregistered(uint indexed id, address indexed owner);
-    event TLDRemoved(uint indexed id, address indexed owner);
 
     ENS public ens;
     mapping(uint => address) public tldControllers; // sets NFTLD to only be changd by original registrar
@@ -30,7 +29,7 @@ contract Root is
     function register(uint id, address _owner) external onlyController returns(bool) {
         require(address(0) == tldControllers[id], 'Cannot register claimed TLD');
         if(_exists(id)) {
-            // Name was previously owned, and expired
+            // Name was previously owned
             _burn(id);
         }
         _mint(_owner, id);
@@ -52,12 +51,6 @@ contract Root is
         emit TLDUnregistered(id, _owner);
         return true;
     }
-
-    // function setSubnodeOwner(uint id, address _owner) external onlyController returns (bool) {
-    //   // bypass lock because used for TLD maintainence
-    //   ens.setSubnodeOwner(ROOT_NODE, bytes32(id), _owner);
-    //   return true;
-    // }
 
     /**
      * @dev Reclaim ownership of a name in ENS if you own the NFT.
