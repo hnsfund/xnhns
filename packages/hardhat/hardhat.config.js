@@ -19,7 +19,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = 'xdai'
+const defaultNetwork = 'localhost'
 
 function mnemonic(generate) {
   if(generate || defaultNetwork === 'localhost') return '';

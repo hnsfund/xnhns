@@ -94,7 +94,7 @@
     "start": "react-scripts start",
     "test": "react-scripts test",
     "lint": "eslint --config ./.eslintrc.js --ignore-path ./.eslintignore ./src/**/*",
-    "deploy": "yarn run build && fleek site:deploy",
+    "deploy": "fleek site:deploy",
     "ipfs": "node ./scripts/ipfs.js",
     "surge": "surge ./build",
     "s3": "node ./scripts/s3.js",

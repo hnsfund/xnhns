@@ -11,6 +11,7 @@
   "private": true,
   "scripts": {
     "react-app:build": "yarn workspace @scaffold-eth/react-app build --max-old-space-size=12288",
+    "react-app:deploy": "yarn workspace @scaffold-eth/react-app deploy",
     "react-app:eject": "yarn workspace @scaffold-eth/react-app eject",
     "react-app:start": "yarn workspace @scaffold-eth/react-app start",
     "react-app:test": "yarn workspace @scaffold-eth/react-app test",
@@ -36,7 +37,6 @@
     "wallet": "cd packages/hardhat && npx hardhat wallet",
     "fundedwallet": "cd packages/hardhat && npx hardhat fundedwallet",
     "flatten": "cd packages/hardhat && npx hardhat flatten",
-    "pregraph-node": "rm -r docker/graph-node/data/postgres/* ",
     "graph-node": "cd docker/graph-node && docker-compose up",
     "graph-remove-node": "cd docker/graph-node && docker-compose down",
     "graph-prepare": "mustache packages/subgraph/config/config.json packages/subgraph/src/subgraph.template.yaml > packages/subgraph/subgraph.yaml",
@@ -56,5 +56,6 @@
       "**/@graphprotocol/graph-ts",
       "**/@graphprotocol/graph-ts/**"
     ]
-  }
+  },
+  "dependencies": {}
 }

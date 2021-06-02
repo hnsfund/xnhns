@@ -133,25 +133,6 @@ module.exports = [
         "type": "address"
       }
     ],
-    "name": "TLDRemoved",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      }
-    ],
     "name": "TLDUnregistered",
     "type": "event"
   },
