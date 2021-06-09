@@ -49,3 +49,7 @@
   padding: 20px;
   line-height: 1em;
 }
+
+a {
+  underline: black;
+}
