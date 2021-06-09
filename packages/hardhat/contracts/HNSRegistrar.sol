@@ -1,9 +1,9 @@
 pragma solidity ^0.7.0;
 
-import "../interfaces/IENS.sol";
-import "../interfaces/IXNHNSOracle.sol";
-import "../interfaces/IPanvalaMember.sol";
-import "../Root.sol";
+import "./interfaces/IENS.sol";
+import "./interfaces/IXNHNSOracle.sol";
+import "./interfaces/IPanvalaMember.sol";
+import "./Root.sol";
 
 /**
  * @dev An ENS registrar that allows the owner of a HNS TLD to claim the

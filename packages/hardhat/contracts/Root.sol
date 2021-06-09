@@ -15,7 +15,6 @@ contract Root is
 
     event TLDRegistered(uint indexed id, address indexed owner);
     event TLDUnregistered(uint indexed id, address indexed owner);
-    event TLDMigrated(bytes32 indexed id, address indexed from, address indexed newRegistrar);
 
     IENS public ens;
     mapping(uint => address) public tldControllers; // sets NFTLD to only be changd by original registrar
@@ -61,34 +60,6 @@ contract Root is
       ens.setSubnodeOwner(ROOT_NODE, bytes32(id), address(0)); // or address(this)?
       delete tldControllers[id];
       emit TLDUnregistered(id, owner_);
-      return true;
-    }
-
-    /**
-      * @dev allows registrar for a tld to transfer control to another registrar.
-      *  so can migrate without calling unregister+register again.
-     */
-    function migrate(uint id,address to,  address owner_)
-      external
-      onlyControllerForTLD(id)
-      returns (bool)
-    {
-      require(isController(to), 'Root: Migration target is invalid registrar');
-      require(to != tldControllers[id], 'Root: Cannot migrate to self');
-      require(
-        IHNSRegistrar(to).initPreMigrationReceiverHook(bytes(id), msg.sender, owner_),
-        'Root: Migration target aborted'
-      );
-
-      tldControllers[id] = to;
-      ens.setSubnodeOwner(ROOT_NODE, bytes32(id), owner_);
-
-      require(
-        IHNSRegistrar(to).initPostMigrationReceiverHook(bytes(id), msg.sender, owner_),
-        'Root: Migration target aborted'
-      );
-  
-      emit TLDMigrated(id, msg.sender, to);
       return true;
     }
 

@@ -1,6 +1,7 @@
 const { utils } = require('ethers')
 const fs = require('fs')
 
+require("@nomiclabs/hardhat-vyper");
 require('@nomiclabs/hardhat-waffle');
 require("@nomiclabs/hardhat-etherscan"); // Uncomment to verify on etherscan
 require('hardhat-deploy');
@@ -126,6 +127,9 @@ module.exports = {
         mnemonic: mnemonic(),
       },
     },
+  },
+  vyper: {
+    version: "0.2.12"
   },
   solidity: {
     evmVersion: 'istanbul',

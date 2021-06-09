@@ -15,14 +15,16 @@ Built With:
 
 
 ## V2 dev notes
-__Hooks__
-Set Protocol hooks are via an external smart contract that gets called, not internal functions inside contract like OpenZeppelin
+__Adapters__
+Adapter contracts are only used for token controller logic, accounting, etc. They do not directly hold deposited assets, those are held in the respective registrar that registered the TLD. This allows us to use assets in other adapters (e.g DeFi integrations) once deposited by DepositAdapter.
 
 __Migrating__
-- Since we are passing "owner" address through all the contracts there is no way for migration receiver to actually verify that `caller`/`owner` passed as param is who actually called. In `HNSRegistrarV2.migrate()` the  `caller`/`owner` param to `Root.migrate()` is the entrypoint of vulnerability and all registrars audits should speifically verify that function call does not have vulnerabilities.
+Once you've verified you TLD on a chain, it does not need to be verified again, you can register to any XNHNS registrar on that chain to gain it's benefits like timelocks or DeFi integrations to yield farm deposits.
+All you need to do to migrate registrars is call `unregister()` on your current registrar and then `register()` on your new registrar. Since each registrar has different requirements for TLD deposits this isn't an automated process yet.
 
 __Refferals__
-Referrer is set in register() instead of verify() because any person or register can call verify(). Only the owner of NFTLD can acll register() meaning that they have given consent to referrer by signing tx with their address.
+Referrer is set in register() instead of verify() because any person or register can call verify(). Only the owner of NFTLD can call register() meaning that they have given consent to referrer by signing tx with their address.
+
 ## quickstart
 
 ```bash
@@ -106,6 +108,8 @@ Always open to developing new cool ideas. Open an issue if you have an idea for 
 We have built [external adapters](https://github.com/hnsfund/xnhns-domain-verification-clea) so any ChainLink oracle can join the XNHNS oracle network and help verify DNS records. ChainLink is inherently crosschain protocol just like XNHNS so it is a perfect fit since we can utilize the same smart contracts and service providers on every chain we use. 
 
 Any smart contract can read TLD owners registered by the `XNHNSOracle` contract. There is a whitelist of external contracts that are allowed to initiate requests to verify domains to prevent spam (deposit on verify() reduces spam). This allows multiple registrars to operate at once, and reducing .
+
+### NOTICE: We are currently using a non-Chainlink, trusted oracle while we are in alpha to improve product iterations.
 ## The Graph
 Use the graph for data querying on the frontend. Pulled from [ENS subgraph](https://github.com/ensdomains/ens-subgraph) with some minor additions for XNHNS requirements like oracle events. Subgraphs names follow the format `xnhns-{networkName}` where networkName is the short code used in the HIP5 NS record e.g. 'eth' for Ethereum mainnet.
 - [Subgraph.yaml](https://github.com/hnsfund/xnhns/blob/master/packages/subgraph/src/subgraph.template.yaml)
