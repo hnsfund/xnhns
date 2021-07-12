@@ -9,8 +9,11 @@ import "../../interfaces/IXNHNSOracle.sol";
  * and assigns ownership to an address
  */
 contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
-    string public NAMESPACE;
+    // immutable variables about xnhns host chain
+    string public immutable XNHNS_NAMESPACE;
+    address public immutable XNHNS_REGISTRY;
 
+    // mutable variables for oracle config
     address public hnsOracle;
     bytes32 public verifyHnsTldJobId;
     uint256 private oracleFee = 0.1 * 10 ** 18; // 0.1 LINK
@@ -24,11 +27,13 @@ contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
 
     constructor(
         string memory _namespace,
+        address registry,
         address oracle,
         address link,
-        bytes32 jobId
+        bytes32 jobId,
       ) {
-        NAMESPACE = _namespace;
+        XNHNS_NAMESPACE = _namespace;
+        XNHNS_REGISTRY = registry
         hnsOracle = oracle;
         setChainlinkToken(link);
         verifyHnsTldJobId = jobId;
@@ -52,7 +57,8 @@ contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
         this.receiveTLDUpdate.selector
       );
       Chainlink.add(request, "tld", tld);
-      Chainlink.add(request, "namespace", NAMESPACE);
+      Chainlink.add(request, "namespace", XNHNS_NAMESPACE);
+      Chainlink.add(request, "registry", XNHNS_REGISTRY);
       
       tldRunIds[request.id] = tld;
 

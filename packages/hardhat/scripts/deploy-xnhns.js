@@ -78,6 +78,8 @@ async function main() {
 
   // uncomment for Chainlink oracle. Update config at beginning of file
   // const XNHNSOracle = await deploy('XNHNSOracle', [
+  //   namespace,
+  //   `${EnsRegistry.address}._${namespace}.`
   //   oracleAddr,
   //   linkAddr,
   //   verifyTldJobId
