@@ -1,6 +1,6 @@
 const fs = require('fs')
 const chalk = require('chalk')
-const { config, ethers } = require('hardhat')
+const { config, ethers, run } = require('hardhat')
 const { arch } = require('os')
 const { utils } = ethers
 const { namehash } = require('@ensdomains/ensjs')
@@ -11,7 +11,8 @@ const addresses = {}
 const HNS_FUND_TREASURY = '0xd25A803E24FFd3C0033547BE04D8C43FFBa7486b';
 const HNS_PANVALA_CONTRACT = '';
 
-const namespace = 'xdai',
+const namespace = 'kovan',
+  governanceAddress = '0xd99ff346476C36cD159fA1bE6f5F79E74b7C37e0', // DAO multisig that contorls XNHNS system
   oracleAddr = '0x31Da52dFe5168e2b029703152a877149ea3fB064',
   linkAddr = '0xa36085F69e2889c224210F603D836748e7dC0088',
   verifyTldJobId = utils.id('41e9e8e2678f4d5f98e4bebe02cc1ccc'),
@@ -37,6 +38,7 @@ const getContract = (contractName, namespace) => {
     }
   });
 }
+
 /**
  * @dev Deploys an entirely new instance of ENS to be used by only a single tld (e.g. .badass/)
 */
@@ -48,10 +50,7 @@ async function deploy(name, _args) {
   const contractAddress = await getContract(name, namespace)
   console.log('predeployed contract address:', contractAddress);
   const contract = contractAddress ?
-    {
-      ...contractArtifacts.attach(contractAddress),
-      // deployTransaction: { wait: () => Promise.resolve() } // stub wait
-    } : 
+    contractArtifacts.attach(contractAddress) : 
     await contractArtifacts.deploy(...args);
 
 
@@ -74,7 +73,8 @@ async function main() {
   const registryAddress = EnsRegistry.address
   console.log('XNHNS registry form namespace --- ', `${registryAddress}._${namespace}.`);
   
-  const Root = await deploy('Root', [registryAddress])
+  const rootParams = [ registryAddress ]
+  const Root = await deploy('Root', rootParams)
 
   // uncomment for Chainlink oracle. Update config at beginning of file
   // const XNHNSOracle = await deploy('XNHNSOracle', [
@@ -86,13 +86,15 @@ async function main() {
   // ])
 
   // comment out if using Chainlink oracle.
-  const XNHNSOracle = await deploy('TrustedXNHNSOracle', [ namespace ])
+  const oracleParams = [ namespace ]
+  const XNHNSOracle = await deploy('TrustedXNHNSOracle', oracleParams)
 
-  const HNSRegistrar = await deploy('HNSRegistrar', [
+  const registrarParams = [
     registryAddress,
     namespace,
     XNHNSOracle.address
-  ])
+  ]
+  const HNSRegistrar = await deploy('HNSRegistrar', registrarParams)
 
   // console.log('oracle', oracleAddr, linkAddr, verifyTldJobId);
   // console.log('ENS Registry ontr', EnsRegistry);
@@ -115,11 +117,11 @@ async function main() {
   // await Root.setController(HNSRegistrar.address, true)
 
   // allow registrar to call oracle to update tld status
-  if(XNHNSOracle.deployTransaction) {
-    await XNHNSOracle.deployTransaction.wait()
-  }
-  console.log('Adding registrar to Oracle...');
-  await XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
+  // if(XNHNSOracle.deployTransaction) {
+  //   await XNHNSOracle.deployTransaction.wait()
+  // }
+  // console.log('Adding registrar to Oracle...');
+  // await XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
   
   // const HnsFund = deploy('PanvalaMember', [HNS_FUND_TREASURY])
   // const TLDBroker = await deploy('TLDSalesBroker', [
@@ -130,7 +132,34 @@ async function main() {
   //   verifyTxJobId,
   // ])
 
+  // Transfer ownerships of contracts from deployer to governance
+  console.log('Root.owner()', await Root.owner());
+  if(await Root.owner() === deployer) {
+    await Root.transferOwnership(governanceAddress);
+    await XNHNSOracle.transferOwnership(governanceAddress);
+  }
+
   // anything else to do?
+
+  // verify contracts on explorers
+  console.log('verifying contracts on etherscan...');
+
+  const contractDetails = [
+    [EnsRegistry.address,     []],
+    [Root.address,            rootParams],
+    [XNHNSOracle.address,     oracleParams],
+    [HNSRegistrar.address,    registrarParams],
+  ]
+  const verifications = contractDetails.map(([addr, params]) => {
+    console.log('addr, params', addr, params);
+    return run("verify:verify", {
+      address: addr,
+      constructorArguments: params
+    }
+  )
+  }) 
+  const verficationResponse = await Promise.all(verifications);
+  console.log('verify contracts response', verficationResponse);
 }
 
 main()

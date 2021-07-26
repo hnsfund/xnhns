@@ -10,8 +10,8 @@ import "../../interfaces/IXNHNSOracle.sol";
  */
 contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
     // immutable variables about xnhns host chain
-    string public immutable XNHNS_NAMESPACE;
-    address public immutable XNHNS_REGISTRY;
+    string public XNHNS_NAMESPACE;
+    address public XNHNS_REGISTRY;
 
     // mutable variables for oracle config
     address public hnsOracle;
@@ -30,10 +30,10 @@ contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
         address registry,
         address oracle,
         address link,
-        bytes32 jobId,
+        bytes32 jobId
       ) {
         XNHNS_NAMESPACE = _namespace;
-        XNHNS_REGISTRY = registry
+        XNHNS_REGISTRY = registry;
         hnsOracle = oracle;
         setChainlinkToken(link);
         verifyHnsTldJobId = jobId;
@@ -58,7 +58,7 @@ contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
       );
       Chainlink.add(request, "tld", tld);
       Chainlink.add(request, "namespace", XNHNS_NAMESPACE);
-      Chainlink.add(request, "registry", XNHNS_REGISTRY);
+      Chainlink.add(request, "registry", string(abi.encodePacked(XNHNS_REGISTRY)));
       
       tldRunIds[request.id] = tld;
 
