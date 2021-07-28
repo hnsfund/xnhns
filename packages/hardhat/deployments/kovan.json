@@ -27,9 +27,9 @@
     "args": {
       "_namespace": "kovan",
       "registry": "0xa4B219ca85EDE5e5c5245B969d72dA7e6e394249",
-      "oracle": "kovan",
-      "link": "kovan",
-      "jobId": "kovan"
+      "oracle": "0xd99ff346476C36cD159fA1bE6f5F79E74b7C37e0",
+      "link": "0xa36085F69e2889c224210F603D836748e7dC0088",
+      "jobId": "0xc41283548f83ba6bd778e08454c501b1ac054a5d9048c1a22d12ef6907475c5b"
     }
   }
 }

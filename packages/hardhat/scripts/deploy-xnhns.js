@@ -1,7 +1,6 @@
 const fs = require('fs')
 const chalk = require('chalk')
 const { config, ethers, run } = require('hardhat')
-const { arch } = require('os')
 const { utils } = ethers
 const { namehash } = require('@ensdomains/ensjs')
 
@@ -13,10 +12,9 @@ const HNS_PANVALA_CONTRACT = '';
 
 const namespace = 'kovan',
   governanceAddress = '0xd99ff346476C36cD159fA1bE6f5F79E74b7C37e0', // DAO multisig that contorls XNHNS system
-  oracleAddr = '0x31Da52dFe5168e2b029703152a877149ea3fB064',
+  oracleAddr = '0xd99ff346476C36cD159fA1bE6f5F79E74b7C37e0',
   linkAddr = '0xa36085F69e2889c224210F603D836748e7dC0088',
-  verifyTldJobId = utils.id('41e9e8e2678f4d5f98e4bebe02cc1ccc'),
-  verifyTxJobId = utils.id('asfawfafawaqwfa'); // coerce bytes32
+  verifyTldJobId = utils.id('41e9e8e2678f4d5f98e4bebe02cc1ccc')
 
 const getContract = (contractName, namespace) => {
   console.log(`checking for existing contract deployments for ${contractName} on ${namespace}...`);
@@ -77,17 +75,19 @@ async function main() {
   const Root = await deploy('Root', rootParams)
 
   // uncomment for Chainlink oracle. Update config at beginning of file
-  // const XNHNSOracle = await deploy('XNHNSOracle', [
-  //   namespace,
-  //   `${EnsRegistry.address}._${namespace}.`
-  //   oracleAddr,
-  //   linkAddr,
-  //   verifyTldJobId
-  // ])
-
-  // comment out if using Chainlink oracle.
   const oracleParams = [ namespace ]
-  const XNHNSOracle = await deploy('TrustedXNHNSOracle', oracleParams)
+  // console.log('oracle', namespace, oracleAddr, linkAddr, verifyTldJobId);
+  const XNHNSOracle = await deploy('XNHNSOracle', [
+    ...oracleParams,
+    EnsRegistry.address,
+    oracleAddr,
+    linkAddr,
+    verifyTldJobId
+  ])
+
+  // const XNHNSOracle = await deploy('TrustedXNHNSOracle', oracleParams)
+  // const XNHNSOracle = await deploy('DummyXNHNSOracle')
+
 
   const registrarParams = [
     registryAddress,
@@ -96,50 +96,53 @@ async function main() {
   ]
   const HNSRegistrar = await deploy('HNSRegistrar', registrarParams)
 
-  // console.log('oracle', oracleAddr, linkAddr, verifyTldJobId);
-  // console.log('ENS Registry ontr', EnsRegistry);
+  /* START POST DEPLOYMENT CONFIGURATION */
+  
   if(EnsRegistry.deployTransaction) {
     await EnsRegistry.deployTransaction.wait()
-  }
-  console.log('giving root contract control of rootzone');
-  try {
-    // const rootTransferTx = await EnsRegistry.setOwner(namehash(''), Root.address)
-    console.log('Successfully transferred ownership of rootzone to Root contract');
-  } catch(e) {
-    console.log('error giving Root contract control of root zone: ', e);
+    console.log('giving Root contract control of rootzone');
+    try {
+      const rootTransferTx = await EnsRegistry.setOwner(namehash(''), Root.address)
+      console.log('Successfully transferred ownership of rootzone to Root contract');
+    } catch(e) {
+      console.log('error giving Root contract control of root zone: ', e);
+    }
   }
 
-  // Allow registrar to update ENS Registry to issue TLDs
+  // // Allow registrar to update ENS Registry to issue TLDs
   if(Root.deployTransaction) {
     await Root.deployTransaction.wait()
   }
   console.log('Adding registrar to Root...');
-  // await Root.setController(HNSRegistrar.address, true)
+  await Root.setController(HNSRegistrar.address, true)
+  
+  // All Root tasks complete
+  // Transfer ownership of contract to Governance after all deployment config setup
+  const rootOwner = await Root.owner()
+  console.log('Root.owner()', rootOwner);
+  if(rootOwner === deployer) {
+    await Root.transferOwnership(governanceAddress);
+    console.log('Successfully gave ownership of Root to governance');
+  }  
+
 
   // allow registrar to call oracle to update tld status
-  // if(XNHNSOracle.deployTransaction) {
-  //   await XNHNSOracle.deployTransaction.wait()
-  // }
-  // console.log('Adding registrar to Oracle...');
-  // await XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
-  
-  // const HnsFund = deploy('PanvalaMember', [HNS_FUND_TREASURY])
-  // const TLDBroker = await deploy('TLDSalesBroker', [
-  //   registryAddress,
-  //   HnsFund.address,
-  //   oracleAddr,
-  //   linkAddr,
-  //   verifyTxJobId,
-  // ])
-
-  // Transfer ownerships of contracts from deployer to governance
-  console.log('Root.owner()', await Root.owner());
-  if(await Root.owner() === deployer) {
-    await Root.transferOwnership(governanceAddress);
-    await XNHNSOracle.transferOwnership(governanceAddress);
+  if(XNHNSOracle.deployTransaction) {
+    await XNHNSOracle.deployTransaction.wait()
   }
+  console.log('Adding registrar to Oracle...');
+  await XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
 
-  // anything else to do?
+
+  if(XNHNSOracle.owner) {
+    const oracleOwner = await XNHNSOracle.owner()
+    console.log('Oracle.owner()', oracleOwner);
+    if(oracleOwner === deployer) {
+      await XNHNSOracle.transferOwnership(governanceAddress);
+      console.log('Successfully gave ownership of Oracle to governance');
+    }  
+  }
+  /* END POST DEPLOYMENT CONFIGURATION */
 
   // verify contracts on explorers
   console.log('verifying contracts on etherscan...');
@@ -150,16 +153,23 @@ async function main() {
     [XNHNSOracle.address,     oracleParams],
     [HNSRegistrar.address,    registrarParams],
   ]
-  const verifications = contractDetails.map(([addr, params]) => {
-    console.log('addr, params', addr, params);
-    return run("verify:verify", {
+  const verifications = contractDetails.map(([addr, params]) => 
+    run("verify:verify", {
       address: addr,
       constructorArguments: params
     }
-  )
-  }) 
-  const verficationResponse = await Promise.all(verifications);
-  console.log('verify contracts response', verficationResponse);
+  ))
+
+  try {
+    const verficationResponse = await Promise.all(verifications);
+    console.log('verify contracts response', verficationResponse);
+  } catch(e) {
+    console.log('Error verifying contracts on etherscan', e)
+  }
+
+
+  // anything else to do?
+
 }
 
 main()

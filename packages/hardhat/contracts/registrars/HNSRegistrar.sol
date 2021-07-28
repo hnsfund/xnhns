@@ -101,7 +101,8 @@ contract HNSRegistrar {
       require(tldOwner != address(0), 'Invalid TLD in namespace');
       require(tldOwner == msg.sender, 'Only TLD owner can register');
 
-       _getRoot().register(uint(node), tldOwner);
+      Root nftld = _getRoot();
+      nftld.register(uint(node), tldOwner);
       emit NewOwner(node, tldOwner);
       return uint(node);
     }

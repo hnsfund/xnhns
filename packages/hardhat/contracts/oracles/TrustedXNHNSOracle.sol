@@ -32,9 +32,9 @@ contract TrustedXNHNSOracle is IXNHNSOracle, Ownable {
     }
 
     function receiveTLDUpdate(bytes32 node, address owner_)
-      external
-      override
-      onlyOwner returns (bool)
+      external override
+      onlyOwner
+      returns (bool)
     {
       tldOwners[node] = owner_;
       emit NewOwner(node, owner_);
