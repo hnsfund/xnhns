@@ -38,7 +38,7 @@ import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants"
 
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['xdai']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS['kovan']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
@@ -130,7 +130,7 @@ function App(props) {
   // console.log("🤗 tldOracle:", tldOracle, tldDeposits)
 
   //📟 Listen for broadcast events
-  const oracleContract = targetNetwork.name === 'localhost' ? "TrustedXNHNSOracle" : "TrustedXNHNSOracle"
+  const oracleContract = targetNetwork.name === 'localhost' ? "DummyXNHNSOracle" : "TrustedXNHNSOracle"
   const oracleNewOwnerEvents = useEventListener(readContracts, oracleContract, "NewOwner", userProvider, 1);
   const registrarNewOwnerEvents = useEventListener(readContracts, "HNSRegistrar", "NewOwner", userProvider, 1);
   console.log("📟 NewOwner events:", oracleNewOwnerEvents, registrarNewOwnerEvents)
@@ -143,28 +143,29 @@ function App(props) {
 
 
   let networkDisplay = ""
-  // if(localChainId && selectedChainId && localChainId != selectedChainId ){
-  //   networkDisplay = (
-  //     <div style={{zIndex:2, position:'absolute', right:0,top:60,padding:16}}>
-  //       <Alert
-  //         message={"⚠️ Wrong Network"}
-  //         description={(
-  //           <div>
-  //             You have <b>{NETWORK(selectedChainId).name}</b> selected and you need to be on <b>{NETWORK(localChainId).name}</b>.
-  //           </div>
-  //         )}
-  //         type="error"
-  //         closable={false}
-  //       />
-  //     </div>
-  //   )
-  // } else {
+  if(localChainId && selectedChainId && localChainId != selectedChainId ){
+    networkDisplay = (
+      <div style={{zIndex:2, position:'absolute', right:0,top:60,padding:16}}>
+        <Alert
+          message={"⚠️ Wrong Network"}
+          description={(
+            <div>
+              You have <b>{(NETWORK(selectedChainId) || {name: "unknown"}).name}</b>
+              selected and you need to be on <b>{NETWORK(localChainId).name}</b>.
+            </div>
+          )}
+          type="error"
+          closable={false}
+        />
+      </div>
+    )
+  } else {
     networkDisplay = (
       <div style={{zIndex:-1, position:'absolute', right:154,top:28,padding:16,color:targetNetwork.color}}>
         {targetNetwork.name}
       </div>
     )
-  // }
+  }
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -184,6 +185,7 @@ function App(props) {
 
   let faucetHint = ""
   const faucetAvailable = localProvider && localProvider.connection && localProvider.connection.url && localProvider.connection.url.indexOf(window.location.hostname)>=0 && !process.env.REACT_APP_PROVIDER && price > 1;
+  console.log('FAucet Avalibale', faucetAvailable);
 
   const [ faucetClicked, setFaucetClicked ] = useState( false );
   if(!faucetClicked&&localProvider&&localProvider._network&&localProvider._network.chainId==31337&&yourLocalBalance&&formatEther(yourLocalBalance)<=0){
@@ -279,6 +281,34 @@ function App(props) {
               oracleNewOwnerEvents={oracleNewOwnerEvents}
               registrarNewOwnerEvents={registrarNewOwnerEvents}
             />
+          </Route>
+          <Route path="/admin">
+            <div>
+
+              <Contract
+                name="Root"
+                signer={userProvider}
+                provider={localProvider}
+                address={address}
+                blockExplorer={blockExplorer}
+              />
+
+              <Contract
+                name={oracleContract}
+                signer={userProvider}
+                provider={localProvider}
+                address={address}
+                blockExplorer={blockExplorer}
+              />
+
+              <Contract
+                name="HNSRegistrar"
+                signer={userProvider}
+                provider={localProvider}
+                address={address}
+                blockExplorer={blockExplorer}
+              />
+            </div>
           </Route>
           <Route path="/subgraph">
             <Subgraph

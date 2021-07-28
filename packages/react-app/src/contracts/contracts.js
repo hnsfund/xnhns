@@ -1,1 +1,1 @@
-module.exports = ["ENSRegistry","Root","DummyOracle","DummyXNHNSOracle","StablePriceOracle","TrustedXNHNSOracle","XNHNSOracle","BaseRegistrar","HNSRegistrar","RegistrarController","PublicResolver"];
+module.exports = ["ENSRegistry","Root","DummyXNHNSOracle","TrustedXNHNSOracle","XNHNSOracle","HNSRegistrar"];

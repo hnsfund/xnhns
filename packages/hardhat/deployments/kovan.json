@@ -1,25 +1,36 @@
 {
   "Root": {
-    "address": "0xfBD6A4856fBC657e189180AB23fAFfe29c7fBD42",
+    "address": "0x6724BDFd49A84Fc36a99eCEd0792105Db802835e",
     "args": {
-      "_ens": "0x3b639E3D3f6D449C79044d7e85bf28beCD18931d"
+      "_ens": "0xa4B219ca85EDE5e5c5245B969d72dA7e6e394249"
     }
   },
   "ENSRegistry": {
-    "address": "0x3b639E3D3f6D449C79044d7e85bf28beCD18931d"
+    "address": "0xa4B219ca85EDE5e5c5245B969d72dA7e6e394249"
   },
   "HNSRegistrar": {
-    "address": "0xA3b7Eae5A19cC94F258C17E1485660506B23874c",
+    "address": "0xfDf9F54561152DA9C153B1911E6bA315b9a5d790",
     "args": {
-      "ens_": "0x3b639E3D3f6D449C79044d7e85bf28beCD18931d",
+      "ens_": "0xa4B219ca85EDE5e5c5245B969d72dA7e6e394249",
       "namespace": "kovan",
-      "oracle": "0x4FD4a3212Bc38C5769E53Eba387Cb71E2E137d47"
+      "oracle": "0xCBd6580795CBE56017B4fa15b23eA7e207C583B9"
     }
   },
   "TrustedXNHNSOracle": {
-    "address": "0x4FD4a3212Bc38C5769E53Eba387Cb71E2E137d47",
+    "address": "0xCBd6580795CBE56017B4fa15b23eA7e207C583B9",
     "args": {
       "_namespace": "kovan"
     }
+  },
+  "XNHNSOracle": {
+    "address": "0xedefF368B6E17b4236b40E5474e021F9A4e2691E",
+    "args": {
+      "_namespace": "kovan",
+      "registry": "0xa4B219ca85EDE5e5c5245B969d72dA7e6e394249",
+      "oracle": "kovan",
+      "link": "kovan",
+      "jobId": "kovan"
+    }
   }
 }
+

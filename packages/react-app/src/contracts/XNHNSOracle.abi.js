@@ -8,6 +8,11 @@ module.exports = [
       },
       {
         "internalType": "address",
+        "name": "registry",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "oracle",
         "type": "address"
       },
@@ -117,12 +122,25 @@ module.exports = [
   },
   {
     "inputs": [],
-    "name": "NAMESPACE",
+    "name": "XNHNS_NAMESPACE",
     "outputs": [
       {
         "internalType": "string",
         "name": "",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "XNHNS_REGISTRY",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
