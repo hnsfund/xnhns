@@ -73,7 +73,7 @@ contract Root is
     }
 
     // GETTERS
-    function getControllerForNFTLD(uint256 id) external view returns(address) {
+    function getControllerOfNFTLD(uint256 id) external view returns(address) {
       return tldControllers[id];
     }
 }

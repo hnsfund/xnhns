@@ -19,11 +19,14 @@ __Adapters__
 Adapter contracts are only used for token controller logic, accounting, etc. They do not directly hold deposited assets, those are held in the respective registrar that registered the TLD. This allows us to use assets in other adapters (e.g DeFi integrations) once deposited by DepositAdapter.
 
 __Migrating__
-Once you've verified you TLD on a chain, it does not need to be verified again, you can register to any XNHNS registrar on that chain to gain it's benefits like timelocks or DeFi integrations to yield farm deposits.
+Once you've verified you TLD on a chain, it does not need to be verified again, you can register to any XNHNS registrar on that chain (assuming it uses the same oracle) to gain it's benefits like timelocks or DeFi integrations to yield farm deposits.
 All you need to do to migrate registrars is call `unregister()` on your current registrar and then `register()` on your new registrar. Since each registrar has different requirements for TLD deposits this isn't an automated process yet.
 
 __Refferals__
 Referrer is set in register() instead of verify() because any person or register can call verify(). Only the owner of NFTLD can call register() meaning that they have given consent to referrer by signing tx with their address.
+
+__Snitching__
+Snitch deposits are always in native asset for chain. This makes keeper UX much better since they don't have inventory risk for whatever asset each registrar utilizes. Just deposit ETH, then get paid in X token but you don't need to trade into X token before hand and hold it while snitch is being processed.
 
 ## quickstart
 

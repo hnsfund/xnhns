@@ -22,6 +22,12 @@ contract DummyXNHNSOracle is IXNHNSOracle {
       return node;
     }
 
+     function receiveTLDUpdate(bytes32 node, address owner) public override returns (bool) {
+      tldOwners[node] = owner;
+      emit NewOwner(node, owner);
+      return true;
+    }
+
     function setOracle(address _oracle, uint _fee, bytes32 _jobId)
       public override
       returns (bool)

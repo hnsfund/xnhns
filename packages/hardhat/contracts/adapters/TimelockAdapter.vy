@@ -1,10 +1,10 @@
 # @version 0.2.12
 
-import ILibHNSRegistrar as LibHNSRegistrar
+from ..interfaces import ILibHNSRegistrar
 
-struct RegistrarTimelockConfig:
+struct TimelockRegistrarConfig:
   adapterEnabled: bool
-  minTimelock: uint256 # TODO what is the base time interval here?
+  minTimelock: uint256
 
 struct TimelockDetails:
   timeStart: uint256
@@ -20,14 +20,21 @@ event TimelockIncreased:
   registrar: address
   amount: uint256
 
-registrarConfigs: public(HashMap[address, RegistrarTimelockConfig])
+registrarConfigs: public(HashMap[address, TimelockRegistrarConfig])
 timelocks: public(HashMap[bytes32, TimelockDetails]) # ENS node -> timestamp for end of lock period
+xnhnsLib: ILibHNSRegistrar
+
+@external
+def __init__(
+  xnhnsLib_: address
+):
+  self.xnhnsLib = ILibHNSRegistrar(xnhnsLib_)
 
 @external
 def updateRegistrarConfig(
   minTimelock: uint256,
   adapterEnabled: bool,
-):
+) -> bool:
   """
     @notice
         Allows registrar to update any parameter
@@ -36,18 +43,19 @@ def updateRegistrarConfig(
   """
   assert minTimelock > 0
 
-  self.registrarConfigs[msg.sender] = RegistrarTimelockConfig({
+  self.registrarConfigs[msg.sender] = TimelockRegistrarConfig({
     minTimelock: minTimelock,
-    adapterEnabled: enabled
+    adapterEnabled: adapterEnabled
   })
 
   log RegistrarConfigUpdated(msg.sender, minTimelock, adapterEnabled)
+  return True
 
 @external
 def increaseTimelock(
   node: bytes32,
   amount: uint256
-):
+) -> bool:
   """
     @notice
         Only accessible to configured registrars.
@@ -55,15 +63,15 @@ def increaseTimelock(
         Assets are deposited in registrar - NOT this contract. Adapter only handles executing logic.
 
     @dev
-      `amount` must be at least the minTimelock on adapaters's RegistrarTimelockConfig
+      `amount` must be at least the minTimelock on adapaters's TimelockRegistrarConfig
 
     @param node The ENS node for TLD
     @param amount Amount of time to add to timelock
   """
   assert amount > 0
-  assert msg.sender == LibHNSRegistrar.getControllerForNFLTD(convert(node, uint256), ens)
+  assert msg.sender == self.xnhnsLib.getControllerOfNFTLD(node, ens)
 
-  config : RegistrarTimelockConfig = self.registrarConfigs[msg.sender]
+  config : TimelockRegistrarConfig = self.registrarConfigs[msg.sender]
   assert config.adapterEnabled == True
 
   lock : TimelockDetails = self.deposits[node]
@@ -76,8 +84,25 @@ def increaseTimelock(
     lock.timeEnd += amount
 
   log TimelockIncreased(node, msg.sender, amount)
+  return True
 
 # no decrease timelock because obv not a thing
+
+@view
+@external
+def removeTLD(node: bytes32) -> bool:
+  """
+  @notice Only called when TLD has been snitched on and unregistered
+    to allow next owner to register tld without errors
+  """
+  assert msg.sender == self.xnhnsLib.getControllerOfNFTLD(node, ens)
+  empty(timelocks[node])
+  return True
+
+@view
+@external
+def timelockEndBlock(node: bytes32) -> bool:
+  return self.timelocks[node].timeEnd
 
 @view
 @external

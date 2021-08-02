@@ -59,6 +59,7 @@ contract XNHNSOracle is ChainlinkClient, Ownable, IXNHNSOracle {
 
     function receiveTLDUpdate(bytes32 requestId, address _owner)
       public
+      override
       recordChainlinkFulfillment(requestId)
       returns (bool)
     {

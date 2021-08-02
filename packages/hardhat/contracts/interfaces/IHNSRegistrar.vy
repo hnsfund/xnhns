@@ -9,3 +9,6 @@ interface IHNSRegistrar:
   
   # def getTLD(node: bytes32) -> : view
   def getSnitch(node: bytes32) -> (address, uint256): view
+
+  def oracle() -> address: view
+  def namespace() -> String[10]: view
