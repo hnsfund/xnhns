@@ -7,15 +7,6 @@ const { namehash } = require('@ensdomains/ensjs')
 // contract addresses after deployment
 const addresses = {}
 
-const HNS_FUND_TREASURY = '0xd25A803E24FFd3C0033547BE04D8C43FFBa7486b';
-const HNS_PANVALA_CONTRACT = '';
-
-const namespace = 'kovan',
-  governanceAddress = '0xd99ff346476C36cD159fA1bE6f5F79E74b7C37e0', // DAO multisig that contorls XNHNS system
-  oracleAddr = '0xd99ff346476C36cD159fA1bE6f5F79E74b7C37e0',
-  linkAddr = '0xa36085F69e2889c224210F603D836748e7dC0088',
-  verifyTldJobId = utils.id('41e9e8e2678f4d5f98e4bebe02cc1ccc')
-
 const getContract = (contractName, namespace) => {
   console.log(`checking for existing contract deployments for ${contractName} on ${namespace}...`);
   return new Promise((resolve, reject) => {
@@ -66,83 +57,30 @@ async function main() {
   const addresses = await ethers.getSigners();
   const deployer = addresses[0].address
   console.log('deploying from - ', deployer);
+
   // deploy 
-  const EnsRegistry = await deploy('ENSRegistry')
-  const registryAddress = EnsRegistry.address
-  console.log('XNHNS registry form namespace --- ', `${registryAddress}._${namespace}.`);
+  const namespace = 'polygon'
+  const governanceAddress = '0x11b3585b00febd9d513fdc27c3721c855051e000' // DAO multisig that contorls XNHNS system
   
-  const rootParams = [ registryAddress ]
-  const Root = await deploy('Root', rootParams)
-
-  // uncomment for Chainlink oracle. Update config at beginning of file
-  const oracleParams = [ namespace ]
-  // console.log('oracle', namespace, oracleAddr, linkAddr, verifyTldJobId);
-  const XNHNSOracle = await deploy('XNHNSOracle', [
-    ...oracleParams,
-    EnsRegistry.address,
-    oracleAddr,
-    linkAddr,
-    verifyTldJobId
-  ])
-
-  // const XNHNSOracle = await deploy('TrustedXNHNSOracle', oracleParams)
-  // const XNHNSOracle = await deploy('DummyXNHNSOracle')
-
-
-  const registrarParams = [
-    registryAddress,
-    namespace,
-    XNHNSOracle.address
-  ]
-  const HNSRegistrar = await deploy('HNSRegistrar', registrarParams)
-
-  /* START POST DEPLOYMENT CONFIGURATION */
+  await deploy("DeployScript", [governanceAddress, namespace])
   
-  if(EnsRegistry.deployTransaction) {
-    await EnsRegistry.deployTransaction.wait()
-    console.log('giving Root contract control of rootzone');
-    try {
-      const rootTransferTx = await EnsRegistry.setOwner(namehash(''), Root.address)
-      console.log('Successfully transferred ownership of rootzone to Root contract');
-    } catch(e) {
-      console.log('error giving Root contract control of root zone: ', e);
-    }
-  }
-
-  // // Allow registrar to update ENS Registry to issue TLDs
-  if(Root.deployTransaction) {
-    await Root.deployTransaction.wait()
-  }
-  console.log('Adding registrar to Root...');
-  await Root.setController(HNSRegistrar.address, true)
-  
-  // All Root tasks complete
-  // Transfer ownership of contract to Governance after all deployment config setup
-  const rootOwner = await Root.owner()
-  console.log('Root.owner()', rootOwner);
-  if(rootOwner === deployer) {
-    await Root.transferOwnership(governanceAddress);
-    console.log('Successfully gave ownership of Root to governance');
-  }  
-
-
-  // allow registrar to call oracle to update tld status
-  if(XNHNSOracle.deployTransaction) {
-    await XNHNSOracle.deployTransaction.wait()
-  }
-  console.log('Adding registrar to Oracle...');
-  await XNHNSOracle.setCallerPermission(HNSRegistrar.address, true);
-
-
-  if(XNHNSOracle.owner) {
-    const oracleOwner = await XNHNSOracle.owner()
-    console.log('Oracle.owner()', oracleOwner);
-    if(oracleOwner === deployer) {
-      await XNHNSOracle.transferOwnership(governanceAddress);
-      console.log('Successfully gave ownership of Oracle to governance');
-    }  
-  }
   /* END POST DEPLOYMENT CONFIGURATION */
+
+  // const EnsRegistryAddress = "0x34f3fa739a0592e3a7ded83802c9faa53c28a1a5"
+  // const EnsRegistryParams = []
+  // const RootAddress = "0xd87944cbfa0f77da6acaf10348f90ec4dcdbcbbb"
+  // const RootParams = [EnsRegistryAddress]
+  // const XNHNSOracleAddress = "0xbd3289d2751bf61db41f38935da42643c4655984"
+  // const XNHNSOracleParams = [namespace]
+  // const HNSRegistrarAddress = "0x21322caa2853c5a2fb57b5fb2f95068dfa7ac6d6"
+  // const HNSRegistrarParams = [EnsRegistryAddress, namespace, XNHNSOracleAddress]
+
+  // const contractDetails = [
+  //   [EnsRegistryAddress,     EnsRegistryParams],
+  //   [RootAddress,            RootParams],
+  //   [XNHNSOracleAddress,     XNHNSOracleParams],
+  //   [HNSRegistrarAddress,    HNSRegistrarParams],
+  // ]
 
   // verify contracts on explorers
   console.log('verifying contracts on etherscan...');

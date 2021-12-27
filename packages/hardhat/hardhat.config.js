@@ -19,7 +19,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = 'kovan'
+const defaultNetwork = 'matic'
 
 function mnemonic(generate) {
   if(generate || defaultNetwork === 'localhost') return '';
@@ -77,7 +77,7 @@ module.exports = {
       },
     },
     matic: {
-      url: 'https://rpc-mainnet.matic.network',
+      url: 'https://polygon-rpc.com',
       accounts: {
         mnemonic: mnemonic(),
       },

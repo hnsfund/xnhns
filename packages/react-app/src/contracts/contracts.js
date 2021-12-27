@@ -1,1 +1,1 @@
-module.exports = ["ENSRegistry","Root","DummyXNHNSOracle","TrustedXNHNSOracle","XNHNSOracle","HNSRegistrar"];
+module.exports = ["DeployScript","ENSRegistry","Root","TrustedXNHNSOracle","XNHNSOracle","HNSRegistrar"];
