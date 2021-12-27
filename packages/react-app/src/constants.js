@@ -92,6 +92,7 @@ export const NETWORKS = {
     matic: {
         name: "matic",
         namespace: 'matic',
+        xnhnsRegistry: '0x34f3fa739a0592e3a7ded83802c9faa53c28a1a5',
         color: '#2bbdf7',
         chainId: 137,
         price: 1,

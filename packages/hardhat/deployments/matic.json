@@ -1,0 +1,26 @@
+{
+  "Root": {
+    "address": "0xd87944cbfa0f77da6acaf10348f90ec4dcdbcbbb",
+    "args": {
+      "_ens": "0x34f3fa739a0592e3a7ded83802c9faa53c28a1a5"
+    }
+  },
+  "ENSRegistry": {
+    "address": "0x34f3fa739a0592e3a7ded83802c9faa53c28a1a5"
+  },
+  "HNSRegistrar": {
+    "address": "0x21322caa2853c5a2fb57b5fb2f95068dfa7ac6d6",
+    "args": {
+      "ens_": "0x34f3fa739a0592e3a7ded83802c9faa53c28a1a5",
+      "namespace": "polygon",
+      "oracle": "0xbd3289d2751bf61db41f38935da42643c4655984"
+    }
+  },
+  "TrustedXNHNSOracle": {
+    "address": "0xbd3289d2751bf61db41f38935da42643c4655984",
+    "args": {
+      "_namespace": "kovan"
+    }
+  }
+}
+
