@@ -96,7 +96,7 @@ export const NETWORKS = {
         chainId: 137,
         price: 1,
         gasPrice:1000000000,
-        rpcUrl: "https://rpc-mainnet.maticvigil.com",
+        rpcUrl: 'https://polygon-rpc.com',
         faucet: "https://faucet.matic.network/",
         blockExplorer: "https://explorer-mainnet.maticvigil.com//",
     },
