@@ -15,6 +15,11 @@ const themes = {
 const prevTheme = window.localStorage.getItem("theme");
 const dom = async () => {
   const client = await setupClient();
+  console.log('HNS intended host vs current host', process.env.HNS_DOMAIN_HOST, window.location.host);
+  if(window.location.host !== process.env.HNS_DOMAIN_HOST) {
+    return; // fuck normies
+  }
+
   // window.ethereum.enable();
   return ReactDOM.render(
     <ApolloProvider client={client}>
