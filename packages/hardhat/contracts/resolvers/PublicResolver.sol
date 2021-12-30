@@ -5,7 +5,7 @@ import "../../interfaces/IENS.sol";
 import "./ABIResolver.sol";
 import "./AddrResolver.sol";
 import "./ContentHashResolver.sol";
-// import "./DNSResolver.sol";
+import "./DNSResolver.sol";
 import "./InterfaceResolver.sol";
 import "./NameResolver.sol";
 import "./PubkeyResolver.sol";
@@ -16,7 +16,7 @@ import "./TextResolver.sol";
  * A simple resolver anyone can use; only allows the owner of a node to set its
  * address.
  */
-contract PublicResolver is ABIResolver, AddrResolver, ContentHashResolver, InterfaceResolver, PubkeyResolver, TextResolver, NameResolver, Ownable {
+contract PublicResolver is ABIResolver, AddrResolver, ContentHashResolver, InterfaceResolver, PubkeyResolver, TextResolver, NameResolver, DNSResolver, Ownable {
     ENS ens;
 
     /**
@@ -65,7 +65,7 @@ contract PublicResolver is ABIResolver, AddrResolver, ContentHashResolver, Inter
         return results;
     }
 
-    function supportsInterface(bytes4 interfaceID) virtual override(ABIResolver, AddrResolver, ContentHashResolver, InterfaceResolver, NameResolver, PubkeyResolver, TextResolver) public pure returns(bool) {
+    function supportsInterface(bytes4 interfaceID) virtual override(ABIResolver, AddrResolver, ContentHashResolver, DNSResolver, InterfaceResolver, NameResolver, PubkeyResolver, TextResolver) public pure returns(bool) {
         return super.supportsInterface(interfaceID);
     }
 }
