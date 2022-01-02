@@ -142,7 +142,7 @@ module.exports = {
     },
   },
   // Set API key for etherscan/polygonscan/mumbai.polygonscan
-  // Endpoint will be chosed based on default network
+  // Endpoint will be chosen based on default network
   // TODO: Replace this hardcode with a switch on defaultNetwork
   etherscan: {
     apiKey: '43JVMCI3EJCZSECDWX99KRZRYWDX3H7MCH'
