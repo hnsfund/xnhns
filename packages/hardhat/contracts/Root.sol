@@ -23,33 +23,39 @@ contract Root is
     }
 
     function setResolver(address resolver) external onlyOwner {
-      ens.setResolver(ROOT_NODE, resolver);
+        ens.setResolver(ROOT_NODE, resolver);
     }
 
-    function register(uint id, address _owner) external onlyController returns(bool) {
+    function register(bytes32 label, address _owner) external onlyController returns(bool) {
+        uint id = generateID(label);
         require(address(0) == tldControllers[id], 'Cannot register claimed TLD');
         if(_exists(id)) {
             // Name was previously owned
             _burn(id);
         }
         _mint(_owner, id);
-        ens.setSubnodeOwner(ROOT_NODE, bytes32(id), _owner);
+        ens.setSubnodeOwner(ROOT_NODE, label, _owner);
         emit TLDRegistered(id, _owner);
         tldControllers[id] = msg.sender;
         return true;
     }
 
-    function unregister(uint id) external onlyController returns(bool) {
+    function unregister(bytes32 label) external onlyController returns(bool) {
+        uint id = generateID(label);
         require(address(0) != tldControllers[id], 'Cannot unregister a nonexistant TLD');
         require(msg.sender == tldControllers[id], 'Controller not allowed for NFTLD');
         address _owner = ownerOf(id);
         if(_exists(id)) {
             _burn(id);
         }
-        ens.setSubnodeOwner(ROOT_NODE, bytes32(id), address(0)); // or address(this)?
+        ens.setSubnodeOwner(ROOT_NODE, label, address(0));
         delete tldControllers[id];
         emit TLDUnregistered(id, _owner);
         return true;
+    }
+
+    function generateID(bytes32 label) internal pure returns (uint) {
+        return uint(keccak256(abi.encode(ROOT_NODE, label)));
     }
 
     /**

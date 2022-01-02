@@ -18,6 +18,11 @@ contract TrustedXNHNSOracle is IXNHNSOracle, Ownable {
       NAMESPACE = _namespace;
     }
 
+
+    /**
+     * @dev Optimisitically approves requesters for TLD ownership.
+     * @param tld string of HNS tld to verify ownership of
+     */
     function requestTLDUpdate(string calldata tld)
       external
       override
@@ -31,6 +36,12 @@ contract TrustedXNHNSOracle is IXNHNSOracle, Ownable {
       return node;
     }
 
+    /**
+     * @dev Allows oracle owner to update TLD ownership.
+            Only needed if malicious actor calls requestTLDUpdate on TLD they don't own
+     * @param node ENS hash of tld to claim
+     * @param owner_ address to give TLD to
+     */
     function receiveTLDUpdate(bytes32 node, address owner_)
       external override
       onlyOwner
