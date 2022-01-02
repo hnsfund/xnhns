@@ -1,6 +1,7 @@
 const fs = require('fs');
 
 const namespace = 'matic'
+const governance = '0x11b3585b00febd9d513fdc27c3721c855051e000'
 
 module.exports = async ({getNamedAccounts, deployments}) => {
   const {deploy, execute} = deployments;
@@ -44,22 +45,9 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     log: true,
   });
 
-  // Set Root's controller to HNSRegistrar
-  if (Root.newlyDeployed) {
-    await execute(
-      'Root',
-      {
-        from: deployer,
-        log: true
-      },
-      'setController',
-      // args:
-      HNSRegistrar.address, true
-    );
-  }
 
   // Allow HNSRegistrar to call XNHNSOracle
-  if (TrustedXNHNSOracle.newlyDeployed || Root.newlyDeployed) {
+  if (HNSRegistrar.newlyDeployed) {
     await execute(
       'TrustedXNHNSOracle',
       {
@@ -70,6 +58,45 @@ module.exports = async ({getNamedAccounts, deployments}) => {
       // args:
       HNSRegistrar.address, true
     );
+  }
+
+  if (Root.newlyDeployed) {
+    // Set Root's controller to HNSRegistrar
+    await execute(
+      'Root',
+      {
+        from: deployer,
+        log: true
+      },
+      'setController',
+      // args:
+      HNSRegistrar.address, true
+    );
+    // Transfer  Root ownership to governance address
+    await execute(
+        'Root',
+        {
+          from: deployer,
+          log: true
+        },
+        'transferOwnership',
+        // args:
+        governance
+      );
+  }
+
+  if(TrustedXNHNSOracle.newlyDeployed) {
+    // Transfer Oracle ownership to governance address
+    await execute(
+        'TrustedXNHNSOracle',
+        {
+          from: deployer,
+          log: true
+        },
+        'transferOwnership',
+        // args:
+        governance
+      );
   }
 
   const PublicResolver = await deploy('PublicResolver', {
