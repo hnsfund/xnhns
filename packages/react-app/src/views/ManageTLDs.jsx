@@ -95,7 +95,7 @@ export default function Manage({
                 console.log('minting tld', tld)
                 updateTld(tld, { status: 'minting' })
                 buttonLoadingStatus = true;
-                writeContracts.HNSRegistrar.register(namehash(tld))
+                writeContracts.HNSRegistrar.register(tld)
                   .then((result) => {
                     console.log(' tld registered', result)
 
