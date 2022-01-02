@@ -103,6 +103,8 @@ export const NETWORKS = {
     },
     mumbai: {
         name: "mumbai",
+        namespace: 'matic',
+        xnhnsRegistry: '0x0',
         color: '#92D9FA',
         chainId: 80001,
         price: 1,

@@ -27,38 +27,28 @@ Referrer is set in register() instead of verify() because any person or register
 
 ## quickstart
 
+Clone the repo and install dependencies:
 ```bash
 git clone https://github.com/hnsfund/xnhns.git
-
 cd xnhns
-```
-
-```bash
-
 yarn install
-
 ```
 
+Start the frontend dev server with:
 ```bash
-
 yarn start
-
 ```
 
-> in a second terminal window:
-
+In a second terminal window, start a local hardhat network (this will deploy all contracts on a fresh chain):
 ```bash
-
+cd packages/hardhat
 yarn chain --network hardhat
-
 ```
 
-> in a third terminal window:
-
+In a third terminal window, run this to compile and publish to frontend (required after every contract modification):
 ```bash
-
+cd packages/hardhat
 yarn deploy:test
-
 ```
 
 
