@@ -92,14 +92,14 @@ export const NETWORKS = {
     matic: {
         name: "matic",
         namespace: 'matic',
-        xnhnsRegistry: '0x34f3fa739a0592e3a7ded83802c9faa53c28a1a5',
+        xnhnsRegistry: '0xb182f23e67761e7e703f67a3019aa25c5928e866',
         color: '#2bbdf7',
         chainId: 137,
         price: 1,
         gasPrice:1000000000,
         rpcUrl: 'https://polygon-rpc.com',
         faucet: "https://faucet.matic.network/",
-        blockExplorer: "https://explorer-mainnet.maticvigil.com//",
+        blockExplorer: "https://polygonscan.com/",
     },
     mumbai: {
         name: "mumbai",
