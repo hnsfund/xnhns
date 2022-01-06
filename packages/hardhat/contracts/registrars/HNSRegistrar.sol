@@ -3,7 +3,6 @@ pragma solidity ^0.7.0;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../../interfaces/IENS.sol";
 import "../../interfaces/IXNHNSOracle.sol";
-import "../../interfaces/IPanvalaMember.sol";
 import "../Root.sol";
 
 /**

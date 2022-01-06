@@ -145,8 +145,12 @@ module.exports = {
   // Endpoint will be chosen based on default network
   // TODO: Replace this hardcode with a switch on defaultNetwork
   etherscan: {
-    apiKey: '43JVMCI3EJCZSECDWX99KRZRYWDX3H7MCH'
-  }
+      apiKey: '9MRKN7N9UPD88UN6HD7QG6QZXD8RERZVZ7'
+    // apiKey: '43JVMCI3EJCZSECDWX99KRZRYWDX3H7MCH'
+  },
+  polygonscan: {
+    apiKey: '9MRKN7N9UPD88UN6HD7QG6QZXD8RERZVZ7'
+  },
 }
 
 const DEBUG = false
