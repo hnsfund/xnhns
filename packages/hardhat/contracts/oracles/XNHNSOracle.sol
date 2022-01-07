@@ -20,7 +20,7 @@ contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
 
     // tld namehash -> owner adddres on HNS
     mapping(bytes32 => address) public tldOwners;
-    // Link request id -> tld namehash
+    // Link request id -> tld
     mapping(bytes32 => string) private tldRunIds;
     // contracts that are allowed to initiate oracle requests
     mapping(address => bool) private allowedCallers;
@@ -73,7 +73,7 @@ contract XNHNSOracle is IXNHNSOracle, ChainlinkClient, Ownable {
       string memory tld = tldRunIds[requestId];
       tldOwners[_getNamehash((tld))] = _owner; // oracle returns addres(0) if invalid claim
       // bytes32(0) is root node which is always parent of a tld
-      emit NewOwner(_getNamehash(tld), _owner);
+      emit NewOwner(tld, _owner);
       return true;
     }
 

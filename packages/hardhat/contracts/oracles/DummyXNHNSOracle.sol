@@ -18,7 +18,7 @@ contract DummyXNHNSOracle is IXNHNSOracle {
       require(allowedCallers[msg.sender], 'Caller does not have permission to initiate oracle requests');
       bytes32 node = _getNamehash(tld);
       tldOwners[node] = tx.origin;
-      emit NewOwner(node, tx.origin);
+      emit NewOwner(tld, tx.origin);
       return node;
     }
 
