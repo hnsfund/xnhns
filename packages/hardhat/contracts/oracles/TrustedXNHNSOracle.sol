@@ -34,14 +34,14 @@ contract TrustedXNHNSOracle is IXNHNSOracle, Ownable {
       require(allowedCallers[msg.sender], 'Caller does not have permission to initiate oracle requests');
       bytes32 node = _getNamehash(tld);
       tldOwners[node] = tx.origin;
-      emit NewOwner(tld, tx.origin);
+      emit NewOwner(_getNamehash(tld), tx.origin);
       return node;
     }
 
     /**
      * @dev Allows oracle owner to update TLD ownership.
             Only needed if malicious actor calls requestTLDUpdate on TLD they don't own
-     * @param node Namehash of HNS TLD to update
+     * @param node ENS hash of tld to claim
      * @param owner_ address to give TLD to
      */
     function receiveTLDUpdate(bytes32 node, address owner_)

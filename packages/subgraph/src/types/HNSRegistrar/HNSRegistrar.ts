@@ -10,6 +10,28 @@ import {
   BigInt
 } from "@graphprotocol/graph-ts";
 
+export class FeesCollected extends ethereum.Event {
+  get params(): FeesCollected__Params {
+    return new FeesCollected__Params(this);
+  }
+}
+
+export class FeesCollected__Params {
+  _event: FeesCollected;
+
+  constructor(event: FeesCollected) {
+    this._event = event;
+  }
+
+  get fees(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get owner(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+}
+
 export class NewOracle extends ethereum.Event {
   get params(): NewOracle__Params {
     return new NewOracle__Params(this);
@@ -173,27 +195,6 @@ export class HNSRegistrar extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toString());
   }
 
-  _getNamehash(tld: string): Bytes {
-    let result = super.call("_getNamehash", "_getNamehash(string):(bytes32)", [
-      ethereum.Value.fromString(tld)
-    ]);
-
-    return result[0].toBytes();
-  }
-
-  try__getNamehash(tld: string): ethereum.CallResult<Bytes> {
-    let result = super.tryCall(
-      "_getNamehash",
-      "_getNamehash(string):(bytes32)",
-      [ethereum.Value.fromString(tld)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBytes());
-  }
-
   _getSnitch(node: Bytes): HNSRegistrar___getSnitchResult {
     let result = super.call(
       "_getSnitch",
@@ -227,22 +228,14 @@ export class HNSRegistrar extends ethereum.SmartContract {
     );
   }
 
-  claimSnitchReward(node: Bytes): boolean {
-    let result = super.call(
-      "claimSnitchReward",
-      "claimSnitchReward(bytes32):(bool)",
-      [ethereum.Value.fromFixedBytes(node)]
-    );
+  claimFees(): boolean {
+    let result = super.call("claimFees", "claimFees():(bool)", []);
 
     return result[0].toBoolean();
   }
 
-  try_claimSnitchReward(node: Bytes): ethereum.CallResult<boolean> {
-    let result = super.tryCall(
-      "claimSnitchReward",
-      "claimSnitchReward(bytes32):(bool)",
-      [ethereum.Value.fromFixedBytes(node)]
-    );
+  try_claimFees(): ethereum.CallResult<boolean> {
+    let result = super.tryCall("claimFees", "claimFees():(bool)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -250,23 +243,27 @@ export class HNSRegistrar extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  donateProfits(): BigInt {
-    let result = super.call("donateProfits", "donateProfits():(uint256)", []);
+  claimSnitchReward(tld: string): boolean {
+    let result = super.call(
+      "claimSnitchReward",
+      "claimSnitchReward(string):(bool)",
+      [ethereum.Value.fromString(tld)]
+    );
 
-    return result[0].toBigInt();
+    return result[0].toBoolean();
   }
 
-  try_donateProfits(): ethereum.CallResult<BigInt> {
+  try_claimSnitchReward(tld: string): ethereum.CallResult<boolean> {
     let result = super.tryCall(
-      "donateProfits",
-      "donateProfits():(uint256)",
-      []
+      "claimSnitchReward",
+      "claimSnitchReward(string):(bool)",
+      [ethereum.Value.fromString(tld)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
     let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
   ens(): Address {
@@ -282,6 +279,44 @@ export class HNSRegistrar extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  getLabel(tld: string): Bytes {
+    let result = super.call("getLabel", "getLabel(string):(bytes32)", [
+      ethereum.Value.fromString(tld)
+    ]);
+
+    return result[0].toBytes();
+  }
+
+  try_getLabel(tld: string): ethereum.CallResult<Bytes> {
+    let result = super.tryCall("getLabel", "getLabel(string):(bytes32)", [
+      ethereum.Value.fromString(tld)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBytes());
+  }
+
+  getNamehash(tld: string): Bytes {
+    let result = super.call("getNamehash", "getNamehash(string):(bytes32)", [
+      ethereum.Value.fromString(tld)
+    ]);
+
+    return result[0].toBytes();
+  }
+
+  try_getNamehash(tld: string): ethereum.CallResult<Bytes> {
+    let result = super.tryCall("getNamehash", "getNamehash(string):(bytes32)", [
+      ethereum.Value.fromString(tld)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
   minTLDDeposit(): BigInt {
@@ -333,23 +368,23 @@ export class HNSRegistrar extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  register(node: Bytes): BigInt {
-    let result = super.call("register", "register(bytes32):(uint256)", [
-      ethereum.Value.fromFixedBytes(node)
+  register(tld: string): boolean {
+    let result = super.call("register", "register(string):(bool)", [
+      ethereum.Value.fromString(tld)
     ]);
 
-    return result[0].toBigInt();
+    return result[0].toBoolean();
   }
 
-  try_register(node: Bytes): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("register", "register(bytes32):(uint256)", [
-      ethereum.Value.fromFixedBytes(node)
+  try_register(tld: string): ethereum.CallResult<boolean> {
+    let result = super.tryCall("register", "register(string):(bool)", [
+      ethereum.Value.fromString(tld)
     ]);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
     let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
   snitchDeposit(): BigInt {
@@ -488,6 +523,36 @@ export class ConstructorCall__Outputs {
   }
 }
 
+export class ClaimFeesCall extends ethereum.Call {
+  get inputs(): ClaimFeesCall__Inputs {
+    return new ClaimFeesCall__Inputs(this);
+  }
+
+  get outputs(): ClaimFeesCall__Outputs {
+    return new ClaimFeesCall__Outputs(this);
+  }
+}
+
+export class ClaimFeesCall__Inputs {
+  _call: ClaimFeesCall;
+
+  constructor(call: ClaimFeesCall) {
+    this._call = call;
+  }
+}
+
+export class ClaimFeesCall__Outputs {
+  _call: ClaimFeesCall;
+
+  constructor(call: ClaimFeesCall) {
+    this._call = call;
+  }
+
+  get value0(): boolean {
+    return this._call.outputValues[0].value.toBoolean();
+  }
+}
+
 export class ClaimSnitchRewardCall extends ethereum.Call {
   get inputs(): ClaimSnitchRewardCall__Inputs {
     return new ClaimSnitchRewardCall__Inputs(this);
@@ -505,8 +570,8 @@ export class ClaimSnitchRewardCall__Inputs {
     this._call = call;
   }
 
-  get node(): Bytes {
-    return this._call.inputValues[0].value.toBytes();
+  get tld(): string {
+    return this._call.inputValues[0].value.toString();
   }
 }
 
@@ -519,36 +584,6 @@ export class ClaimSnitchRewardCall__Outputs {
 
   get value0(): boolean {
     return this._call.outputValues[0].value.toBoolean();
-  }
-}
-
-export class DonateProfitsCall extends ethereum.Call {
-  get inputs(): DonateProfitsCall__Inputs {
-    return new DonateProfitsCall__Inputs(this);
-  }
-
-  get outputs(): DonateProfitsCall__Outputs {
-    return new DonateProfitsCall__Outputs(this);
-  }
-}
-
-export class DonateProfitsCall__Inputs {
-  _call: DonateProfitsCall;
-
-  constructor(call: DonateProfitsCall) {
-    this._call = call;
-  }
-}
-
-export class DonateProfitsCall__Outputs {
-  _call: DonateProfitsCall;
-
-  constructor(call: DonateProfitsCall) {
-    this._call = call;
-  }
-
-  get value0(): BigInt {
-    return this._call.outputValues[0].value.toBigInt();
   }
 }
 
@@ -607,8 +642,8 @@ export class RegisterCall__Inputs {
     this._call = call;
   }
 
-  get node(): Bytes {
-    return this._call.inputValues[0].value.toBytes();
+  get tld(): string {
+    return this._call.inputValues[0].value.toString();
   }
 }
 
@@ -619,8 +654,8 @@ export class RegisterCall__Outputs {
     this._call = call;
   }
 
-  get id(): BigInt {
-    return this._call.outputValues[0].value.toBigInt();
+  get value0(): boolean {
+    return this._call.outputValues[0].value.toBoolean();
   }
 }
 
@@ -675,8 +710,8 @@ export class UnregisterCall__Inputs {
     this._call = call;
   }
 
-  get node(): Bytes {
-    return this._call.inputValues[0].value.toBytes();
+  get tld(): string {
+    return this._call.inputValues[0].value.toString();
   }
 }
 

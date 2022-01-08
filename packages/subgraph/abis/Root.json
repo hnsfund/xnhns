@@ -358,9 +358,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "label",
+        "type": "bytes32"
       },
       {
         "internalType": "address",
@@ -651,9 +651,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "label",
+        "type": "bytes32"
       }
     ],
     "name": "unregister",

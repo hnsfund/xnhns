@@ -40,9 +40,9 @@ contract HNSRegistrar {
     );
 
     event NewOracle(address oracle);
-    event TLDMigrationRequested(string indexed tld, address indexed owner, uint256 deposit);
+    event TLDMigrationRequested(bytes32 indexed node, address indexed owner, uint256 deposit);
     // NewOwner identitcal to IENS.sol
-    event NewOwner(string indexed tld, address owner);
+    event NewOwner(bytes32 indexed node, address owner);
     event SnitchedOn(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchReward);
     event SnitchesGotStitches(bytes32 indexed node, address indexed owner, address snitch, uint256 snitchPenalty);
     event FeesCollected(uint indexed fees, address indexed owner);
@@ -89,7 +89,7 @@ contract HNSRegistrar {
       totalDeposits = totalDeposits.add(msg.value);
       tldDeposits[node] = tldDeposits[node].add(msg.value); // add to protect user funds incase they have to verify multiple times
       requestId = xnhnsOracle.requestTLDUpdate(tld);
-      emit TLDMigrationRequested(tld, msg.sender, tldDeposits[node]);
+      emit TLDMigrationRequested(node, msg.sender, tldDeposits[node]);
       return requestId;
     }
 
@@ -108,7 +108,7 @@ contract HNSRegistrar {
 
       Root nftld = _getRoot();
       nftld.register(_getLabel(tld), tldOwner);
-      emit NewOwner(tld, tldOwner);
+      emit NewOwner(node, tldOwner);
 
       return true;
     }

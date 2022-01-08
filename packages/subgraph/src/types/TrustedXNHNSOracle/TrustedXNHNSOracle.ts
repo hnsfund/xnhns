@@ -72,6 +72,28 @@ export class OwnershipTransferred__Params {
   }
 }
 
+export class TrustedOracleUpdate extends ethereum.Event {
+  get params(): TrustedOracleUpdate__Params {
+    return new TrustedOracleUpdate__Params(this);
+  }
+}
+
+export class TrustedOracleUpdate__Params {
+  _event: TrustedOracleUpdate;
+
+  constructor(event: TrustedOracleUpdate) {
+    this._event = event;
+  }
+
+  get node(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get owner(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+}
+
 export class TrustedXNHNSOracle extends ethereum.SmartContract {
   static bind(address: Address): TrustedXNHNSOracle {
     return new TrustedXNHNSOracle("TrustedXNHNSOracle", address);
