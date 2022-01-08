@@ -1,13 +1,11 @@
 // Import types and APIs from graph-ts
 import {
-  BigInt,
   crypto,
   ens,
-  log,
 } from '@graphprotocol/graph-ts'
 
 import {
-  createEventID, getDomain, concat, ROOT_NODE, EMPTY_ADDRESS
+  createEventID, getDomain, concat, ROOT_NODE
 } from './utils'
 
 // Import event types from the registry contract ABI
@@ -38,17 +36,14 @@ function _handleNewOwner(event: NewOwnerEvent): void {
   }
 
   if(domain.name === null) {
-    log.warning('ENS _handleNewOwner: domain.name is null.', [])
     // Get label and node names
     let label = ens.nameByHash(event.params.label.toHexString())
     if (label !== null) {
       domain.labelName = label
-      log.warning('ENS _handleNewOwner: setting labelName to ' + label, [])
     }
 
     if(label === null) {
       label = '[' + event.params.label.toHexString().slice(2) + ']'
-      log.warning('ENS _handleNewOwner: calculating label: ' + label, [])
     }
     if(event.params.node.toHexString() === ROOT_NODE) {
       domain.name = label
@@ -60,7 +55,6 @@ function _handleNewOwner(event: NewOwnerEvent): void {
       }
     }
   }
-  // log.warning('ENS _handleNewOwner: setting domain.name based on label to: ' + domain.name, [])
 
   domain.owner = account.id
   domain.parent = event.params.node.toHexString()
@@ -79,14 +73,12 @@ function _handleNewOwner(event: NewOwnerEvent): void {
 // Handler for Transfer events
 export function handleTransfer(event: TransferEvent): void {
   let node = event.params.node.toHexString()
-  // log.warning('ENS handleTransfer: node: ' + node, [])
   let account = new Account(event.params.owner.toHexString())
   account.save()
 
   // Update the domain owner
   let domain = getDomain(node)!
   domain.owner = account.id
-  // log.warning('ENS handleTransfer: domain id: ' + domain.id, [])
   domain.save()
 
   let domainEvent = new Transfer(createEventID(event))
