@@ -1182,20 +1182,20 @@ export class Resolver extends Entity {
     }
   }
 
-  get coinTypes(): Array<i32> | null {
+  get coinTypes(): Array<BigInt> | null {
     let value = this.get("coinTypes");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toI32Array();
+      return value.toBigIntArray();
     }
   }
 
-  set coinTypes(value: Array<i32> | null) {
+  set coinTypes(value: Array<BigInt> | null) {
     if (!value) {
       this.unset("coinTypes");
     } else {
-      this.set("coinTypes", Value.fromI32Array(<Array<i32>>value));
+      this.set("coinTypes", Value.fromBigIntArray(<Array<BigInt>>value));
     }
   }
 

@@ -19,7 +19,7 @@ import {
 // Import entity types generated from the GraphQL schema
 import { Account, Domain, Resolver, NewOwner, Transfer, NewResolver, NewTTL } from './types/schema'
 
-function makeSubnode(event:NewOwnerEvent): string {
+function makeNamehash(event:NewOwnerEvent): string {
   return crypto.keccak256(concat(event.params.node, event.params.label)).toHexString()
 }
 
@@ -28,7 +28,7 @@ function _handleNewOwner(event: NewOwnerEvent): void {
   let account = new Account(event.params.owner.toHexString())
   account.save()
 
-  let subnode =  makeSubnode(event)
+  let subnode =  makeNamehash(event)
   let domain = getDomain(subnode, event.block.timestamp);
   if(domain === null) {
     domain = new Domain(subnode)
