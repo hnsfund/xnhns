@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Switch, Route, NavLink, Redirect } from "react-router-dom";
+import { HashRouter, Switch, Route, NavLink, Redirect } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
@@ -209,7 +209,7 @@ function App(props) {
   return (
     <div className={`App  ${isMobile ? 'app-mobile' : 'app-desktop'}`}>
 
-      <BrowserRouter>
+      <HashRouter>
         <div className={`menu-wrapper ${isMobile ? 'menu-wrapper-mobile' : 'menu-wrapper-desktop'}`}>
           <Menu 
             selectedKeys={[route]}
@@ -319,7 +319,7 @@ function App(props) {
             />
           </Route>
         </Switch>
-      </BrowserRouter>
+      </HashRouter>
 
       <ThemeSwitch />
 
