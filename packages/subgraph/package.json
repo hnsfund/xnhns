@@ -17,8 +17,8 @@
     "watch-local": "graph deploy graphprotocol/ens --watch --debug --node http://127.0.0.1:8020/ --ipfs http://localhost:5001"
   },
   "devDependencies": {
-    "@graphprotocol/graph-cli": "0.18.0",
-    "@graphprotocol/graph-ts": "0.18.0",
+    "@graphprotocol/graph-cli": "^0.25.1",
+    "@graphprotocol/graph-ts": "^0.24.1",
     "@ensdomains/content-hash": "^2.5.3",
     "mustache": "^3.1.0"
   }

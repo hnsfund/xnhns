@@ -8,7 +8,10 @@ import {
   NameChanged as NameChangedEvent,
   PubkeyChanged as PubkeyChangedEvent,
   TextChanged as TextChangedEvent,
-} from './types/Resolver/Resolver'
+  DNSRecordChanged as DNSRecordChangedEvent,
+  DNSRecordDeleted as DNSRecordDeletedEvent,
+  DNSZoneCleared as DNSZoneClearedEvent,
+} from './types/PublicResolver/PublicResolver'
 
 import {
   Account,
@@ -20,6 +23,9 @@ import {
   AbiChanged,
   PubkeyChanged,
   ContenthashChanged,
+  DNSRecordChanged,
+  DNSRecordDeleted,
+  DNSZoneCleared,
   InterfaceChanged,
   AuthorisationChanged,
   TextChanged,
@@ -40,7 +46,7 @@ export function handleAddrChanged(event: AddrChangedEvent): void {
   resolver.save()
 
   let domain = Domain.load(event.params.node.toHexString())
-  if(domain.resolver == resolver.id) {
+  if(domain && domain.resolver === resolver.id) {
     domain.resolvedAddress = event.params.a.toHexString()
     domain.save()
   }
@@ -56,20 +62,18 @@ export function handleAddrChanged(event: AddrChangedEvent): void {
 export function handleMulticoinAddrChanged(event: AddressChangedEvent): void {
   let resolver = getOrCreateResolver(event.params.node, event.address)
 
-  // Handle cointypes that are outside the range we support
-  if(!event.params.coinType.isI32()) {
-    return;
-  }
+  let coinType = event.params.coinType
 
-  let coinType = event.params.coinType.toI32()
-  if(resolver.coinTypes == null) {
+  if(resolver.coinTypes === null) {
     resolver.coinTypes = [coinType];
     resolver.save();
-  } else if(!resolver.coinTypes.includes(coinType)) {
-    let coinTypes = resolver.coinTypes
-    coinTypes.push(coinType)
-    resolver.coinTypes = coinTypes
-    resolver.save()
+  } else {
+    let coinTypes = resolver.coinTypes!
+    if(!coinTypes.includes(coinType)) {
+      coinTypes.push(coinType)
+      resolver.coinTypes = coinTypes
+      resolver.save()
+    }
   }
 
   let resolverEvent = new MulticoinAddrChanged(createEventID(event))
@@ -83,7 +87,7 @@ export function handleMulticoinAddrChanged(event: AddressChangedEvent): void {
 
 export function handleNameChanged(event: NameChangedEvent): void {
   if(event.params.name.indexOf("\u0000") != -1) return;
-  
+
   let resolverEvent = new NameChanged(createEventID(event))
   resolverEvent.resolver = createResolverID(event.params.node, event.address)
   resolverEvent.blockNumber = event.block.number.toI32()
@@ -114,14 +118,16 @@ export function handlePubkeyChanged(event: PubkeyChangedEvent): void {
 export function handleTextChanged(event: TextChangedEvent): void {
   let resolver = getOrCreateResolver(event.params.node, event.address)
   let key = event.params.key;
-  if(resolver.texts == null) {
+  if(resolver.texts === null) {
     resolver.texts = [key];
     resolver.save();
-  } else if(!resolver.texts.includes(key)) {
-    let texts = resolver.texts
-    texts.push(key)
-    resolver.texts = texts
-    resolver.save()
+  } else {
+    let texts = resolver.texts!
+    if(!texts.includes(key)) {
+      texts.push(key)
+      resolver.texts = texts
+      resolver.save()
+    }
   }
 
   let resolverEvent = new TextChanged(createEventID(event))
@@ -136,12 +142,53 @@ export function handleContentHashChanged(event: ContenthashChangedEvent): void {
   let resolver = getOrCreateResolver(event.params.node, event.address)
   resolver.contentHash = event.params.hash
   resolver.save()
-  
+
   let resolverEvent = new ContenthashChanged(createEventID(event))
   resolverEvent.resolver = createResolverID(event.params.node, event.address)
   resolverEvent.blockNumber = event.block.number.toI32()
   resolverEvent.transactionID = event.transaction.hash
   resolverEvent.hash = event.params.hash
+  resolverEvent.save()
+}
+
+export function handleDNSRecordChanged(event: DNSRecordChangedEvent): void {
+  let resolver = getOrCreateResolver(event.params.node, event.address)
+  resolver.save()
+
+  let resolverEvent = new DNSRecordChanged(createEventID(event))
+  resolverEvent.resolver = createResolverID(event.params.node, event.address)
+  resolverEvent.blockNumber = event.block.number.toI32()
+  resolverEvent.transactionID = event.transaction.hash
+  resolverEvent.node = event.params.node
+  resolverEvent.name = event.params.name
+  resolverEvent.resource = event.params.resource
+  resolverEvent.record = event.params.record
+  resolverEvent.save()
+}
+
+export function handleDNSRecordDeleted(event: DNSRecordDeletedEvent): void {
+  let resolver = getOrCreateResolver(event.params.node, event.address)
+  resolver.save()
+
+  let resolverEvent = new DNSRecordDeleted(createEventID(event))
+  resolverEvent.resolver = createResolverID(event.params.node, event.address)
+  resolverEvent.blockNumber = event.block.number.toI32()
+  resolverEvent.transactionID = event.transaction.hash
+  resolverEvent.node = event.params.node
+  resolverEvent.name = event.params.name
+  resolverEvent.resource = event.params.resource
+  resolverEvent.save()
+}
+
+export function handleDNSZoneCleared(event: DNSZoneClearedEvent): void {
+  let resolver = getOrCreateResolver(event.params.node, event.address)
+  resolver.save()
+
+  let resolverEvent = new DNSZoneCleared(createEventID(event))
+  resolverEvent.resolver = createResolverID(event.params.node, event.address)
+  resolverEvent.blockNumber = event.block.number.toI32()
+  resolverEvent.transactionID = event.transaction.hash
+  resolverEvent.node = event.params.node
   resolverEvent.save()
 }
 

@@ -1,25 +1,32 @@
 specVersion: 0.0.3
 description: >-
-  A secure & decentralized way to address resources on and off the blockchain
-  using simple, human-readable names. Access domains and transfer history.
-repository: 'https://github.com/ensdomains/ens-subgraph'
+  XNHNS is an easy way for any Handshake TLD owner to use their domain
+  trustlessly on other blockchains.
+repository: 'https://github.com/hnsfund/xnhns'
 schema:
   file: ./schema.graphql
 dataSources:
+
+  # ENSRegisty
   - kind: ethereum/contract
     name: ENSRegistry
     network: localhost
     source:
-      address: '0x398f1d25D4e77120E4D776dc3bf7B3Cf7b7f5d64'
+      address: '0x5FbDB2315678afecb367f032d93F642f64180aa3'
       abi: EnsRegistry
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/ensRegistry.ts
       entities:
         - Domain
         - Account
+        - NewOwner
+        - Resolver
+        - Transfer
+        - NewResolver
+        - NewTTL
       abis:
         - name: EnsRegistry
           file: ./abis/ENSRegistry.json
@@ -28,79 +35,150 @@ dataSources:
           handler: handleTransfer
         - event: 'NewOwner(indexed bytes32,indexed bytes32,address)'
           handler: handleNewOwner
+        - event: 'NewTTL(indexed bytes32,uint64)'
+          handler: handleNewTTL
+        - event: 'NewResolver(indexed bytes32,address)'
+          handler: handleNewResolver
+
+  # PublicResolver
+  - kind: ethereum/contract
+    name: PublicResolver
+    network: localhost
+    source:
+      address: '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318'
+      abi: PublicResolver
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/resolver.ts
+      entities:
+        - Domain
+        - Account
+        - Resolver
+        - AddrChanged
+        - MulticoinAddrChanged
+        - NameChanged
+        - AbiChanged
+        - PubkeyChanged
+        - ContenthashChanged
+        - DNSRecordChanged
+        - DNSRecordDeleted
+        - DNSZoneCleared
+        - InterfaceChanged
+        - AuthorisationChanged
+        - TextChanged
+      abis:
+        - name: PublicResolver
+          file: ./abis/PublicResolver.json
+      eventHandlers:
+        - event: 'ABIChanged(indexed bytes32,indexed uint256)'
+          handler: handleABIChanged
+        - event: 'AddrChanged(indexed bytes32,address)'
+          handler: handleAddrChanged
+        - event: 'AddressChanged(indexed bytes32,uint256,bytes)'
+          handler: handleMulticoinAddrChanged
+        - event: >-
+            AuthorisationChanged(indexed bytes32,indexed address,indexed
+            address,bool)
+          handler: handleAuthorisationChanged
+        - event: 'ContenthashChanged(indexed bytes32,bytes)'
+          handler: handleContentHashChanged
+        - event: 'InterfaceChanged(indexed bytes32,indexed bytes4,address)'
+          handler: handleInterfaceChanged
+        - event: 'NameChanged(indexed bytes32,string)'
+          handler: handleNameChanged
+        - event: 'PubkeyChanged(indexed bytes32,bytes32,bytes32)'
+          handler: handlePubkeyChanged
+        - event: 'TextChanged(indexed bytes32,indexed string,string)'
+          handler: handleTextChanged
+        - event: 'DNSRecordChanged(indexed bytes32,bytes,uint16,bytes)'
+          handler: handleDNSRecordChanged
+        - event: 'DNSRecordDeleted(indexed bytes32,bytes,uint16)'
+          handler: handleDNSRecordDeleted
+        - event: 'DNSZoneCleared(indexed bytes32)'
+          handler: handleDNSZoneCleared
+
   # Root
   - kind: ethereum/contract
     name: Root
     network: localhost
     source:
-      address: '0xBb79C43feee69343Ae43aDe89BfB7132C2f26176'
+      address: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'
       abi: Root
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/xnhns.ts
       entities:
-        - Domain
         - Account
-        - NewOwner
+        - Domain
+        - Transfer
       abis:
         - name: Root
           file: ./abis/Root.json
       eventHandlers:
         - event: 'Transfer(indexed address,indexed address,indexed uint256)'
           handler: handleNFTLDTransfer
-  # Registrars
+        # - event: 'TLDRegistered(indexed uint256,indexed address)'
+        #   handler: handleTLDRegistered
+        - event: 'TLDUnregistered(indexed uint256,indexed address)'
+          handler: handleTLDUnregistered
+
+  # HNSRegistrar
   - kind: ethereum/contract
     name: HNSRegistrar
     network: localhost
     source:
-      address: '0xA08857E895F655591Eab9B0C8404B30b17da304C'
+      address: '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9'
       abi: HNSRegistrar
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/xnhns.ts
       entities:
-        - Domain
         - Account
-        - NewOwner
-        - MigrationRequested
+        - Domain
         - Deposit
+        - NewOwner
       abis:
         - name: HNSRegistrar
           file: ./abis/HNSRegistrar.json
       eventHandlers:
-        - event: 'TLDMigrationRequested(indexed bytes32,indexed address,uint256)'
+        - event: 'TLDMigrationRequested(indexed bytes32,indexed address,uint256)' # on HNSRegistrar.verify()
           handler: handleMigrationRequest
-        - event: 'NewOwner(indexed bytes32,address)'
-          handler: handleTLDRegistered
-        - event: 'SnitchedOn(indexed bytes32,indexed address,address,uint256)'
-          handler: handleSnitchedOn
-        - event: 'SnitchesGotStitches(indexed bytes32,indexed address,address,uint256)'
-          handler: handleSnitchesGetStiches
+        - event: 'NewOwner(indexed bytes32,address)' # on HNSRegistrar.register()
+          handler: handleNewOwnerRegistrar
+        # - event: 'SnitchedOn(indexed bytes32,indexed address,address,uint256)'
+        #   handler: handleSnitchedOn
+        # - event: 'SnitchesGotStitches(indexed bytes32,indexed address,address,uint256)'
+        #   handler: handleSnitchesGetStiches
+
   # Oracles
   - kind: ethereum/contract
     name: TrustedXNHNSOracle
     network: localhost
     source:
-      address: '0x4d807285db099bDcd334877f2705d1f7Db157006'
+      address: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9'
       abi: TrustedXNHNSOracle
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/xnhns.ts
       entities:
         - Domain
         - Account
-        - NewOwner
+        - OracleUpdateReceived
       abis:
         - name: TrustedXNHNSOracle
           file: ./abis/TrustedXNHNSOracle.json
       eventHandlers:
         - event: 'NewOwner(indexed bytes32,address)'
           handler: handleOracleUpdateReceived
-        - event: 'NewOracle(address)'
-          handler: handleOracleUpdated
+        # - event: 'NewOracle(address)'
+        #   handler: handleNewOracle
+        # - event: 'TrustedOracleUpdate(indexed bytes32,address)'
+        #   handler: handleTrustedOracleUpdate

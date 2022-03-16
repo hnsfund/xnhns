@@ -128,28 +128,6 @@ export class TLDRegistered__Params {
   }
 }
 
-export class TLDRemoved extends ethereum.Event {
-  get params(): TLDRemoved__Params {
-    return new TLDRemoved__Params(this);
-  }
-}
-
-export class TLDRemoved__Params {
-  _event: TLDRemoved;
-
-  constructor(event: TLDRemoved) {
-    this._event = event;
-  }
-
-  get id(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get owner(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-}
-
 export class TLDUnregistered extends ethereum.Event {
   get params(): TLDUnregistered__Params {
     return new TLDUnregistered__Params(this);
@@ -388,18 +366,18 @@ export class Root extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  register(id: BigInt, _owner: Address): boolean {
-    let result = super.call("register", "register(uint256,address):(bool)", [
-      ethereum.Value.fromUnsignedBigInt(id),
+  register(label: Bytes, _owner: Address): boolean {
+    let result = super.call("register", "register(bytes32,address):(bool)", [
+      ethereum.Value.fromFixedBytes(label),
       ethereum.Value.fromAddress(_owner)
     ]);
 
     return result[0].toBoolean();
   }
 
-  try_register(id: BigInt, _owner: Address): ethereum.CallResult<boolean> {
-    let result = super.tryCall("register", "register(uint256,address):(bool)", [
-      ethereum.Value.fromUnsignedBigInt(id),
+  try_register(label: Bytes, _owner: Address): ethereum.CallResult<boolean> {
+    let result = super.tryCall("register", "register(bytes32,address):(bool)", [
+      ethereum.Value.fromFixedBytes(label),
       ethereum.Value.fromAddress(_owner)
     ]);
     if (result.reverted) {
@@ -557,17 +535,17 @@ export class Root extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  unregister(id: BigInt): boolean {
-    let result = super.call("unregister", "unregister(uint256):(bool)", [
-      ethereum.Value.fromUnsignedBigInt(id)
+  unregister(label: Bytes): boolean {
+    let result = super.call("unregister", "unregister(bytes32):(bool)", [
+      ethereum.Value.fromFixedBytes(label)
     ]);
 
     return result[0].toBoolean();
   }
 
-  try_unregister(id: BigInt): ethereum.CallResult<boolean> {
-    let result = super.tryCall("unregister", "unregister(uint256):(bool)", [
-      ethereum.Value.fromUnsignedBigInt(id)
+  try_unregister(label: Bytes): ethereum.CallResult<boolean> {
+    let result = super.tryCall("unregister", "unregister(bytes32):(bool)", [
+      ethereum.Value.fromFixedBytes(label)
     ]);
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -696,8 +674,8 @@ export class RegisterCall__Inputs {
     this._call = call;
   }
 
-  get id(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
+  get label(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
   }
 
   get _owner(): Address {
@@ -1006,8 +984,8 @@ export class UnregisterCall__Inputs {
     this._call = call;
   }
 
-  get id(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
+  get label(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
   }
 }
 
