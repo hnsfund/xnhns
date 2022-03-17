@@ -30,7 +30,7 @@ interface DomainEvent {
 
 type Deposit implements DomainEvent @entity {
   id: ID!
-  domain: Domain! @derivedFrom(field: "deposit")
+  domain: Domain!
   blockNumber: Int!
   transactionID: Bytes!
   amount: BigInt!       # amount of tokens deposited

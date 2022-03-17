@@ -7,10 +7,10 @@ import "../../interfaces/IBaseRegistrar.sol";
 
 contract BaseRegistrar is
   IBaseRegistrar,
-  ERC721("NFTLD Domain Registrar", "NFTLD") 
+  ERC721("Cross-Network Handshake SLD Registrar", "XNHNSSLD") 
 {
     // A map of expiry times
-    mapping(uint256=>uint) expiries;
+    mapping(uint256 => uint) expiries;
 
     bytes4 constant private RECLAIM_ID = bytes4(keccak256("reclaim(uint256,address)"));
 
@@ -42,29 +42,29 @@ contract BaseRegistrar is
     }
 
     // Authorises a controller, who can register and renew domains.
-    function addController(address controller) override external onlyOwner {
+    function addController(address controller) onlyOwner external override {
         controllers[controller] = true;
         emit ControllerAdded(controller);
     }
 
     // Revoke controller permission for an address.
-    function removeController(address controller) override external onlyOwner {
+    function removeController(address controller) onlyOwner external override {
         controllers[controller] = false;
         emit ControllerRemoved(controller);
     }
 
     // Set the resolver for the TLD this registrar manages.
-    function setResolver(address resolver) override external onlyOwner {
+    function setResolver(address resolver) onlyOwner external override {
         ens.setResolver(baseNode, resolver);
     }
 
     // Returns the expiration timestamp of the specified id.
-    function nameExpires(uint256 id) override external view returns(uint) {
+    function nameExpires(uint256 id) external view override returns(uint) {
         return expiries[id];
     }
 
     // Returns true iff the specified name is available for registration.
-    function available(uint256 id) override public view returns(bool) {
+    function available(uint256 id) public view override returns(bool) {
         // Not available if it's registered here or in its grace period.
         return expiries[id] + GRACE_PERIOD < block.timestamp;
     }
@@ -75,7 +75,7 @@ contract BaseRegistrar is
      * @param _owner The address that should own the registration.
      * @param duration Duration in seconds for the registration.
      */
-    function register(uint256 id, address _owner, uint duration) override external returns(uint) {
+    function register(uint256 id, address _owner, uint duration) external override returns(uint) {
       return _register(id, _owner, duration, true);
     }
 
@@ -89,7 +89,7 @@ contract BaseRegistrar is
       return _register(id, _owner, duration, false);
     }
 
-    function _register(uint256 id, address _owner, uint duration, bool updateRegistry) internal live onlyController returns(uint) {
+    function _register(uint256 id, address _owner, uint duration, bool updateRegistry) live onlyController internal returns(uint) {
         require(available(id));
         require(block.timestamp + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD); // Prevent future overflow
 
@@ -108,7 +108,7 @@ contract BaseRegistrar is
         return block.timestamp + duration;
     }
 
-    function renew(uint256 id, uint duration) override external live onlyController returns(uint) {
+    function renew(uint256 id, uint duration) live onlyController external override  returns(uint) {
         require(expiries[id] + GRACE_PERIOD >= block.timestamp); // Name must be registered here or in grace period
         require(expiries[id] + duration + GRACE_PERIOD > duration + GRACE_PERIOD); // Prevent future overflow
 
@@ -123,5 +123,21 @@ contract BaseRegistrar is
     function reclaim(uint256 id, address _owner) override external live {
         require(_isApprovedOrOwner(msg.sender, id));
         ens.setSubnodeOwner(baseNode, bytes32(id), _owner);
+    }
+
+    /**
+     * @dev Give ownership of TLD and NFTLD to owner
+     */
+    function releaseNFTLD(address _owner) onlyController external override returns(bool) {
+        ens.setOwner(baseNode, _owner);
+        (bool success, bytes memory data) = ens.owner(bytes32(0)).call(
+          abi.encodeWithSignature(
+            "reclaim(uint256,address)",
+            uint256(baseNode),
+            _owner
+          )
+        );
+        require(success);
+        return true;
     }
 }

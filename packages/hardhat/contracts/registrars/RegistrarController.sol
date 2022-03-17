@@ -1,4 +1,4 @@
-pragma solidity ^0.7.0;
+pragma solidity^0.7.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../../interfaces/IPublicResolver.sol";
@@ -40,9 +40,8 @@ contract RegistrarController is Ownable {
     event NameRenewed(string name, bytes32 indexed label, uint cost, uint expires);
     event NewPriceOracle(address indexed oracle);
 
-    constructor(BaseRegistrar _base, IPriceOracle _prices, uint _minCommitmentAge, uint _maxCommitmentAge) public {
+    constructor(BaseRegistrar _base, IPriceOracle _prices, uint _minCommitmentAge, uint _maxCommitmentAge) {
         require(_maxCommitmentAge > _minCommitmentAge);
-
         base = _base;
         prices = _prices;
         minCommitmentAge = _minCommitmentAge;
@@ -55,7 +54,7 @@ contract RegistrarController is Ownable {
     }
 
     function valid(string memory name) public pure returns(bool) {
-        return name.strlen() >= 3;
+        return name.strlen() > 0;
     }
 
     function available(string memory name) public view returns(bool) {
@@ -63,17 +62,17 @@ contract RegistrarController is Ownable {
         return valid(name) && base.available(uint256(label));
     }
 
-    function makeCommitment(string memory name, address owner, bytes32 secret) pure public returns(bytes32) {
-        return makeCommitmentWithConfig(name, owner, secret, address(0), address(0));
+    function makeCommitment(string memory name, address owner_, bytes32 secret) pure public returns(bytes32) {
+        return makeCommitmentWithConfig(name, owner_, secret, address(0), address(0));
     }
 
-    function makeCommitmentWithConfig(string memory name, address owner, bytes32 secret, address resolver, address addr) pure public returns(bytes32) {
+    function makeCommitmentWithConfig(string memory name, address owner_, bytes32 secret, address resolver, address addr) pure public returns(bytes32) {
         bytes32 label = keccak256(bytes(name));
         if (resolver == address(0) && addr == address(0)) {
-            return keccak256(abi.encodePacked(label, owner, secret));
+            return keccak256(abi.encodePacked(label, owner_, secret));
         }
         require(resolver != address(0));
-        return keccak256(abi.encodePacked(label, owner, resolver, addr, secret));
+        return keccak256(abi.encodePacked(label, owner_, resolver, addr, secret));
     }
 
     function commit(bytes32 commitment) public {
@@ -81,12 +80,12 @@ contract RegistrarController is Ownable {
         commitments[commitment] =block.timestamp;
     }
 
-    function register(string calldata name, address owner, uint duration, bytes32 secret) external payable {
-      registerWithConfig(name, owner, duration, secret, address(0), address(0));
+    function register(string calldata name, address owner_, uint duration, bytes32 secret) external payable {
+      registerWithConfig(name, owner_, duration, secret, address(0), address(0));
     }
 
-    function registerWithConfig(string memory name, address owner, uint duration, bytes32 secret, address resolver, address addr) public payable {
-        bytes32 commitment = makeCommitmentWithConfig(name, owner, secret, resolver, addr);
+    function registerWithConfig(string memory name, address owner_, uint duration, bytes32 secret, address resolver, address addr) public payable {
+        bytes32 commitment = makeCommitmentWithConfig(name, owner_, secret, resolver, addr);
         uint cost = _consumeCommitment(name, duration, commitment);
 
         bytes32 label = keccak256(bytes(name));
@@ -110,14 +109,14 @@ contract RegistrarController is Ownable {
             }
 
             // Now transfer full ownership to the expeceted owner
-            base.reclaim(tokenId, owner);
-            base.transferFrom(address(this), owner, tokenId);
+            base.reclaim(tokenId, owner_);
+            base.transferFrom(address(this), owner_, tokenId);
         } else {
             require(addr == address(0));
-            expires = base.register(tokenId, owner, duration);
+            expires = base.register(tokenId, owner_, duration);
         }
 
-        emit NameRegistered(name, label, owner, cost, expires);
+        emit NameRegistered(name, label, owner_, cost, expires);
 
         // Refund any extra payment
         if(msg.value > cost) {
@@ -174,5 +173,10 @@ contract RegistrarController is Ownable {
         require(msg.value >= cost);
 
         return cost;
+    }
+
+    function releaseNFTLD(address _owner) onlyOwner external returns (bool) {
+      require(base.releaseNFTLD(_owner));
+      return true;
     }
 }

@@ -300,6 +300,7 @@ export class Deposit extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
+    this.set("domain", Value.fromString(""));
     this.set("transactionID", Value.fromBytes(Bytes.empty()));
     this.set("amount", Value.fromBigInt(BigInt.zero()));
     this.set("token", Value.fromBytes(Bytes.empty()));

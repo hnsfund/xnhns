@@ -62,4 +62,10 @@ abstract contract IBaseRegistrar is Ownable {
      * @dev Reclaim ownership of a name in ENS, if you own it in the registrar.
      */
     function reclaim(uint256 id, address owner) external virtual;
+
+
+    /**
+     * @dev Send ownership of ENS namehash and NFTLD to owner
+     */
+    function releaseNFTLD(address _owner) external virtual  returns(bool);
 }

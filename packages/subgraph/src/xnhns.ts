@@ -40,15 +40,7 @@ export function handleMigrationRequest(event: NewMigrationRequestedEvent): void 
   // Create an account
   let account = new Account(event.params.owner.toHexString())
   account.save()
-
-  // Create a deposit
-  let deposit = new Deposit(createEventID(event))
-  deposit.amount = event.params.deposit;
-  deposit.token = Address.fromString(EMPTY_ADDRESS)
-  deposit.blockNumber = event.block.number.toI32()
-  deposit.transactionID = event.transaction.hash
-  deposit.save()
-
+  
   let node = event.params.node
   let decodedInputTuple = ethereum.decode('(string)', getTxnInputDataToDecode(event))!.toTuple()
   let tld = decodedInputTuple[0].toString()
@@ -57,13 +49,21 @@ export function handleMigrationRequest(event: NewMigrationRequestedEvent): void 
   let domain = new Domain(node.toHexString())
   domain.registrar = event.address
   domain.owner = account.id // will be set again by oracle handler (handleOracleUpdateReceived)
-  domain.deposit = deposit.id
   domain.createdAt = event.block.timestamp
   domain.name = tld
   domain.labelName = tld
   domain.labelhash = node
   domain.parent = ROOT_NODE
   domain.save()
+
+  // Create a deposit
+  let deposit = new Deposit(createEventID(event))
+  deposit.amount = event.params.deposit;
+  deposit.token = Address.fromString(EMPTY_ADDRESS)
+  deposit.blockNumber = event.block.number.toI32()
+  deposit.domain = domain.id
+  deposit.transactionID = event.transaction.hash
+  deposit.save()
 }
 
 

@@ -1,7 +1,9 @@
+pragma solidity ^0.7.0;
 import  "./ENSRegistry.sol";
 import "./Root.sol";
 import "./oracles/TrustedXNHNSOracle.sol";
 import "./registrars/HNSRegistrar.sol";
+
 contract DeployScript {
   constructor(
     address governance,

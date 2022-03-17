@@ -19,7 +19,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = 'matic'
+const defaultNetwork = 'localhost'
 
 function mnemonic(generate) {
   if(generate || defaultNetwork === 'localhost') return '';
@@ -130,8 +130,9 @@ module.exports = {
   solidity: {
     evmVersion: 'istanbul',
     compilers: [
+      // { version: "0.8.9" },
       { version: "0.7.0" },
-      { version: "0.5.16" },
+      // { version: "0.5.16" },
       // { version: "0.4.24" },
     ],
     settings: {
