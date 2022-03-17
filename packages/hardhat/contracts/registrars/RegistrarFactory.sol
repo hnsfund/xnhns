@@ -67,10 +67,13 @@ contract XNHNSRegistrarFactory {
     _;
   }
 
+  /**
+  * @dev deploys default registrar for TLD with `node`
+  * @param node - ENS namehash of TLD to deploy registrar for
+  */
   function createRegistrar(bytes32 node)
     onlyNFTLDOwner(node)
     takeDeploymentFee
-  )
     payable
     external
     returns(address)
@@ -131,9 +134,23 @@ contract XNHNSRegistrarFactory {
     return address(controller);
   }
 
+  /**
+  * @dev update settings for fees paid by NFTLD owners to deploy registrars
+  * @notice changing `feeToken` changes value default pricing.
+            consider calling setPrices() if feeToken changes
+  * @param token - address of token to take as fees. address(0) == ETH
+  * @param amount - amount of token to take per registrar deployment
+   */
+
   function setFees(address token, uint256 amount) onlyRootOwner external returns(bool) {
     feeToken = token;
     fee = amount;
+    return true;
+  }
+
+    function setPrices(uint256[] calldata prices, uint256[] calldata tiers) onlyRootOwner external returns(bool) {
+    DEFAULT_PRICES = prices;
+    DEFAULT_PRICE_TIERS = tiers;
     return true;
   }
 
